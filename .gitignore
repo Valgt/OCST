@@ -63,4 +63,8 @@ Thumbs.db
 *.tmp
 *.temp
 
+# Carpetas de documentación y tesis (solo local)
+docs/
+thesis/
+
 
