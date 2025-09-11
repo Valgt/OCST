@@ -1,0 +1,26 @@
+# Dependencias de Python para OCST
+# Instalar con: pip install -r requirements.txt
+
+# Análisis de datos
+numpy>=1.21.0
+pandas>=1.3.0
+
+# Visualización
+matplotlib>=3.4.0
+seaborn>=0.11.0
+
+# Optimización (opcional, para comparaciones)
+scipy>=1.7.0
+
+# Utilidades
+tqdm>=4.62.0  # Barras de progreso
+click>=8.0.0  # Interfaz de línea de comandos
+
+# Jupyter (opcional, para notebooks de análisis)
+jupyter>=1.0.0
+ipykernel>=6.0.0
+
+# Testing (opcional)
+pytest>=6.0.0
+
+

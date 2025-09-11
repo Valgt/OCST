@@ -1,0 +1,66 @@
+# Archivos de compilación
+build/
+*.o
+*.obj
+*.exe
+*.out
+*.app
+
+# Archivos de Gurobi
+*.log
+*.lp
+*.sol
+*.mps
+*.rew
+*.h5
+*.attr
+
+# Archivos de LaTeX
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+*.lof
+*.lot
+*.idx
+*.ind
+*.ilg
+*.bcf
+*.run.xml
+
+# Archivos de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Archivos de datos grandes
+*.csv
+*.dat
+*.txt
+!requirements.txt
+!README.txt
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Archivos temporales
+*.tmp
+*.temp
+
+
