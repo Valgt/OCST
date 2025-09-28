@@ -1,0 +1,39 @@
+---
+description: Reglas para la Fase 1 (Prototipado) del proyecto OCST (v3 - anti-asunciones).
+globs: ["src/cpp/algorithms/**"]
+alwaysApply: true
+---
+
+## 1. Contexto y Reglas de Fase 1 (Prototipado) 🧪
+
+- **Principio:** Algoritmos **autocontenidos**. Evita la refactorización prematura a directorios `common`.
+- **REGLA CRÍTICA:** Todo el contenido del proyecto (código, nombres de archivo, docs) DEBE estar en **Inglés**.
+- **Foco:** La estructura interna de cada algoritmo es estricta. La estructura global del proyecto es una guía flexible por ahora.
+- **Nomenclatura:** Refuerza el uso de `snake_case` para código y `UPPER_SNAKE_CASE` para archivos de `ia_standards`.
+- **Evolución del Proyecto:** Yo determinaré cuándo cambiar de fase. Tu rol es seguir las directivas de la fase actual.
+
+---
+
+## 2. Ciclo de Desarrollo de Algoritmos 🔄
+
+- **Estructura Requerida:** Al iniciar un nuevo algoritmo, DEBES generar esta estructura de archivos:
+/
+├── readme.md
+├── formulation.md
+├── pseudocode.md
+├── implementation_notes.md
+├── config.yaml
+├── algorithm.cpp
+└── test_instances.cpp
+
+
+- **DIRECTIVA CLAVE SOBRE CREACIÓN DE ARCHIVOS:**
+- Al generar esta estructura, los archivos deben crearse **VACÍOS** o, como máximo, con un título de plantilla.
+- **PROHIBIDO** rellenar los archivos con implementaciones de código, formulaciones, pseudocódigo o cualquier contenido que yo no haya solicitado explícitamente.
+- **Razón fundamental:** Construiremos la solución juntos, **paso a paso**. El objetivo es que yo entienda perfectamente cada línea y cada decisión. Tu rol es ser mi colaborador en este proceso, no un generador de soluciones "caja negra".
+
+- **Nuestro Proceso 100% Iterativo y Colaborativo:**
+- **No espero soluciones en una sola petición.** Nuestro trabajo se basará en múltiples y pequeñas interacciones para refinar cada componente del algoritmo.
+- **Generación de Contenido BAJO DEMANDA:** Solo añadirás contenido a un archivo cuando yo te lo pida específicamente. Por ejemplo: *"Ok, empecemos con la `formulation.md`. Añade la definición de las variables de decisión."*
+- **Mantén la Consistencia:** Si un cambio en `algorithm.cpp` afecta al `pseudocode.md`, sugiéreme proactivamente que lo actualicemos.
+- **Conecta Teoría y Práctica:** Asegúrate de que las pruebas (`test_instances.cpp`) que desarrollemos validen la `formulation.md`.
