@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cmath>
 #include <set>
+#include <iomanip>
 
 // Gurobi integration
 #include <gurobi_c++.h>
@@ -89,10 +90,15 @@ struct OCSTInstance
     {
         std::set<std::pair<int, int>> existing_reqs;
         
-        // Track existing requirements to avoid duplicates
+        // Track existing requirements to avoid duplicates (directional)
         for (const auto& req : requirements) {
             existing_reqs.insert({req.origin, req.destination});
-            existing_reqs.insert({req.destination, req.origin}); // Undirected
+            // NOTE: Requirements are directional, so we DON'T add reverse direction
+        }
+        
+        std::cout << "Existing requirements before adding artificial ones:" << std::endl;
+        for (const auto& req : requirements) {
+            std::cout << "  (" << req.origin << ", " << req.destination << ") weight=" << req.weight << std::endl;
         }
         
         // Add (root, v) requirements with weight 0 if they don't exist
@@ -102,9 +108,13 @@ struct OCSTInstance
                 if (existing_reqs.find(req_pair) == existing_reqs.end()) {
                     add_requirement(root_node, v, 0.0);
                     std::cout << "Added artificial requirement: (" << root_node << ", " << v << ") with weight 0" << std::endl;
+                } else {
+                    std::cout << "SKIPPED artificial requirement: (" << root_node << ", " << v << ") - already exists" << std::endl;
                 }
             }
         }
+        
+        std::cout << "Total requirements after adding artificial ones: " << requirements.size() << std::endl;
     }
     
     bool has_edge(int i, int j) const 
@@ -389,14 +399,25 @@ private:
     void set_objective() 
     {
         GRBLinExpr objective = 0;
+        int included_requirements = 0;
+        int skipped_requirements = 0;
+        
+        std::cout << "Setting objective function:" << std::endl;
         
         for (int r = 0; r < static_cast<int>(instance_.requirements.size()); ++r) {
             const Requirement& req = instance_.requirements[r];
             
             // Skip artificial requirements (weight = 0)
             if (req.weight <= 0.0) {
+                std::cout << "  SKIPPED req[" << r << "]: (" << req.origin << ", " << req.destination 
+                         << ") weight=" << req.weight << std::endl;
+                skipped_requirements++;
                 continue;
             }
+            
+            std::cout << "  INCLUDED req[" << r << "]: (" << req.origin << ", " << req.destination 
+                     << ") weight=" << req.weight << std::endl;
+            included_requirements++;
             
             for (int e = 0; e < instance_.num_edges; ++e) {
                 const Edge& edge = instance_.edges[e];
@@ -406,6 +427,11 @@ private:
                 objective += req.weight * edge.cost * y_vars_[r][2*e + 1]; // Backward direction
             }
         }
+        
+        std::cout << "Objective function summary:" << std::endl;
+        std::cout << "  Requirements included: " << included_requirements << std::endl;
+        std::cout << "  Requirements skipped: " << skipped_requirements << std::endl;
+        std::cout << "  Total requirements: " << instance_.requirements.size() << std::endl;
         
         model_.setObjective(objective, GRB_MINIMIZE);
     }
@@ -513,6 +539,40 @@ OCSTInstance parse_instance_file(const std::string& filename)
     return instance;
 }
 
+/**
+ * @brief Writes complete solution to file for validation
+ * @param filename Output filename 
+ * @param instance Problem instance
+ * @param result Solution result
+ */
+void write_complete_solution(const std::string& filename, 
+                           const OCSTInstance& instance, 
+                           const SolutionResult& result) 
+{
+    std::ofstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Warning: Could not create complete solution file: " << filename << std::endl;
+        return;
+    }
+    
+    // Line 1: Objective value
+    file << std::fixed << std::setprecision(0) << result.objective_value << std::endl;
+    
+    // Line 2: Number of nodes
+    file << instance.num_nodes << std::endl;
+    
+    // Next n-1 lines: Selected edges (x y format)
+    for (int edge_idx : result.selected_edges) {
+        if (edge_idx >= 0 && edge_idx < static_cast<int>(instance.edges.size())) {
+            const Edge& edge = instance.edges[edge_idx];
+            file << edge.source << " " << edge.destination << std::endl;
+        }
+    }
+    
+    file.close();
+    std::cout << "Complete solution written to: " << filename << std::endl;
+}
+
 //=============================================================================
 // MAIN SOLVING FUNCTION
 //=============================================================================
@@ -563,6 +623,16 @@ SolutionResult solve_path_based_instance(const std::string& input_file,
             csv_file.close();
             std::cout << "Results saved to: " << output_csv << std::endl;
         }
+        
+        // Always generate complete solution file for validation
+        std::string instance_basename = input_file;
+        size_t last_slash = instance_basename.find_last_of("/");
+        if (last_slash != std::string::npos) {
+            instance_basename = instance_basename.substr(last_slash + 1);
+        }
+        
+        std::string complete_solution_file = "data/output/test_instances/complete_" + instance_basename + ".sol";
+        write_complete_solution(complete_solution_file, instance, result);
         
         return result;
         
