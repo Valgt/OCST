@@ -59,6 +59,10 @@ Thumbs.db
 *.swo
 *~
 
+# Archivos de editores
+.vscode/
+.cursor/
+
 # Archivos temporales
 *.tmp
 *.temp
