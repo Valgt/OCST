@@ -384,6 +384,7 @@ private:
     
     /**
      * @brief Sets the objective function: minimize total weighted communication cost
+     * Only considers requirements with weight > 0 (excludes artificial connectivity requirements)
      */
     void set_objective() 
     {
@@ -391,6 +392,11 @@ private:
         
         for (int r = 0; r < static_cast<int>(instance_.requirements.size()); ++r) {
             const Requirement& req = instance_.requirements[r];
+            
+            // Skip artificial requirements (weight = 0)
+            if (req.weight <= 0.0) {
+                continue;
+            }
             
             for (int e = 0; e < instance_.num_edges; ++e) {
                 const Edge& edge = instance_.edges[e];
