@@ -6,14 +6,14 @@ build/
 *.out
 *.app
 
-# Archivos de Gurobi
+# Archivos de Gurobi (excluir archivos temporales, mantener soluciones)
 *.log
 *.lp
-*.sol
 *.mps
 *.rew
 *.h5
 *.attr
+# Mantener archivos .sol de soluciones
 
 # Archivos de LaTeX
 *.aux
@@ -45,12 +45,8 @@ ENV/
 env.bak/
 venv.bak/
 
-# Archivos de datos grandes
-*.csv
-*.dat
-*.txt
-!requirements.txt
-!README.txt
+# Archivos de datos grandes (excluir solo archivos muy grandes)
+# Mantener archivos de instancias y resultados de experimentos
 
 # Archivos del sistema
 .DS_Store
