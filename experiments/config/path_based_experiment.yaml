@@ -5,7 +5,11 @@ analysis:
 execution:
   executable_path: build/executables/path_based_formulation
   heuristics_level: 0.5
-  time_limit: 60
+  time_limit: 60  # Default fallback
+  time_limits_by_group:
+    ocstpin: 30    # Small instances: 30 seconds
+    orst: 30       # Small-medium instances: 30 seconds
+    orstBig: 300   # Large instances: 5 minutes
 experiment:
   algorithm: Path-Based MILP Formulation
   description: Comprehensive evaluation of path-based formulation on all available
@@ -17,9 +21,12 @@ instances:
   - description: OCST instances (small-medium)
     name: ocstpin
     pattern: ocstpin*
-  - description: ORST instances (medium - excluding Big)
+  - description: ORST instances (small-medium)
     name: orst
     pattern: orst[0-9]
+  - description: ORST Big instances (large)
+    name: orstBig
+    pattern: orstBig[0-9]
   input_directory: data/input/test_instances
   output_directory: data/output/test_instances
 logging:

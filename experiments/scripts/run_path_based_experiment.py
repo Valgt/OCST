@@ -92,6 +92,11 @@ class PathBasedExperimentRunner:
         self.logger.info(f"Found {len(instances)} instances to test")
         return instances
     
+    def _get_time_limit_for_group(self, group_name):
+        """Get time limit for a specific instance group"""
+        time_limits = self.config['execution'].get('time_limits_by_group', {})
+        return time_limits.get(group_name, self.config['execution']['time_limit'])
+    
     def get_optimal_solution(self, instance_name):
         """Get the known optimal solution for an instance"""
         output_dir = self.config['instances']['output_directory']
@@ -115,7 +120,10 @@ class PathBasedExperimentRunner:
         
         # Prepare command
         executable = self.config['execution']['executable_path']
-        time_limit = self.config['execution']['time_limit']
+        
+        # Get time limit for this instance group
+        time_limit = self._get_time_limit_for_group(instance_info['group'])
+        
         heuristics = self.config['execution']['heuristics_level']
         
         cmd = [executable, instance_path, "", str(time_limit), str(heuristics)]
@@ -236,7 +244,7 @@ class PathBasedExperimentRunner:
         
         # Add experiment parameters
         result_data.update({
-            'time_limit': self.config['execution']['time_limit'],
+            'time_limit': self._get_time_limit_for_group(instance_info['group']),
             'heuristics_level': self.config['execution']['heuristics_level'],
             'algorithm_version': self.config['experiment']['version']
         })
@@ -285,6 +293,12 @@ class PathBasedExperimentRunner:
         avg_runtime = sum(r.get('runtime_seconds', 0) for r in self.results) / total_instances
         max_runtime = max(r.get('runtime_seconds', 0) for r in self.results)
         
+        # Calculate time limits by group
+        time_limits_info = self.config['execution'].get('time_limits_by_group', {})
+        time_limits_str = ", ".join([f"{group}: {limit}s" for group, limit in time_limits_info.items()])
+        if not time_limits_str:
+            time_limits_str = f"Default: {self.config['execution']['time_limit']}s"
+        
         summary = f"""
 === EXPERIMENT SUMMARY ===
 Algorithm: {self.config['experiment']['algorithm']}
@@ -299,7 +313,7 @@ Instances:
 Performance:
   Average Runtime: {avg_runtime:.3f} seconds
   Maximum Runtime: {max_runtime:.3f} seconds
-  Time Limit: {self.config['execution']['time_limit']} seconds
+  Time Limits: {time_limits_str}
 
 Configuration:
   Heuristics Level: {self.config['execution']['heuristics_level']}
