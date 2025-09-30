@@ -99,7 +99,8 @@ class PathBasedExperimentRunner:
         
         try:
             with open(sol_file, 'r') as f:
-                optimal_value = float(f.readline().strip())
+                # Parse as integer to avoid floating point precision issues
+                optimal_value = int(float(f.readline().strip()))
             return optimal_value
         except (FileNotFoundError, ValueError):
             self.logger.warning(f"No optimal solution found for {instance_name}")
@@ -203,7 +204,8 @@ class PathBasedExperimentRunner:
                 # Extract: Objective value: 1340
                 value_str = line.split(':')[1].strip()
                 try:
-                    result_data['best_found'] = float(value_str)
+                    # Parse as integer to avoid floating point precision issues
+                    result_data['best_found'] = int(float(value_str))
                 except ValueError:
                     result_data['best_found'] = None
             
@@ -226,6 +228,11 @@ class PathBasedExperimentRunner:
         
         # Get optimal solution
         result_data['optimal_known'] = self.get_optimal_solution(instance_info['name'])
+        
+        # Validate consistency between found solution and solution file
+        if result_data['best_found'] is not None and result_data['optimal_known'] is not None:
+            if result_data['best_found'] != result_data['optimal_known']:
+                self.logger.warning(f"⚠️ {instance_info['name']}: Found {result_data['best_found']} but optimal is {result_data['optimal_known']}")
         
         # Add experiment parameters
         result_data.update({

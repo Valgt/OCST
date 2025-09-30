@@ -606,7 +606,7 @@ SolutionResult solve_path_based_instance(const std::string& input_file,
         // Print results
         std::cout << "\n=== SOLUTION RESULTS ===" << std::endl;
         std::cout << "Status: " << (result.is_optimal ? "OPTIMAL" : "NON-OPTIMAL") << std::endl;
-        std::cout << "Objective value: " << result.objective_value << std::endl;
+        std::cout << "Objective value: " << std::fixed << std::setprecision(0) << result.objective_value << std::endl;
         std::cout << "Runtime: " << result.runtime_seconds << " seconds" << std::endl;
         std::cout << "Nodes explored: " << result.num_nodes_explored << std::endl;
         std::cout << "MIP gap: " << result.mip_gap << "%" << std::endl;
@@ -618,7 +618,7 @@ SolutionResult solve_path_based_instance(const std::string& input_file,
             csv_file << "instance,nodes,edges,requirements,probability,objective,runtime,gap,status,nodes_explored\n";
             csv_file << input_file << "," << instance.num_nodes << "," << instance.num_edges << ","
                     << instance.requirements.size() << "," << instance.probability << ","
-                    << result.objective_value << "," << result.runtime_seconds << ","
+                    << std::fixed << std::setprecision(0) << result.objective_value << "," << result.runtime_seconds << ","
                     << result.mip_gap << "," << result.gurobi_status << "," << result.num_nodes_explored << "\n";
             csv_file.close();
             std::cout << "Results saved to: " << output_csv << std::endl;
