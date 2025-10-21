@@ -3,17 +3,17 @@ analysis:
   create_plots: false
   generate_summary: true
 execution:
-  executable_path: build/executables/path_based_formulation
+  executable_path: build/executables/flow_based_formulation
   heuristics_level: 0.5
-  time_limit: 60  # Default fallback
+  time_limit: 30
   time_limits_by_group:
-    ocstpin: 30    # Small instances: 30 seconds
-    orst: 60       # Small-medium instances: 1 minute
+    ocstpin: 30
+    orst: 60
 experiment:
-  algorithm: Path-Based MILP Formulation
-  description: Comprehensive evaluation of path-based formulation on all available
+  algorithm: Flow-Based MILP Formulation
+  description: Comprehensive evaluation of flow-based formulation on all available
     instances
-  name: path_based_formulation
+  name: flow_based_formulation
   version: '1.0'
 instances:
   groups:

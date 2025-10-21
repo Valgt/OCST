@@ -17,8 +17,12 @@ BIN_DIR = $(BUILD_DIR)/executables
 TEST_SOURCES = $(wildcard $(TEST_DIR)/*.cpp)
 TEST_TARGETS = $(TEST_SOURCES:$(TEST_DIR)/%.cpp=$(BIN_DIR)/%)
 
+# Algoritmos
+PATH_BASED_SRC = $(SRC_DIR)/algorithms/path_based_formulation/algorithm.cpp
+FLOW_BASED_SRC = $(SRC_DIR)/algorithms/flow_based_formulation/algorithm.cpp
+
 # Objetivo principal
-all: setup test_gurobi
+all: setup test_gurobi path_based flow_based
 
 # Crear directorios necesarios
 setup:
@@ -26,9 +30,22 @@ setup:
 	@mkdir -p $(BIN_DIR)
 	@echo "✓ Directorios creados"
 
-# Compilar test de Gurobi
-test_gurobi: $(BIN_DIR)/test_gurobi
-	@echo "✓ Test de Gurobi compilado"
+# Compilar algoritmos
+path_based: $(BIN_DIR)/path_based_formulation
+	@echo "✓ Path-Based Formulation compilado"
+
+flow_based: $(BIN_DIR)/flow_based_formulation
+	@echo "✓ Flow-Based Formulation compilado"
+
+$(BIN_DIR)/path_based_formulation: $(PATH_BASED_SRC) | $(BIN_DIR)
+	@echo "Compilando Path-Based Formulation..."
+	$(CXX) $(CXXFLAGS) $< -o $@ $(GUROBI_FLAGS)
+	@echo "✓ Compilación exitosa"
+
+$(BIN_DIR)/flow_based_formulation: $(FLOW_BASED_SRC) | $(BIN_DIR)
+	@echo "Compilando Flow-Based Formulation..."
+	$(CXX) $(CXXFLAGS) $< -o $@ $(GUROBI_FLAGS)
+	@echo "✓ Compilación exitosa"
 
 # Crear directorio de ejecutables
 $(BIN_DIR):
@@ -75,12 +92,14 @@ help:
 	@echo "Comandos disponibles:"
 	@echo "  make setup          - Crear directorios necesarios"
 	@echo "  make test_gurobi    - Compilar test de Gurobi"
+	@echo "  make path_based     - Compilar Path-Based Formulation"
+	@echo "  make flow_based     - Compilar Flow-Based Formulation"
 	@echo "  make run_test       - Ejecutar test de permisos académicos"
 	@echo "  make check_gurobi   - Verificar configuración de Gurobi"
 	@echo "  make clean          - Limpiar archivos compilados"
 	@echo "  make help           - Mostrar esta ayuda"
 
 # Objetivos que no son archivos
-.PHONY: all setup test_gurobi run_test clean check_gurobi help
+.PHONY: all setup test_gurobi path_based flow_based run_test clean check_gurobi help
 
 
