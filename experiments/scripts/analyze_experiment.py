@@ -95,7 +95,16 @@ class ExperimentAnalyzer:
         with open(self.csv_path, 'r') as f:
             reader = csv.DictReader(f)
             for row in reader:
-                gap = float(row['mip_gap_percent'])
+                # Handle empty or None values safely
+                def safe_float(val, default=0.0):
+                    return float(val) if val and val.strip() and val.strip() != 'None' else default
+                
+                def safe_int(val, default=0):
+                    return int(float(val)) if val and val.strip() and val.strip() != 'None' else default
+                
+                gap = safe_float(row.get('mip_gap_percent', '0'))
+                best_found = safe_float(row.get('best_found', '0'))
+                
                 result = InstanceResult(
                     instance_name=row['instance_name'],
                     algorithm=row['algorithm_name'],
@@ -103,15 +112,15 @@ class ExperimentAnalyzer:
                     m=int(row['num_edges']),
                     requirements=int(row['num_requirements']),
                     probability=float(row['probability']),
-                    objective=float(row['best_found']),
-                    nodes=int(row['nodes_explored']),
-                    runtime=float(row['runtime_seconds']),
+                    objective=best_found,
+                    nodes=safe_int(row.get('nodes_explored', '0')),
+                    runtime=safe_float(row.get('runtime_seconds', '0')),
                     gap=gap,
-                    lazy_constraints=int(row['lazy_constraints']),
-                    cutting_planes=int(row['cutting_planes']),
+                    lazy_constraints=safe_int(row.get('lazy_constraints', '0')),
+                    cutting_planes=safe_int(row.get('cutting_planes', '0')),
                     relaxation=-1.0,  # Not in this CSV format
                     lower_bound=-1.0,  # Not in this CSV format
-                    upper_bound=float(row['best_found']),
+                    upper_bound=best_found,
                     is_optimal=(gap < 0.01),
                     status="OPTIMAL" if gap < 0.01 else "NON-OPTIMAL"
                 )
@@ -248,9 +257,18 @@ class ExperimentAnalyzer:
         # Comparative table
         lines.append("\n\n📊 COMPARATIVE SUMMARY TABLE")
         lines.append("="*80)
-        lines.append("┌────────────────────────────┬──────────┬──────────┬──────────┬──────────┐")
-        lines.append("│ Metric                     │ FlowRlxd │ FlowBase │ PathBase │   Best   │")
-        lines.append("├────────────────────────────┼──────────┼──────────┼──────────┼──────────┤")
+        
+        # Check if we have rooted tree-based
+        rtb_stats = self.stats_by_algorithm.get('rooted_tree_based_formulation')
+        
+        if rtb_stats:
+            lines.append("┌────────────────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┐")
+            lines.append("│ Metric                     │ FlowRlxd │ FlowBase │ PathBase │ RootTree │   Best   │")
+            lines.append("├────────────────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┤")
+        else:
+            lines.append("┌────────────────────────────┬──────────┬──────────┬──────────┬──────────┐")
+            lines.append("│ Metric                     │ FlowRlxd │ FlowBase │ PathBase │   Best   │")
+            lines.append("├────────────────────────────┼──────────┼──────────┼──────────┼──────────┤")
         
         # Get stats in order
         fbr_stats = self.stats_by_algorithm.get('flow_based_relaxed_formulation')
@@ -258,26 +276,52 @@ class ExperimentAnalyzer:
         pb_stats = self.stats_by_algorithm.get('path_based_formulation')
         
         if fbr_stats and fb_stats and pb_stats:
-            # Runtime
-            best_runtime = min(fbr_stats.avg_runtime, fb_stats.avg_runtime, pb_stats.avg_runtime)
-            best_rt = "FBR" if best_runtime == fbr_stats.avg_runtime else ("FB" if best_runtime == fb_stats.avg_runtime else "PB")
-            lines.append(f"│ Avg Runtime (s)            │ {fbr_stats.avg_runtime:>8.3f} │ {fb_stats.avg_runtime:>8.3f} │ {pb_stats.avg_runtime:>8.3f} │ {best_rt:>8} │")
-            
-            # Nodes
-            best_nodes = min(fbr_stats.avg_nodes, fb_stats.avg_nodes, pb_stats.avg_nodes)
-            best_nd = "FBR" if best_nodes == fbr_stats.avg_nodes else ("FB" if best_nodes == fb_stats.avg_nodes else "PB")
-            lines.append(f"│ Avg Nodes Explored         │ {fbr_stats.avg_nodes:>8.1f} │ {fb_stats.avg_nodes:>8.1f} │ {pb_stats.avg_nodes:>8.1f} │ {best_nd:>8} │")
-            
-            # Lazy cuts
-            lines.append(f"│ Avg Lazy Constraints       │ {fbr_stats.avg_lazy:>8.1f} │ {fb_stats.avg_lazy:>8.1f} │ {pb_stats.avg_lazy:>8.1f} │    -     │")
-            
-            # Fractional cuts
-            lines.append(f"│ Avg Fractional Cuts        │ {fbr_stats.avg_cuts:>8.1f} │ {fb_stats.avg_cuts:>8.1f} │ {pb_stats.avg_cuts:>8.1f} │    -     │")
-            
-            # Optimal percentage
-            lines.append(f"│ Optimal Solutions (%)      │ {fbr_stats.optimal_percentage:>8.1f} │ {fb_stats.optimal_percentage:>8.1f} │ {pb_stats.optimal_percentage:>8.1f} │    -     │")
-        
-        lines.append("└────────────────────────────┴──────────┴──────────┴──────────┴──────────┘")
+            if rtb_stats:
+                # With 4 algorithms
+                # Runtime
+                runtimes = [fbr_stats.avg_runtime, fb_stats.avg_runtime, pb_stats.avg_runtime, rtb_stats.avg_runtime]
+                best_runtime = min(runtimes)
+                best_rt = ["FBR", "FB", "PB", "RTB"][runtimes.index(best_runtime)]
+                lines.append(f"│ Avg Runtime (s)            │ {fbr_stats.avg_runtime:>8.3f} │ {fb_stats.avg_runtime:>8.3f} │ {pb_stats.avg_runtime:>8.3f} │ {rtb_stats.avg_runtime:>8.3f} │ {best_rt:>8} │")
+                
+                # Nodes
+                nodes = [fbr_stats.avg_nodes, fb_stats.avg_nodes, pb_stats.avg_nodes, rtb_stats.avg_nodes]
+                best_nodes = min(nodes)
+                best_nd = ["FBR", "FB", "PB", "RTB"][nodes.index(best_nodes)]
+                lines.append(f"│ Avg Nodes Explored         │ {fbr_stats.avg_nodes:>8.1f} │ {fb_stats.avg_nodes:>8.1f} │ {pb_stats.avg_nodes:>8.1f} │ {rtb_stats.avg_nodes:>8.1f} │ {best_nd:>8} │")
+                
+                # Lazy cuts
+                lines.append(f"│ Avg Lazy Constraints       │ {fbr_stats.avg_lazy:>8.1f} │ {fb_stats.avg_lazy:>8.1f} │ {pb_stats.avg_lazy:>8.1f} │ {rtb_stats.avg_lazy:>8.1f} │    -     │")
+                
+                # Fractional cuts
+                lines.append(f"│ Avg Fractional Cuts        │ {fbr_stats.avg_cuts:>8.1f} │ {fb_stats.avg_cuts:>8.1f} │ {pb_stats.avg_cuts:>8.1f} │ {rtb_stats.avg_cuts:>8.1f} │    -     │")
+                
+                # Optimal percentage
+                lines.append(f"│ Optimal Solutions (%)      │ {fbr_stats.optimal_percentage:>8.1f} │ {fb_stats.optimal_percentage:>8.1f} │ {pb_stats.optimal_percentage:>8.1f} │ {rtb_stats.optimal_percentage:>8.1f} │    -     │")
+                
+                lines.append("└────────────────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┘")
+            else:
+                # With 3 algorithms
+                # Runtime
+                best_runtime = min(fbr_stats.avg_runtime, fb_stats.avg_runtime, pb_stats.avg_runtime)
+                best_rt = "FBR" if best_runtime == fbr_stats.avg_runtime else ("FB" if best_runtime == fb_stats.avg_runtime else "PB")
+                lines.append(f"│ Avg Runtime (s)            │ {fbr_stats.avg_runtime:>8.3f} │ {fb_stats.avg_runtime:>8.3f} │ {pb_stats.avg_runtime:>8.3f} │ {best_rt:>8} │")
+                
+                # Nodes
+                best_nodes = min(fbr_stats.avg_nodes, fb_stats.avg_nodes, pb_stats.avg_nodes)
+                best_nd = "FBR" if best_nodes == fbr_stats.avg_nodes else ("FB" if best_nodes == fb_stats.avg_nodes else "PB")
+                lines.append(f"│ Avg Nodes Explored         │ {fbr_stats.avg_nodes:>8.1f} │ {fb_stats.avg_nodes:>8.1f} │ {pb_stats.avg_nodes:>8.1f} │ {best_nd:>8} │")
+                
+                # Lazy cuts
+                lines.append(f"│ Avg Lazy Constraints       │ {fbr_stats.avg_lazy:>8.1f} │ {fb_stats.avg_lazy:>8.1f} │ {pb_stats.avg_lazy:>8.1f} │    -     │")
+                
+                # Fractional cuts
+                lines.append(f"│ Avg Fractional Cuts        │ {fbr_stats.avg_cuts:>8.1f} │ {fb_stats.avg_cuts:>8.1f} │ {pb_stats.avg_cuts:>8.1f} │    -     │")
+                
+                # Optimal percentage
+                lines.append(f"│ Optimal Solutions (%)      │ {fbr_stats.optimal_percentage:>8.1f} │ {fb_stats.optimal_percentage:>8.1f} │ {pb_stats.optimal_percentage:>8.1f} │    -     │")
+                
+                lines.append("└────────────────────────────┴──────────┴──────────┴──────────┴──────────┘")
         
         # Consistency check
         lines.append("\n\n✅ CONSISTENCY CHECK")

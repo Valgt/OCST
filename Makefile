@@ -21,9 +21,10 @@ TEST_TARGETS = $(TEST_SOURCES:$(TEST_DIR)/%.cpp=$(BIN_DIR)/%)
 PATH_BASED_SRC = $(SRC_DIR)/algorithms/path_based_formulation/algorithm.cpp
 FLOW_BASED_SRC = $(SRC_DIR)/algorithms/flow_based_formulation/algorithm.cpp
 FLOW_BASED_RELAXED_SRC = $(SRC_DIR)/algorithms/flow_based_relaxed_formulation/algorithm.cpp
+ROOTED_TREE_BASED_SRC = $(SRC_DIR)/algorithms/rooted_tree_based_formulation/algorithm.cpp
 
 # Objetivo principal
-all: setup test_gurobi path_based flow_based flow_based_relaxed
+all: setup test_gurobi path_based flow_based flow_based_relaxed rooted_tree_based
 
 # Crear directorios necesarios
 setup:
@@ -41,6 +42,9 @@ flow_based: $(BIN_DIR)/flow_based_formulation
 flow_based_relaxed: $(BIN_DIR)/flow_based_relaxed_formulation
 	@echo "✓ Flow-Based Relaxed Formulation compilado"
 
+rooted_tree_based: $(BIN_DIR)/rooted_tree_based_formulation
+	@echo "✓ Rooted Tree-Based Formulation compilado"
+
 $(BIN_DIR)/path_based_formulation: $(PATH_BASED_SRC) | $(BIN_DIR)
 	@echo "Compilando Path-Based Formulation..."
 	$(CXX) $(CXXFLAGS) $< -o $@ $(GUROBI_FLAGS)
@@ -53,6 +57,11 @@ $(BIN_DIR)/flow_based_formulation: $(FLOW_BASED_SRC) | $(BIN_DIR)
 
 $(BIN_DIR)/flow_based_relaxed_formulation: $(FLOW_BASED_RELAXED_SRC) | $(BIN_DIR)
 	@echo "Compilando Flow-Based Relaxed Formulation..."
+	$(CXX) $(CXXFLAGS) $< -o $@ $(GUROBI_FLAGS)
+	@echo "✓ Compilación exitosa"
+
+$(BIN_DIR)/rooted_tree_based_formulation: $(ROOTED_TREE_BASED_SRC) | $(BIN_DIR)
+	@echo "Compilando Rooted Tree-Based Formulation..."
 	$(CXX) $(CXXFLAGS) $< -o $@ $(GUROBI_FLAGS)
 	@echo "✓ Compilación exitosa"
 
@@ -99,17 +108,18 @@ check_gurobi:
 # Ayuda
 help:
 	@echo "Comandos disponibles:"
-	@echo "  make setup          - Crear directorios necesarios"
+	@echo "  make setup                 - Crear directorios necesarios"
 	@echo "  make test_gurobi           - Compilar test de Gurobi"
 	@echo "  make path_based            - Compilar Path-Based Formulation"
 	@echo "  make flow_based            - Compilar Flow-Based Formulation"
 	@echo "  make flow_based_relaxed    - Compilar Flow-Based Relaxed Formulation"
+	@echo "  make rooted_tree_based     - Compilar Rooted Tree-Based Formulation"
 	@echo "  make run_test              - Ejecutar test de permisos académicos"
-	@echo "  make check_gurobi   - Verificar configuración de Gurobi"
-	@echo "  make clean          - Limpiar archivos compilados"
-	@echo "  make help           - Mostrar esta ayuda"
+	@echo "  make check_gurobi          - Verificar configuración de Gurobi"
+	@echo "  make clean                 - Limpiar archivos compilados"
+	@echo "  make help                  - Mostrar esta ayuda"
 
 # Objetivos que no son archivos
-.PHONY: all setup test_gurobi path_based flow_based flow_based_relaxed run_test clean check_gurobi help
+.PHONY: all setup test_gurobi path_based flow_based flow_based_relaxed rooted_tree_based run_test clean check_gurobi help
 
 

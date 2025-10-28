@@ -13,6 +13,9 @@ execution:
   - description: Flow-Based Relaxed MILP Formulation
     executable_path: build/executables/flow_based_relaxed_formulation
     name: flow_based_relaxed_formulation
+  - description: Rooted Tree-Based MILP Formulation
+    executable_path: build/executables/rooted_tree_based_formulation
+    name: rooted_tree_based_formulation
   heuristics_level: 0.5
   time_limit: 60
   time_limits_by_group:

@@ -205,8 +205,10 @@ class ComparativeExperimentRunner:
         
         # Parse output lines
         for line in output_lines:
-            if "Instance stats:" in line:
+            # Handle both "Instance stats:" and "Instance:" formats
+            if "Instance stats:" in line or (line.startswith("Instance:") and "nodes" in line):
                 # Extract: Instance stats: 10 nodes, 24 edges, 15 requirements
+                # OR: Instance: 10 nodes, 24 edges, 15 requirements
                 parts = line.split(':')[1].strip().split(',')
                 for part in parts:
                     part = part.strip()
@@ -217,9 +219,10 @@ class ComparativeExperimentRunner:
                     elif 'requirements' in part:
                         result_data['num_requirements'] = int(part.split()[0])
             
-            elif "Objective value:" in line:
-                # Extract: Objective value: 1340
-                value_str = line.split(':')[1].strip()
+            # Handle both "Objective value:" and "Objective:" formats
+            elif "Objective value:" in line or (line.startswith("Objective:") and ":" in line):
+                # Extract: Objective value: 1340 OR Objective: 1340.00
+                value_str = line.split(':')[-1].strip()
                 try:
                     # Parse as integer to avoid floating point precision issues
                     result_data['best_found'] = int(float(value_str))
@@ -235,8 +238,8 @@ class ComparativeExperimentRunner:
                 # Extract: Nodes explored: 1
                 result_data['nodes_explored'] = int(line.split(':')[1].strip())
             
-            elif "MIP gap:" in line:
-                # Extract: MIP gap: 0%
+            elif "MIP gap:" in line or "MIP Gap:" in line:
+                # Extract: MIP gap: 0% OR MIP Gap: 0.0000%
                 gap_str = line.split(':')[1].strip().replace('%', '')
                 try:
                     result_data['mip_gap_percent'] = float(gap_str)
@@ -365,7 +368,7 @@ Configuration:
         print(summary)
         self.logger.info("Comparative experiment completed successfully")
     
-    def run_experiment(self):
+    def run_experiment(self, short_mode=False):
         """Main method to run the complete comparative experiment"""
         self.logger.info("Starting Comparative Formulations Experiment")
         
@@ -375,6 +378,12 @@ Configuration:
         if not instances:
             self.logger.error("No instances found to test")
             return
+        
+        # Short mode: only run first instance
+        if short_mode:
+            instances = [instances[0]]
+            print(f"🔬 SHORT MODE: Testing only {instances[0]['name']}")
+            self.logger.info(f"SHORT MODE: Testing only {instances[0]['name']}")
         
         # Get all algorithms
         algorithms = self.config['execution']['algorithms']
@@ -405,14 +414,21 @@ Configuration:
 
 def main():
     """Main entry point"""
-    config_file = sys.argv[1] if len(sys.argv) > 1 else "experiments/config/comparative_experiment.yaml"
+    # Check for --short flag
+    short_mode = '--short' in sys.argv
+    
+    # Remove --short from args to get config file
+    args = [arg for arg in sys.argv[1:] if arg != '--short']
+    config_file = args[0] if args else "experiments/config/comparative_experiment.yaml"
     
     print("🚀 Comparative Formulations Experiment Runner")
+    if short_mode:
+        print("🔬 SHORT MODE: Testing only 1 instance")
     print("=" * 50)
     
     try:
         runner = ComparativeExperimentRunner(config_file)
-        csv_path = runner.run_experiment()
+        csv_path = runner.run_experiment(short_mode=short_mode)
         
         print(f"\n✅ Comparative experiment completed successfully!")
         print(f"📊 Results saved to: {csv_path}")
