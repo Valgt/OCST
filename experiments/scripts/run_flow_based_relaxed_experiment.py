@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Comparative Formulations Experiment Runner
+Flow-Based Relaxed Formulation Experiment Runner
 
-This script executes multiple algorithms on the same instances and generates
-a comprehensive CSV report for comparison.
+This script executes the flow-based relaxed formulation algorithm on all available instances
+and generates a comprehensive CSV report with results.
 
 Usage:
-    python run_comparative_experiment.py [config_file]
+    python run_flow_based_relaxed_experiment.py [config_file]
 
 Author: OCST Project
 Version: 1.0
@@ -23,10 +23,10 @@ from datetime import datetime
 from pathlib import Path
 import logging
 
-class ComparativeExperimentRunner:
-    """Main class for running comparative experiments across multiple algorithms"""
+class FlowBasedRelaxedExperimentRunner:
+    """Main class for running flow-based relaxed formulation experiments"""
     
-    def __init__(self, config_file="experiments/config/comparative_experiment.yaml"):
+    def __init__(self, config_file="experiments/config/flow_based_relaxed_experiment.yaml"):
         """Initialize the experiment runner with configuration"""
         self.config = self._load_config(config_file)
         self.timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -69,7 +69,7 @@ class ComparativeExperimentRunner:
             )
         
         self.logger = logging.getLogger(__name__)
-        self.logger.info("Comparative Formulations Experiment Started")
+        self.logger.info("Flow-Based Relaxed Formulation Experiment Started")
     
     def get_instances(self):
         """Get all instances to test based on configuration"""
@@ -111,16 +111,15 @@ class ComparativeExperimentRunner:
             self.logger.warning(f"No optimal solution found for {instance_name}")
             return None
     
-    def run_instance_with_algorithm(self, instance_info, algorithm_info):
-        """Run a specific algorithm on a single instance"""
+    def run_instance(self, instance_info):
+        """Run the algorithm on a single instance"""
         instance_name = instance_info['name']
         instance_path = instance_info['path']
-        algorithm_name = algorithm_info['name']
         
-        self.logger.info(f"Running {algorithm_name} on {instance_name}")
+        self.logger.info(f"Running instance: {instance_name}")
         
         # Prepare command
-        executable = algorithm_info['executable_path']
+        executable = self.config['execution']['executable_path']
         
         # Get time limit for this instance group
         time_limit = self._get_time_limit_for_group(instance_info['group'])
@@ -144,46 +143,40 @@ class ComparativeExperimentRunner:
             output_lines = result.stdout.split('\n')
             
             # Extract results
-            result_data = self._parse_output(output_lines, instance_info, algorithm_info, runtime)
+            result_data = self._parse_output(output_lines, instance_info, runtime)
             
             if result.returncode == 0:
-                self.logger.info(f"✓ {algorithm_name} on {instance_name}: {result_data['best_found']} (optimal: {result_data['is_optimal']})")
+                self.logger.info(f"✓ {instance_name}: {result_data['best_found']} (optimal: {result_data['is_optimal']})")
             else:
-                self.logger.error(f"❌ {algorithm_name} on {instance_name}: Execution failed")
+                self.logger.error(f"❌ {instance_name}: Execution failed")
                 result_data['error'] = result.stderr
             
             return result_data
             
         except subprocess.TimeoutExpired:
-            self.logger.error(f"❌ {algorithm_name} on {instance_name}: Timeout after {time_limit}s")
+            self.logger.error(f"❌ {instance_name}: Timeout after {time_limit}s")
             return {
                 'instance_name': instance_name,
-                'algorithm_name': algorithm_name,
-                'algorithm_description': algorithm_info['description'],
                 'error': 'Timeout',
                 'runtime_seconds': time_limit,
                 'best_found': None,
                 'is_optimal': False
             }
         except Exception as e:
-            self.logger.error(f"❌ {algorithm_name} on {instance_name}: Error - {str(e)}")
+            self.logger.error(f"❌ {instance_name}: Error - {str(e)}")
             return {
                 'instance_name': instance_name,
-                'algorithm_name': algorithm_name,
-                'algorithm_description': algorithm_info['description'],
                 'error': str(e),
                 'runtime_seconds': 0,
                 'best_found': None,
                 'is_optimal': False
             }
     
-    def _parse_output(self, output_lines, instance_info, algorithm_info, runtime):
+    def _parse_output(self, output_lines, instance_info, runtime):
         """Parse the algorithm output to extract results"""
         result_data = {
             'instance_name': instance_info['name'],
             'instance_group': instance_info['group'],
-            'algorithm_name': algorithm_info['name'],
-            'algorithm_description': algorithm_info['description'],
             'runtime_seconds': runtime,
             'error': None
         }
@@ -197,8 +190,6 @@ class ComparativeExperimentRunner:
             'best_found': None,
             'is_optimal': False,
             'nodes_explored': 0,
-            'lazy_constraints': 0,
-            'cutting_planes': 0,
             'mip_gap_percent': 100.0,
             'gurobi_status': -1
         })
@@ -242,20 +233,6 @@ class ComparativeExperimentRunner:
                     result_data['mip_gap_percent'] = float(gap_str)
                 except ValueError:
                     result_data['mip_gap_percent'] = 100.0
-            
-            elif "Lazy constraints added:" in line:
-                # Extract: Lazy constraints added: 10
-                try:
-                    result_data['lazy_constraints'] = int(line.split(':')[1].strip())
-                except (ValueError, IndexError):
-                    result_data['lazy_constraints'] = 0
-            
-            elif "Cutting planes added:" in line:
-                # Extract: Cutting planes added: 5
-                try:
-                    result_data['cutting_planes'] = int(line.split(':')[1].strip())
-                except (ValueError, IndexError):
-                    result_data['cutting_planes'] = 0
         
         # Get optimal solution
         result_data['optimal_known'] = self.get_optimal_solution(instance_info['name'])
@@ -263,7 +240,7 @@ class ComparativeExperimentRunner:
         # Validate consistency between found solution and solution file
         if result_data['best_found'] is not None and result_data['optimal_known'] is not None:
             if result_data['best_found'] != result_data['optimal_known']:
-                self.logger.warning(f"⚠️ {algorithm_info['name']} on {instance_info['name']}: Found {result_data['best_found']} but optimal is {result_data['optimal_known']}")
+                self.logger.warning(f"⚠️ {instance_info['name']}: Found {result_data['best_found']} but optimal is {result_data['optimal_known']}")
         
         # Add experiment parameters
         result_data.update({
@@ -309,45 +286,12 @@ class ComparativeExperimentRunner:
         if not self.results:
             return
         
-        # Group results by algorithm
-        algorithms = {}
-        for result in self.results:
-            alg_name = result.get('algorithm_name', 'Unknown')
-            if alg_name not in algorithms:
-                algorithms[alg_name] = []
-            algorithms[alg_name].append(result)
+        total_instances = len(self.results)
+        optimal_solutions = sum(1 for r in self.results if r.get('is_optimal', False))
+        failed_instances = sum(1 for r in self.results if r.get('error'))
         
-        total_instances = len(set(r['instance_name'] for r in self.results))
-        total_runs = len(self.results)
-        
-        summary = f"""
-=== COMPARATIVE EXPERIMENT SUMMARY ===
-Experiment: {self.config['experiment']['algorithm']}
-Version: {self.config['experiment']['version']}
-Timestamp: {self.timestamp}
-
-Overall Statistics:
-  Total Instances: {total_instances}
-  Total Algorithm Runs: {total_runs}
-  Algorithms Tested: {len(algorithms)}
-
-Algorithm Performance:
-"""
-        
-        for alg_name, alg_results in algorithms.items():
-            optimal_solutions = sum(1 for r in alg_results if r.get('is_optimal', False))
-            failed_runs = sum(1 for r in alg_results if r.get('error'))
-            avg_runtime = sum(r.get('runtime_seconds', 0) for r in alg_results) / len(alg_results)
-            max_runtime = max(r.get('runtime_seconds', 0) for r in alg_results)
-            
-            summary += f"""
-  {alg_name}:
-    Runs: {len(alg_results)}
-    Optimal: {optimal_solutions} ({optimal_solutions/len(alg_results)*100:.1f}%)
-    Failed: {failed_runs} ({failed_runs/len(alg_results)*100:.1f}%)
-    Avg Runtime: {avg_runtime:.3f}s
-    Max Runtime: {max_runtime:.3f}s
-"""
+        avg_runtime = sum(r.get('runtime_seconds', 0) for r in self.results) / total_instances
+        max_runtime = max(r.get('runtime_seconds', 0) for r in self.results)
         
         # Calculate time limits by group
         time_limits_info = self.config['execution'].get('time_limits_by_group', {})
@@ -355,19 +299,34 @@ Algorithm Performance:
         if not time_limits_str:
             time_limits_str = f"Default: {self.config['execution']['time_limit']}s"
         
-        summary += f"""
+        summary = f"""
+=== EXPERIMENT SUMMARY ===
+Algorithm: {self.config['experiment']['algorithm']}
+Version: {self.config['experiment']['version']}
+Timestamp: {self.timestamp}
+
+Instances:
+  Total: {total_instances}
+  Optimal: {optimal_solutions} ({optimal_solutions/total_instances*100:.1f}%)
+  Failed: {failed_instances} ({failed_instances/total_instances*100:.1f}%)
+
+Performance:
+  Average Runtime: {avg_runtime:.3f} seconds
+  Maximum Runtime: {max_runtime:.3f} seconds
+  Time Limits: {time_limits_str}
+
 Configuration:
   Heuristics Level: {self.config['execution']['heuristics_level']}
-  Time Limits: {time_limits_str}
-========================================
+  Executable: {self.config['execution']['executable_path']}
+========================
 """
         
         print(summary)
-        self.logger.info("Comparative experiment completed successfully")
+        self.logger.info("Experiment completed successfully")
     
     def run_experiment(self):
-        """Main method to run the complete comparative experiment"""
-        self.logger.info("Starting Comparative Formulations Experiment")
+        """Main method to run the complete experiment"""
+        self.logger.info("Starting Flow-Based Relaxed Formulation Experiment")
         
         # Get all instances
         instances = self.get_instances()
@@ -376,23 +335,11 @@ Configuration:
             self.logger.error("No instances found to test")
             return
         
-        # Get all algorithms
-        algorithms = self.config['execution']['algorithms']
-        
-        if not algorithms:
-            self.logger.error("No algorithms configured")
-            return
-        
-        # Run each algorithm on each instance
-        total_runs = len(instances) * len(algorithms)
-        current_run = 0
-        
-        for instance_info in instances:
-            for algorithm_info in algorithms:
-                current_run += 1
-                self.logger.info(f"Progress: {current_run}/{total_runs} - {algorithm_info['name']} on {instance_info['name']}")
-                result = self.run_instance_with_algorithm(instance_info, algorithm_info)
-                self.results.append(result)
+        # Run each instance
+        for i, instance_info in enumerate(instances, 1):
+            self.logger.info(f"Progress: {i}/{len(instances)} - {instance_info['name']}")
+            result = self.run_instance(instance_info)
+            self.results.append(result)
         
         # Save results
         csv_path = self.save_results()
@@ -405,16 +352,16 @@ Configuration:
 
 def main():
     """Main entry point"""
-    config_file = sys.argv[1] if len(sys.argv) > 1 else "experiments/config/comparative_experiment.yaml"
+    config_file = sys.argv[1] if len(sys.argv) > 1 else "experiments/config/flow_based_relaxed_experiment.yaml"
     
-    print("🚀 Comparative Formulations Experiment Runner")
+    print("🚀 Flow-Based Relaxed Formulation Experiment Runner")
     print("=" * 50)
     
     try:
-        runner = ComparativeExperimentRunner(config_file)
+        runner = FlowBasedRelaxedExperimentRunner(config_file)
         csv_path = runner.run_experiment()
         
-        print(f"\n✅ Comparative experiment completed successfully!")
+        print(f"\n✅ Experiment completed successfully!")
         print(f"📊 Results saved to: {csv_path}")
         
     except KeyboardInterrupt:
@@ -426,3 +373,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

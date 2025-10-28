@@ -313,17 +313,22 @@ private:
     {
         GRBLinExpr cut_expr;
         
-        // Sum edges with both endpoints in the component
+        // OPTIMIZATION: Use bool vector for O(1) membership check
+        std::vector<bool> in_component(instance_.num_nodes, false);
+        for (int v : component) {
+            in_component[v] = true;
+        }
+        
+        // OPTIMIZATION: Iterate only over edges incident to component vertices
+        // Use adjacency matrix for O(1) edge lookup instead of O(m) iteration
         for (size_t i = 0; i < component.size(); ++i) {
+            int u = component[i];
             for (size_t j = i + 1; j < component.size(); ++j) {
-                int u = component[i];
                 int v = component[j];
                 
-                if (instance_.has_edge(u, v)) {
-                    int edge_idx = instance_.get_edge_index(u, v);
-                    if (edge_idx >= 0) {
-                        cut_expr += x_vars_[edge_idx];
-                    }
+                int edge_idx = instance_.get_edge_index(u, v);
+                if (edge_idx >= 0) {
+                    cut_expr += x_vars_[edge_idx];
                 }
             }
         }
@@ -1370,11 +1375,32 @@ SolutionResult solve_path_based_instance(const std::string& input_file,
         
         // Print results
         std::cout << "\n=== SOLUTION RESULTS ===" << std::endl;
-        std::cout << "Status: " << (result.is_optimal ? "OPTIMAL" : "NON-OPTIMAL") << std::endl;
+        
+        // Detailed status reporting
+        std::string status_str;
+        if (result.is_optimal) {
+            status_str = "OPTIMAL";
+        } else if (result.gurobi_status == GRB_TIME_LIMIT) {
+            if (result.objective_value > 0) {
+                status_str = "TIME_LIMIT (feasible solution found)";
+            } else {
+                status_str = "TIME_LIMIT (no feasible solution)";
+            }
+        } else if (result.gurobi_status == GRB_INFEASIBLE) {
+            status_str = "INFEASIBLE";
+        } else if (result.gurobi_status == GRB_UNBOUNDED) {
+            status_str = "UNBOUNDED";
+        } else {
+            status_str = "NON-OPTIMAL (status=" + std::to_string(result.gurobi_status) + ")";
+        }
+        
+        std::cout << "Status: " << status_str << std::endl;
         std::cout << "Objective value: " << std::fixed << std::setprecision(0) << result.objective_value << std::endl;
         std::cout << "Runtime: " << result.runtime_seconds << " seconds" << std::endl;
         std::cout << "Nodes explored: " << result.num_nodes_explored << std::endl;
         std::cout << "MIP gap: " << result.mip_gap << "%" << std::endl;
+        std::cout << "Lazy constraints added: " << result.lazy_constraints_added << std::endl;
+        std::cout << "Cutting planes added: " << result.cutting_planes_added << std::endl;
         std::cout << "Selected edges: " << result.selected_edges.size() << std::endl;
         
         // Save to CSV if specified

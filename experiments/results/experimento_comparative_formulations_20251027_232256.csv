@@ -1,0 +1,76 @@
+instance_name,instance_group,algorithm_name,algorithm_description,num_nodes,num_edges,num_requirements,probability,optimal_known,best_found,is_optimal,runtime_seconds,nodes_explored,lazy_constraints,cutting_planes,mip_gap_percent,gurobi_status,time_limit,heuristics_level,algorithm_version
+ocstpin0,ocstpin,path_based_formulation,Path-Based MILP Formulation,10,24,15,0.0,1340,1340,True,0.012647867202758789,1,4,0,0.0,-1,30,0.5,1.0
+ocstpin0,ocstpin,flow_based_formulation,Flow-Based MILP Formulation,10,24,15,0.0,1340,1340,True,0.049880266189575195,14,8,10,0.0,-1,30,0.5,1.0
+ocstpin0,ocstpin,flow_based_relaxed_formulation,Flow-Based Relaxed MILP Formulation,10,24,15,0.0,1340,1340,True,0.01871037483215332,1,9,45,0.0,-1,30,0.5,1.0
+ocstpin1,ocstpin,path_based_formulation,Path-Based MILP Formulation,10,16,10,0.0,4135577,4135577,True,0.007515668869018555,1,1,0,0.0,-1,30,0.5,1.0
+ocstpin1,ocstpin,flow_based_formulation,Flow-Based MILP Formulation,10,16,10,0.0,4135577,4135577,True,0.013147115707397461,1,8,0,0.0,-1,30,0.5,1.0
+ocstpin1,ocstpin,flow_based_relaxed_formulation,Flow-Based Relaxed MILP Formulation,10,16,10,0.0,4135577,4135577,True,0.0114593505859375,1,10,15,0.0,-1,30,0.5,1.0
+ocstpin10,ocstpin,path_based_formulation,Path-Based MILP Formulation,10,23,16,0.0,6909911,6909911,True,0.053388357162475586,17,28,0,0.0,-1,30,0.5,1.0
+ocstpin10,ocstpin,flow_based_formulation,Flow-Based MILP Formulation,10,23,16,0.0,6909911,6909911,True,0.16264581680297852,154,8,22,0.0,-1,30,0.5,1.0
+ocstpin10,ocstpin,flow_based_relaxed_formulation,Flow-Based Relaxed MILP Formulation,10,23,16,0.0,6909911,6909911,True,0.08579087257385254,17,9,70,0.0,-1,30,0.5,1.0
+ocstpin11,ocstpin,path_based_formulation,Path-Based MILP Formulation,10,24,15,0.0,3888533,3888533,True,0.053395748138427734,9,14,0,0.0,-1,30,0.5,1.0
+ocstpin11,ocstpin,flow_based_formulation,Flow-Based MILP Formulation,10,24,15,0.0,3888533,3888533,True,0.07023978233337402,55,8,7,0.0,-1,30,0.5,1.0
+ocstpin11,ocstpin,flow_based_relaxed_formulation,Flow-Based Relaxed MILP Formulation,10,24,15,0.0,3888533,3888533,True,0.022057771682739258,1,9,0,0.0,-1,30,0.5,1.0
+ocstpin12,ocstpin,path_based_formulation,Path-Based MILP Formulation,10,29,11,0.0,2150236,2150236,True,0.013700723648071289,1,0,0,0.0,-1,30,0.5,1.0
+ocstpin12,ocstpin,flow_based_formulation,Flow-Based MILP Formulation,10,29,11,0.0,2150236,2150236,True,0.04578876495361328,7,7,0,0.0,-1,30,0.5,1.0
+ocstpin12,ocstpin,flow_based_relaxed_formulation,Flow-Based Relaxed MILP Formulation,10,29,11,0.0,2150236,2150236,True,0.0157625675201416,1,7,0,0.0,-1,30,0.5,1.0
+ocstpin13,ocstpin,path_based_formulation,Path-Based MILP Formulation,15,37,30,0.0,5806363,5806363,True,0.022402524948120117,1,0,0,0.0,-1,30,0.5,1.0
+ocstpin13,ocstpin,flow_based_formulation,Flow-Based MILP Formulation,15,37,30,0.0,5806363,5806363,True,0.07733535766601562,1,7,0,0.0,-1,30,0.5,1.0
+ocstpin13,ocstpin,flow_based_relaxed_formulation,Flow-Based Relaxed MILP Formulation,15,37,30,0.0,5806363,5806363,True,0.027055978775024414,1,8,20,0.005759,-1,30,0.5,1.0
+ocstpin14,ocstpin,path_based_formulation,Path-Based MILP Formulation,15,25,21,0.0,9955439,9955439,True,0.04914045333862305,10,40,0,0.0,-1,30,0.5,1.0
+ocstpin14,ocstpin,flow_based_formulation,Flow-Based MILP Formulation,15,25,21,0.0,9955439,9955439,True,0.1790766716003418,114,10,21,0.0,-1,30,0.5,1.0
+ocstpin14,ocstpin,flow_based_relaxed_formulation,Flow-Based Relaxed MILP Formulation,15,25,21,0.0,9955439,9955439,True,0.19694900512695312,10,9,101,0.0,-1,30,0.5,1.0
+ocstpin2,ocstpin,path_based_formulation,Path-Based MILP Formulation,10,15,7,0.0,2896545,2896545,True,0.007837772369384766,1,6,0,0.0,-1,30,0.5,1.0
+ocstpin2,ocstpin,flow_based_formulation,Flow-Based MILP Formulation,10,15,7,0.0,2896545,2896545,True,0.018854856491088867,1,9,10,0.0,-1,30,0.5,1.0
+ocstpin2,ocstpin,flow_based_relaxed_formulation,Flow-Based Relaxed MILP Formulation,10,15,7,0.0,2896545,2896545,True,0.01033639907836914,1,9,6,0.0,-1,30,0.5,1.0
+ocstpin3,ocstpin,path_based_formulation,Path-Based MILP Formulation,10,18,15,0.0,7280790,7280790,True,0.009929180145263672,1,0,0,0.0,-1,30,0.5,1.0
+ocstpin3,ocstpin,flow_based_formulation,Flow-Based MILP Formulation,10,18,15,0.0,7280790,7280790,True,0.01809215545654297,1,7,0,0.0,-1,30,0.5,1.0
+ocstpin3,ocstpin,flow_based_relaxed_formulation,Flow-Based Relaxed MILP Formulation,10,18,15,0.0,7280790,7280790,True,0.011498212814331055,1,7,0,0.0,-1,30,0.5,1.0
+ocstpin4,ocstpin,path_based_formulation,Path-Based MILP Formulation,10,12,15,0.0,7263378,7263378,True,0.009318351745605469,1,0,0,0.0,-1,30,0.5,1.0
+ocstpin4,ocstpin,flow_based_formulation,Flow-Based MILP Formulation,10,12,15,0.0,7263378,7263378,True,0.013228416442871094,1,8,0,0.0,-1,30,0.5,1.0
+ocstpin4,ocstpin,flow_based_relaxed_formulation,Flow-Based Relaxed MILP Formulation,10,12,15,0.0,7263378,7263378,True,0.011199951171875,1,8,11,0.0,-1,30,0.5,1.0
+ocstpin5,ocstpin,path_based_formulation,Path-Based MILP Formulation,10,13,14,0.0,14235693,14235693,True,0.009267091751098633,1,0,0,0.0,-1,30,0.5,1.0
+ocstpin5,ocstpin,flow_based_formulation,Flow-Based MILP Formulation,10,13,14,0.0,14235693,14235693,True,0.031065940856933594,3,7,10,0.0,-1,30,0.5,1.0
+ocstpin5,ocstpin,flow_based_relaxed_formulation,Flow-Based Relaxed MILP Formulation,10,13,14,0.0,14235693,14235693,True,0.014446735382080078,1,8,16,0.0,-1,30,0.5,1.0
+ocstpin6,ocstpin,path_based_formulation,Path-Based MILP Formulation,10,16,11,0.0,3482519,3482519,True,0.024587631225585938,2,0,0,0.0,-1,30,0.5,1.0
+ocstpin6,ocstpin,flow_based_formulation,Flow-Based MILP Formulation,10,16,11,0.0,3482519,3482519,True,0.0367431640625,9,9,11,0.0,-1,30,0.5,1.0
+ocstpin6,ocstpin,flow_based_relaxed_formulation,Flow-Based Relaxed MILP Formulation,10,16,11,0.0,3482519,3482519,True,0.056939125061035156,5,10,19,0.0,-1,30,0.5,1.0
+ocstpin7,ocstpin,path_based_formulation,Path-Based MILP Formulation,10,17,13,0.0,5889141,5889141,True,0.00901341438293457,1,0,0,0.0,-1,30,0.5,1.0
+ocstpin7,ocstpin,flow_based_formulation,Flow-Based MILP Formulation,10,17,13,0.0,5889141,5889141,True,0.04112887382507324,32,9,11,0.0,-1,30,0.5,1.0
+ocstpin7,ocstpin,flow_based_relaxed_formulation,Flow-Based Relaxed MILP Formulation,10,17,13,0.0,5889141,5889141,True,0.021306991577148438,1,10,21,0.0,-1,30,0.5,1.0
+ocstpin8,ocstpin,path_based_formulation,Path-Based MILP Formulation,10,11,11,0.0,3155658,3155658,True,0.007674455642700195,1,0,0,0.0,-1,30,0.5,1.0
+ocstpin8,ocstpin,flow_based_formulation,Flow-Based MILP Formulation,10,11,11,0.0,3155658,3155658,True,0.020493507385253906,2,10,6,0.0,-1,30,0.5,1.0
+ocstpin8,ocstpin,flow_based_relaxed_formulation,Flow-Based Relaxed MILP Formulation,10,11,11,0.0,3155658,3155658,True,0.009478330612182617,1,8,0,0.00047,-1,30,0.5,1.0
+ocstpin9,ocstpin,path_based_formulation,Path-Based MILP Formulation,10,23,18,0.0,6629218,6629218,True,0.03350400924682617,3,0,0,0.0,-1,30,0.5,1.0
+ocstpin9,ocstpin,flow_based_formulation,Flow-Based MILP Formulation,10,23,18,0.0,6629218,6629218,True,0.0848686695098877,60,9,14,0.0,-1,30,0.5,1.0
+ocstpin9,ocstpin,flow_based_relaxed_formulation,Flow-Based Relaxed MILP Formulation,10,23,18,0.0,6629218,6629218,True,0.030712366104125977,1,8,7,0.0,-1,30,0.5,1.0
+orst0,orst,path_based_formulation,Path-Based MILP Formulation,10,45,12,0.0,801846,801846,True,0.03689408302307129,2,0,0,0.0,-1,60,0.5,1.0
+orst0,orst,flow_based_formulation,Flow-Based MILP Formulation,10,45,12,0.0,801846,801846,True,0.11463737487792969,46,8,16,0.0,-1,60,0.5,1.0
+orst0,orst,flow_based_relaxed_formulation,Flow-Based Relaxed MILP Formulation,10,45,12,0.0,801846,801846,True,0.0239105224609375,1,7,30,0.007401,-1,60,0.5,1.0
+orst1,orst,path_based_formulation,Path-Based MILP Formulation,10,45,14,0.0,995494,995494,True,0.24852681159973145,74,0,0,0.0,-1,60,0.5,1.0
+orst1,orst,flow_based_formulation,Flow-Based MILP Formulation,10,45,14,0.0,995494,995494,True,0.3177363872528076,245,10,29,0.0,-1,60,0.5,1.0
+orst1,orst,flow_based_relaxed_formulation,Flow-Based Relaxed MILP Formulation,10,45,14,0.0,995494,995494,True,0.11683988571166992,1,12,54,0.0,-1,60,0.5,1.0
+orst2,orst,path_based_formulation,Path-Based MILP Formulation,10,45,11,0.0,712327,712327,True,0.040163516998291016,5,0,0,0.0,-1,60,0.5,1.0
+orst2,orst,flow_based_formulation,Flow-Based MILP Formulation,10,45,11,0.0,712327,712327,True,0.14861321449279785,82,11,15,0.0,-1,60,0.5,1.0
+orst2,orst,flow_based_relaxed_formulation,Flow-Based Relaxed MILP Formulation,10,45,11,0.0,712327,712327,True,0.11534762382507324,9,9,22,0.0,-1,60,0.5,1.0
+orst3,orst,path_based_formulation,Path-Based MILP Formulation,10,45,8,0.0,307480,307480,True,0.22085237503051758,160,224,0,0.0,-1,60,0.5,1.0
+orst3,orst,flow_based_formulation,Flow-Based MILP Formulation,10,45,8,0.0,307480,307480,True,0.41884422302246094,433,24,22,0.0,-1,60,0.5,1.0
+orst3,orst,flow_based_relaxed_formulation,Flow-Based Relaxed MILP Formulation,10,45,8,0.0,307480,307480,True,0.15345430374145508,61,17,79,0.0,-1,60,0.5,1.0
+orst4,orst,path_based_formulation,Path-Based MILP Formulation,10,45,9,0.0,451519,451519,True,0.0641331672668457,30,49,0,0.0,-1,60,0.5,1.0
+orst4,orst,flow_based_formulation,Flow-Based MILP Formulation,10,45,9,0.0,451519,451519,True,0.2016458511352539,156,16,10,0.0,-1,60,0.5,1.0
+orst4,orst,flow_based_relaxed_formulation,Flow-Based Relaxed MILP Formulation,10,45,9,0.0,451519,451519,True,0.1647810935974121,40,13,74,0.0,-1,60,0.5,1.0
+orst5,orst,path_based_formulation,Path-Based MILP Formulation,10,45,16,0.0,1147497,1147497,True,0.05773782730102539,1,0,0,0.0,-1,60,0.5,1.0
+orst5,orst,flow_based_formulation,Flow-Based MILP Formulation,10,45,16,0.0,1147497,1147497,True,0.40474867820739746,244,7,65,0.0,-1,60,0.5,1.0
+orst5,orst,flow_based_relaxed_formulation,Flow-Based Relaxed MILP Formulation,10,45,16,0.0,1147497,1147497,True,0.1412956714630127,3,8,62,0.0,-1,60,0.5,1.0
+orst6,orst,path_based_formulation,Path-Based MILP Formulation,10,45,11,0.0,1134484,1134484,True,14.686395645141602,6832,50,0,0.0,-1,60,0.5,1.0
+orst6,orst,flow_based_formulation,Flow-Based MILP Formulation,10,45,11,0.0,1134484,1134484,True,8.484624147415161,5382,14,399,0.0,-1,60,0.5,1.0
+orst6,orst,flow_based_relaxed_formulation,Flow-Based Relaxed MILP Formulation,10,45,11,0.0,1134484,1134484,True,9.396945238113403,3665,17,4842,0.000873,-1,60,0.5,1.0
+orst7,orst,path_based_formulation,Path-Based MILP Formulation,10,45,18,0.0,1556492,1556492,True,1.5214269161224365,302,0,0,0.0,-1,60,0.5,1.0
+orst7,orst,flow_based_formulation,Flow-Based MILP Formulation,10,45,18,0.0,1556492,1556492,True,12.849045276641846,6718,19,397,0.0,-1,60,0.5,1.0
+orst7,orst,flow_based_relaxed_formulation,Flow-Based Relaxed MILP Formulation,10,45,18,0.0,1556492,1556492,True,3.4865095615386963,691,12,910,0.005313,-1,60,0.5,1.0
+orst8,orst,path_based_formulation,Path-Based MILP Formulation,10,45,14,0.0,905252,905252,True,0.07848572731018066,16,13,0,0.0,-1,60,0.5,1.0
+orst8,orst,flow_based_formulation,Flow-Based MILP Formulation,10,45,14,0.0,905252,905252,True,0.6263949871063232,361,10,31,0.0,-1,60,0.5,1.0
+orst8,orst,flow_based_relaxed_formulation,Flow-Based Relaxed MILP Formulation,10,45,14,0.0,905252,905252,True,0.11441755294799805,24,12,44,0.0,-1,60,0.5,1.0
+orst9,orst,path_based_formulation,Path-Based MILP Formulation,10,45,9,0.0,555643,555643,True,0.25748682022094727,165,10,0,0.0,-1,60,0.5,1.0
+orst9,orst,flow_based_formulation,Flow-Based MILP Formulation,10,45,9,0.0,555643,555643,True,0.18497133255004883,125,10,21,0.0,-1,60,0.5,1.0
+orst9,orst,flow_based_relaxed_formulation,Flow-Based Relaxed MILP Formulation,10,45,9,0.0,555643,555643,True,0.47748231887817383,459,9,209,0.0,-1,60,0.5,1.0

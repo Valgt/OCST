@@ -3,26 +3,17 @@ analysis:
   create_plots: false
   generate_summary: true
 execution:
-  algorithms:
-  - description: Path-Based MILP Formulation
-    executable_path: build/executables/path_based_formulation
-    name: path_based_formulation
-  - description: Flow-Based MILP Formulation
-    executable_path: build/executables/flow_based_formulation
-    name: flow_based_formulation
-  - description: Flow-Based Relaxed MILP Formulation
-    executable_path: build/executables/flow_based_relaxed_formulation
-    name: flow_based_relaxed_formulation
+  executable_path: build/executables/flow_based_relaxed_formulation
   heuristics_level: 0.5
-  time_limit: 60
+  time_limit: 30
   time_limits_by_group:
     ocstpin: 30
     orst: 60
 experiment:
-  algorithm: Comparative Analysis
-  description: Comprehensive comparison of all available formulations on small-medium
+  algorithm: Flow-Based Relaxed MILP Formulation
+  description: Comprehensive evaluation of flow-based relaxed formulation on all available
     instances
-  name: comparative_formulations
+  name: flow_based_relaxed_formulation
   version: '1.0'
 instances:
   groups:
@@ -42,8 +33,6 @@ output:
   columns:
   - instance_name
   - instance_group
-  - algorithm_name
-  - algorithm_description
   - num_nodes
   - num_edges
   - num_requirements
@@ -53,8 +42,6 @@ output:
   - is_optimal
   - runtime_seconds
   - nodes_explored
-  - lazy_constraints
-  - cutting_planes
   - mip_gap_percent
   - gurobi_status
   - time_limit

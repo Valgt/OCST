@@ -471,6 +471,9 @@ private:
             
             Network csi_network(instance_.num_nodes, csi_capacities);
             
+            // Counter for cuts added in THIS invocation (for statistics/logging)
+            int cuts_this_round = 0;
+            
             // Process both configurations (rConfig = 0, 1) with fixed root
             for (int rConfig = 0; rConfig < 2; ++rConfig) {
                 int rFixed = (rConfig == 0) ? 0 : instance_.num_nodes - 1;  // Fixed root
@@ -484,6 +487,7 @@ private:
                     if (maxFlowCSI < 0.99) {  // Connectivity violation
                         std::vector<int> cut_arcs = csi_network.GetIndexArcsMinCut(rFixed, t);
                         add_csi_cut(cut_arcs, arc_to_edge);
+                        cuts_this_round++;
                     }
                     
                     // === SEC CUTS (Subtour) ===
@@ -519,10 +523,13 @@ private:
                     if (minCutSEC < instance_.num_nodes - 1e-6) {  // SEC violation
                         std::vector<int> S = sec_network.GetVerticesMinCut(rFixed, t);
                         add_sec_cut(S);
+                        cuts_this_round++;
                     }
                     
-                    // Limit number of cuts per callback to avoid explosion
-                    if (cutting_planes_count_ >= 10) return;
+                    // REMOVED: MAX_CUTS_PER_ROUND limit
+                    // Rationale: Early return leaves unprocessed (s,t) pairs with potential 
+                    // CSI/SEC violations, making the LP relaxation inconsistent. We must 
+                    // process all 2(n-1) pairs to ensure correctness, even if it adds many cuts.
                 }
             }
             
@@ -595,83 +602,6 @@ private:
         return -1;  // Invalid nodes or edge not found
     }
     
-    std::vector<std::vector<int>> find_violated_cuts_network(
-        const std::vector<double>& x_vals,
-        const std::vector<std::pair<double, std::pair<int, int>>>& arc_capacities) {
-        
-        std::vector<std::vector<int>> violations;
-        
-        // Create network with fractional capacities
-        Network network(instance_.num_nodes, arc_capacities);
-        
-        // Try to find cuts by testing connectivity from each node
-        for (int source = 0; source < instance_.num_nodes; ++source) {
-            for (int sink = source + 1; sink < instance_.num_nodes; ++sink) {
-                // Get minimum cut vertices
-                std::vector<int> cut_set = network.GetVerticesMinCut(source, sink);
-                
-                // Check if cut is violated
-                if (!cut_set.empty() && is_cut_violated_network(cut_set, x_vals)) {
-                    violations.push_back(cut_set);
-                    // Limit number of cuts per callback to avoid explosion
-                    if (violations.size() >= 3) break;
-                }
-            }
-            if (violations.size() >= 3) break;
-        }
-        
-        return violations;
-    }
-    
-    bool is_cut_violated_network(const std::vector<int>& cut_set, const std::vector<double>& x_vals) {
-        if (cut_set.size() <= 1 || cut_set.size() >= static_cast<size_t>(instance_.num_nodes - 1)) {
-            return false;  // Trivial cuts
-        }
-        
-        // Use Network::CapCut for consistency instead of recalculating
-        // Build arc capacities from fractional x values
-        std::vector<std::pair<double, std::pair<int, int>>> arc_capacities;
-        for (int e = 0; e < instance_.num_edges; ++e) {
-            const Edge& edge = instance_.edges[e];
-            if (x_vals[e] > 0.01) {  // Only consider edges with significant flow
-                arc_capacities.push_back({x_vals[e], {edge.source, edge.destination}});
-                arc_capacities.push_back({x_vals[e], {edge.destination, edge.source}});
-            }
-        }
-        
-        // Create temporary network to use CapCut
-        Network temp_network(instance_.num_nodes, arc_capacities);
-        double cut_value = temp_network.CapCut(cut_set);
-        
-        // Cut is violated if cut_value < 1.0 (need at least 1 edge to connect cut to rest)
-        return cut_value < 0.99;
-    }
-    
-    void add_fractional_cut(const std::vector<int>& cut_set) {
-        GRBLinExpr cut_expr = 0;
-        
-        // Sum edges crossing the cut
-        for (int e = 0; e < instance_.num_edges; ++e) {
-            const Edge& edge = instance_.edges[e];
-            bool source_in_cut = false;
-            bool dest_in_cut = false;
-            
-            for (int v : cut_set) {
-                if (edge.source == v) source_in_cut = true;
-                if (edge.destination == v) dest_in_cut = true;
-            }
-            
-            // Edge crosses the cut
-            if ((source_in_cut && !dest_in_cut) || (!source_in_cut && dest_in_cut)) {
-                cut_expr += x_vars_[e];
-            }
-        }
-        
-        // Add cut: sum of edges crossing cut >= 1
-        addCut(cut_expr >= 1.0);
-        cutting_planes_count_++;
-    }
-    
 private:
     void dfs_component(int v, int comp_id, std::vector<int>& component, 
                       const std::vector<double>& x_vals) {
@@ -720,36 +650,38 @@ private:
     }
 };
 
-// FLOW-BASED FORMULATION SOLVER
+// FLOW-BASED RELAXED FORMULATION SOLVER
 //=============================================================================
 
 /**
- * @brief Flow-based formulation solver for OCST problem
+ * @brief Flow-based relaxed formulation solver for OCST problem
+ * This is the RFB formulation (Relaxation of Flow-Based)
+ * Key difference: NO y variables (arborescence binary variables)
  */
-class FlowBasedSolver 
+class FlowBasedRelaxedSolver 
 {
 private:
     const OCSTInstance& instance_;
     GRBEnv env_;
     GRBModel model_;
     
-    // Variables para Flow-Based (formulación real según 4.25-4.35)
-    std::vector<GRBVar> x_vars_;                    // x[edge] - binary (4.35)
-    std::vector<std::vector<GRBVar>> f_vars_;       // f[origin][arc] - continuous (4.33)
-    std::vector<std::vector<GRBVar>> y_vars_;       // y[origin][arc] - binary (4.34)
+    // Variables for Flow-Based Relaxed (formulation 4.36-4.43)
+    std::vector<GRBVar> x_vars_;                    // x[edge] - binary (4.43)
+    std::vector<std::vector<GRBVar>> f_vars_;       // f[origin][arc] - continuous (4.42)
+    // NO y_vars_ in relaxed formulation!
     
-    // Callback para SEC como miembro del solver
+    // Callback for SEC as member of solver
     std::unique_ptr<SECCallback> sec_callback_;
     
     // Edge lookup table for O(1) access
     std::vector<std::vector<int>> edge_lookup_;
     
-    // Métricas de seguimiento
+    // Metrics tracking
     int lazy_constraints_count_;
     int cutting_planes_count_;
     
 public:
-    explicit FlowBasedSolver(const OCSTInstance& instance) 
+    explicit FlowBasedRelaxedSolver(const OCSTInstance& instance) 
         : instance_(instance), env_(GRBEnv()), model_(GRBModel(env_)), sec_callback_(nullptr)
     {
         lazy_constraints_count_ = 0;
@@ -769,11 +701,11 @@ public:
         model_.set(GRB_IntParam_PreCrush, 1);  // Ensure lazy constraints work with presolve
         model_.set(GRB_IntParam_Presolve, 0);  // Disable presolve for better cut separation
         model_.set(GRB_IntParam_Threads, 1);   // Single thread for reproducibility
-        model_.set(GRB_IntParam_Cuts, 0);      // Disable default cuts to prioritize custom ones
+        model_.set(GRB_IntParam_Cuts, -1);     // Enable aggressive cuts to help tighten LP relaxation
     }
     
     /**
-     * @brief Solves the OCST instance using flow-based formulation
+     * @brief Solves the OCST instance using flow-based relaxed formulation
      * @param time_limit Time limit in seconds
      * @param heuristics_level Gurobi heuristics parameter (0-2)
      * @return SolutionResult containing all solution metrics
@@ -798,7 +730,6 @@ public:
             // Add constraints
             add_structural_constraints();
             add_flow_constraints();
-            add_arborescence_constraints();
             add_coupling_constraints();
             
             // Set objective function
@@ -907,7 +838,7 @@ private:
             x_vars_[e].set(GRB_DoubleAttr_Start, in_mst ? 1.0 : 0.0);
         }
         
-        // Build MST adjacency with exact edge indices (EXPERT FIX)
+        // Build MST adjacency with exact edge indices
         std::vector<std::vector<std::pair<int, int>>> mst_adj(instance_.num_nodes);
         std::vector<std::vector<int>> parent(instance_.num_nodes, std::vector<int>(instance_.num_nodes, -1));
         std::vector<std::vector<int>> parent_edge(instance_.num_nodes, std::vector<int>(instance_.num_nodes, -1));
@@ -954,8 +885,8 @@ private:
             demand_matrix[req.origin][req.destination] += req.weight;
         }
         
-        // Set flow variables (f) and arborescence variables (y) based on MST arborescences
-        // Following UtilSolver::SetInitialSolutionFlow pattern
+        // Set flow variables (f) based on MST arborescences
+        // NO y variables in relaxed formulation!
         for (int root = 0; root < instance_.num_nodes; ++root) {
             // OPTIMIZATION: Build children list once per root
             std::vector<std::vector<int>> children(instance_.num_nodes);
@@ -969,15 +900,12 @@ private:
             std::vector<double> subtree_demand_cache(instance_.num_nodes, -1.0);
             compute_all_subtree_demands(root, root, children, demand_matrix[root], subtree_demand_cache);
             
-            // EXPERT FIX: Always mark arborescence for all origins, even with no demand
-            // This ensures constraint 4.31 (sum y[root][arc] = n-1) is satisfied
-            
-            // Mark arborescence: y[root][index(parent[root][j], j)] = 1 for each child j
+            // Set flows: f[root][index(parent[root][j], j)] = subtree_demand
             for (int j = 0; j < instance_.num_nodes; ++j) {
                 if (j != root && parent[root][j] != -1) {
                     int parent_j = parent[root][j];
                     
-                    // Use exact edge index from MST instead of edge_lookup_ (EXPERT FIX)
+                    // Use exact edge index from MST
                     int edge_idx = parent_edge[root][j];
                     if (edge_idx >= 0) {
                         // Determine correct orientation: parent_j -> j
@@ -992,9 +920,6 @@ private:
                         } else {
                             continue;  // Edge not found or invalid orientation
                         }
-                        
-                        // Mark arborescence arc with correct orientation
-                        y_vars_[root][arc_index].set(GRB_DoubleAttr_Start, 1.0);
                         
                         // Use precomputed subtree demand from cache
                         double subtree_flow = subtree_demand_cache[j];
@@ -1084,64 +1009,9 @@ private:
         return calculate_subtree_demand_dfs(root, node, parent, children, subtree_demand_cache);
     }
     
-    /**
-     * @brief Finds path between two nodes in MST using BFS
-     */
-    std::vector<int> find_path_in_mst(int source, int dest, 
-                                     const std::vector<std::vector<int>>& mst_adj) 
-    {
-        std::vector<int> parent(instance_.num_nodes, -1);
-        std::vector<bool> visited(instance_.num_nodes, false);
-        std::queue<int> q;
-        
-        q.push(source);
-        visited[source] = true;
-        
-        while (!q.empty()) {
-            int u = q.front();
-            q.pop();
-            
-            if (u == dest) break;
-            
-            for (int v : mst_adj[u]) {
-                if (!visited[v]) {
-                    visited[v] = true;
-                    parent[v] = u;
-                    q.push(v);
-                }
-            }
-        }
-        
-        // Reconstruct path
-        std::vector<int> path;
-        int cur = dest;
-        while (cur != -1) {
-            path.push_back(cur);
-            cur = parent[cur];
-        }
-        std::reverse(path.begin(), path.end());
-        
-        return path;
-    }
-    
-    /**
-     * @brief Finds edge index for given pair of nodes
-     */
-    int find_edge_index(int u, int v) 
-    {
-        for (int e = 0; e < instance_.num_edges; ++e) {
-            const Edge& edge = instance_.edges[e];
-            if ((edge.source == u && edge.destination == v) ||
-                (edge.source == v && edge.destination == u)) {
-                return e;
-            }
-        }
-        return -1;
-    }
-    
     void create_variables() 
     {
-        // Crear variables x[edge] - binarias (4.35)
+        // Create variables x[edge] - binary (4.43)
         x_vars_.resize(instance_.num_edges);
         for (int e = 0; e < instance_.num_edges; ++e) {
             const Edge& edge = instance_.edges[e];
@@ -1149,77 +1019,67 @@ private:
             x_vars_[e] = model_.addVar(0.0, 1.0, 0.0, GRB_BINARY, var_name);
         }
         
-        // Crear variables f[origin][arc] y y[origin][arc] para cada origen
+        // Create variables f[origin][arc] for each origin - continuous (4.42)
+        // NO y variables in relaxed formulation!
         f_vars_.resize(instance_.num_nodes);
-        y_vars_.resize(instance_.num_nodes);
         
         for (int o = 0; o < instance_.num_nodes; ++o) {
-            // Cada arista no dirigida se convierte en 2 arcos dirigidos
+            // Each undirected edge becomes 2 directed arcs
             f_vars_[o].resize(instance_.num_edges * 2);
-            y_vars_[o].resize(instance_.num_edges * 2);
             
             for (int e = 0; e < instance_.num_edges; ++e) {
                 const Edge& edge = instance_.edges[e];
                 
-                // Dirección forward (i -> j)
+                // Forward direction (i -> j)
                 std::string f_name_fwd = "f_" + std::to_string(o) + "_" + 
                                         std::to_string(edge.source) + "_" + std::to_string(edge.destination);
-                std::string y_name_fwd = "y_" + std::to_string(o) + "_" + 
-                                        std::to_string(edge.source) + "_" + std::to_string(edge.destination);
-                
                 f_vars_[o][2*e] = model_.addVar(0.0, GRB_INFINITY, 0.0, GRB_CONTINUOUS, f_name_fwd);
-                y_vars_[o][2*e] = model_.addVar(0.0, 1.0, 0.0, GRB_BINARY, y_name_fwd);
                 
-                // Dirección backward (j -> i)
+                // Backward direction (j -> i)
                 std::string f_name_bwd = "f_" + std::to_string(o) + "_" + 
                                         std::to_string(edge.destination) + "_" + std::to_string(edge.source);
-                std::string y_name_bwd = "y_" + std::to_string(o) + "_" + 
-                                        std::to_string(edge.destination) + "_" + std::to_string(edge.source);
-                
                 f_vars_[o][2*e + 1] = model_.addVar(0.0, GRB_INFINITY, 0.0, GRB_CONTINUOUS, f_name_bwd);
-                y_vars_[o][2*e + 1] = model_.addVar(0.0, 1.0, 0.0, GRB_BINARY, y_name_bwd);
             }
         }
         
-        // Actualizar modelo después de crear variables
+        // Update model after creating variables
         model_.update();
     }
     
     /**
-     * @brief Adds structural constraints (4.26-4.27): spanning tree constraints
+     * @brief Adds structural constraints (4.37-4.38): spanning tree constraints
      */
     void add_structural_constraints() 
     {
-        // Restricción (4.26): sum of edges = n-1
+        // Constraint (4.37): sum of edges = n-1
         GRBLinExpr tree_constraint = 0;
         for (int e = 0; e < instance_.num_edges; ++e) {
             tree_constraint += x_vars_[e];
         }
         model_.addConstr(tree_constraint == instance_.num_nodes - 1, "tree_constraint");
         
-        // Restricciones (4.27): subtour elimination constraints (SEC)
-        // Para cada subconjunto S de V, |S| >= 2, sum_{ij in E(S)} x_ij <= |S| - 1
-        // Implementamos SEC usando lazy constraints para eficiencia
-        // Callback como miembro del solver para evitar referencias colgantes
+        // Constraints (4.38): subtour elimination constraints (SEC)
+        // For each subset S of V, |S| >= 2, sum_{ij in E(S)} x_ij <= |S| - 1
+        // Implemented using lazy constraints for efficiency
         sec_callback_ = std::make_unique<SECCallback>(instance_, x_vars_, edge_lookup_, lazy_constraints_count_, cutting_planes_count_);
         model_.setCallback(sec_callback_.get());
     }
     
     /**
-     * @brief Adds flow constraints (4.28-4.29): flow conservation per origin
+     * @brief Adds flow constraints (4.39-4.40): flow conservation per origin
      */
     void add_flow_constraints() 
     {
-        // Calcular demanda total por origen
+        // Calculate total demand per origin
         std::vector<double> total_demand_from(instance_.num_nodes, 0.0);
         std::vector<std::vector<double>> demand_matrix(instance_.num_nodes, std::vector<double>(instance_.num_nodes, 0.0));
         
         for (const auto& req : instance_.requirements) {
             total_demand_from[req.origin] += req.weight;
-            demand_matrix[req.origin][req.destination] += req.weight;  // Acumular demandas
+            demand_matrix[req.origin][req.destination] += req.weight;  // Accumulate demands
         }
         
-        // Restricciones (4.28): conservación de flujo para cada origen o y vértice j != o
+        // Constraints (4.39): flow conservation for each origin o and vertex j != o
         for (int o = 0; o < instance_.num_nodes; ++o) {
             for (int j = 0; j < instance_.num_nodes; ++j) {
                 if (j == o) continue;  // Skip origin itself
@@ -1227,133 +1087,107 @@ private:
                 GRBLinExpr flow_in = 0;
                 GRBLinExpr flow_out = 0;
                 
-                // Sumar flujo entrante a j desde todos los arcos ij
+                // Sum incoming flow to j from all arcs ij
                 for (int e = 0; e < instance_.num_edges; ++e) {
                     const Edge& edge = instance_.edges[e];
                     
-                    // Arco ij -> j (forward)
+                    // Arc ij -> j (forward)
                     if (edge.destination == j) {
                         flow_in += f_vars_[o][2*e];
                     }
-                    // Arco ji -> j (backward) 
+                    // Arc ji -> j (backward) 
                     if (edge.source == j) {
                         flow_in += f_vars_[o][2*e + 1];
                     }
                     
-                    // Sumar flujo saliente de j hacia todos los arcos jk
-                    // Arco jk saliente (forward)
+                    // Sum outgoing flow from j to all arcs jk
+                    // Arc jk outgoing (forward)
                     if (edge.source == j) {
                         flow_out += f_vars_[o][2*e];
                     }
-                    // Arco kj saliente (backward)
+                    // Arc kj outgoing (backward)
                     if (edge.destination == j) {
                         flow_out += f_vars_[o][2*e + 1];
                     }
                 }
                 
-                // Restricción: flow_in - flow_out = w_oj (demanda en j desde origen o)
+                // Constraint: flow_in - flow_out = w_oj (demand at j from origin o)
                 double demand_at_j = demand_matrix[o][j];
                 std::string constr_name = "flow_conservation_" + std::to_string(o) + "_" + std::to_string(j);
                 model_.addConstr(flow_in - flow_out == demand_at_j, constr_name);
             }
         }
         
-        // Restricciones (4.29): flujo inicial desde cada origen o
+        // Constraints (4.40): initial flow from each origin o
         for (int o = 0; o < instance_.num_nodes; ++o) {
             GRBLinExpr initial_flow = 0;
             
-            // Sumar flujo saliente desde origen o
+            // Sum outgoing flow from origin o
             for (int e = 0; e < instance_.num_edges; ++e) {
                 const Edge& edge = instance_.edges[e];
                 
-                // Arco o -> k (forward)
+                // Arc o -> k (forward)
                 if (edge.source == o) {
                     initial_flow += f_vars_[o][2*e];
                 }
-                // Arco k -> o (backward, pero saliente desde o)
+                // Arc k -> o (backward, but outgoing from o)
                 if (edge.destination == o) {
                     initial_flow += f_vars_[o][2*e + 1];
                 }
             }
             
-            // Restricción: flujo inicial = suma de demandas con origen o
+            // Constraint: initial flow = sum of demands with origin o
             std::string constr_name = "initial_flow_" + std::to_string(o);
             model_.addConstr(initial_flow == total_demand_from[o], constr_name);
         }
         
-        // Restricción crítica: flujo entrante al origen = 0 (evita ciclos en la raíz)
+        // Critical constraint: incoming flow to origin = 0 (prevents cycles at root)
         for (int o = 0; o < instance_.num_nodes; ++o) {
             GRBLinExpr inflow_to_root = 0;
             
-            // Sumar flujo entrante al origen o
+            // Sum incoming flow to origin o
             for (int e = 0; e < instance_.num_edges; ++e) {
                 const Edge& edge = instance_.edges[e];
                 
-                // Arco k -> o (forward)
+                // Arc k -> o (forward)
                 if (edge.destination == o) {
                     inflow_to_root += f_vars_[o][2*e];
                 }
-                // Arco o -> k (backward, pero entrante a o)
+                // Arc o -> k (backward, but incoming to o)
                 if (edge.source == o) {
                     inflow_to_root += f_vars_[o][2*e + 1];
                 }
             }
             
-            // Restricción: flujo entrante al origen = 0
+            // Constraint: incoming flow to origin = 0
             std::string constr_name = "root_inflow_zero_" + std::to_string(o);
             model_.addConstr(inflow_to_root == 0, constr_name);
         }
     }
     
     /**
-     * @brief Adds arborescence constraints (4.31-4.32): arborescence properties per origin
-     */
-    void add_arborescence_constraints() 
-    {
-        // Restricciones (4.31): cada origen o debe tener exactamente n-1 arcos en su arborescencia
-        for (int o = 0; o < instance_.num_nodes; ++o) {
-            GRBLinExpr arborescence_size = 0;
-            
-            for (int e = 0; e < instance_.num_edges; ++e) {
-                // Contar ambos arcos dirigidos de cada arista
-                arborescence_size += y_vars_[o][2*e];      // forward arc
-                arborescence_size += y_vars_[o][2*e + 1];  // backward arc
-            }
-            
-            std::string constr_name = "arborescence_size_" + std::to_string(o);
-            model_.addConstr(arborescence_size == instance_.num_nodes - 1, constr_name);
-        }
-        
-        // Restricciones (4.32): y_o_ij + y_o_ji <= x_ij (acoplamiento arborescencia-arista)
-        for (int o = 0; o < instance_.num_nodes; ++o) {
-            for (int e = 0; e < instance_.num_edges; ++e) {
-                GRBLinExpr arborescence_arcs = y_vars_[o][2*e] + y_vars_[o][2*e + 1];
-                std::string constr_name = "arborescence_edge_" + std::to_string(o) + "_" + std::to_string(e);
-                model_.addConstr(arborescence_arcs <= x_vars_[e], constr_name);
-            }
-        }
-    }
-    
-    /**
-     * @brief Adds coupling constraints (4.30): flow-arborescence coupling
+     * @brief Adds coupling constraints (4.41): flow-edge coupling
+     * This is the KEY difference from flow-based: direct coupling without y variables
      */
     void add_coupling_constraints() 
     {
-        // Calcular suma de demandas por origen para Big-M dinámico
+        // Calculate sum of demands per origin for Big-M dynamic
         std::vector<double> total_demand_from(instance_.num_nodes, 0.0);
         for (const auto& req : instance_.requirements) {
             total_demand_from[req.origin] += req.weight;
         }
         
-        // Restricciones (4.30): f_o_ij + f_o_ji <= sumW * x_ij (acoplamiento flujo-arista)
+        // Constraints (4.41): f_o_ij + f_o_ji <= (sum W_o) * x_ij (flow-edge coupling)
+        // CRITICAL: Apply for ALL origins o ∈ V, even when W_o = 0
+        // When W_o = 0, the constraint becomes f_o_ij + f_o_ji <= 0, forcing both to 0
         for (int o = 0; o < instance_.num_nodes; ++o) {
             double sumW = total_demand_from[o];
-            if (sumW <= 0) continue;  // Skip origins with no demand
+            // NO skip: constraint applies to all origins as per formulation (4.41)
             
             for (int e = 0; e < instance_.num_edges; ++e) {
                 const Edge& edge = instance_.edges[e];
                 
-                // Una sola desigualdad: f_o_ij + f_o_ji <= sumW * x_ij
+                // One inequality: f_o_ij + f_o_ji <= sumW * x_ij
                 GRBLinExpr total_flow = f_vars_[o][2*e] + f_vars_[o][2*e + 1];
                 std::string constr_name = "flow_edge_" + std::to_string(o) + "_" + 
                                          std::to_string(edge.source) + "_" + 
@@ -1371,7 +1205,7 @@ private:
     {
         GRBLinExpr objective = 0;
         
-        // Objetivo Flow-Based (4.25): min Σ_o Σ_ij c_ij * f_o_ij
+        // Objective Flow-Based Relaxed (4.36): min Σ_o Σ_ij c_ij * f_o_ij
         for (int o = 0; o < instance_.num_nodes; ++o) {
             for (int e = 0; e < instance_.num_edges; ++e) {
                 const Edge& edge = instance_.edges[e];
@@ -1398,7 +1232,12 @@ private:
         result.is_optimal = (result.gurobi_status == GRB_OPTIMAL);
         result.num_nodes_explored = model_.get(GRB_DoubleAttr_NodeCount);
         
-        if (result.gurobi_status == GRB_OPTIMAL || result.gurobi_status == GRB_TIME_LIMIT) {
+        // CRITICAL FIX: Check SolCount before reading ObjVal to avoid exception
+        // when TIME_LIMIT is reached without finding a feasible solution
+        int sol_count = model_.get(GRB_IntAttr_SolCount);
+        
+        if (result.gurobi_status == GRB_OPTIMAL || 
+            (result.gurobi_status == GRB_TIME_LIMIT && sol_count > 0)) {
             result.objective_value = model_.get(GRB_DoubleAttr_ObjVal);
             result.upper_bound = model_.get(GRB_DoubleAttr_ObjVal);
             
@@ -1408,8 +1247,14 @@ private:
                     result.selected_edges.push_back(e);
                 }
             }
+        } else if (result.gurobi_status == GRB_TIME_LIMIT && sol_count == 0) {
+            // TIME_LIMIT reached without finding any feasible solution
+            result.objective_value = -1.0;
+            result.upper_bound = 0.0;
+            std::cerr << "Warning: TIME_LIMIT reached without finding a feasible solution" << std::endl;
         }
         
+        // Try to get bounds (available even without incumbent)
         if (result.gurobi_status == GRB_OPTIMAL || result.gurobi_status == GRB_TIME_LIMIT) {
             try {
                 result.lower_bound = model_.get(GRB_DoubleAttr_ObjBound);
@@ -1418,8 +1263,13 @@ private:
                 }
             } catch (GRBException& e) {
                 // Bound not available
-                result.lower_bound = result.objective_value;
-                result.mip_gap = 0.0;
+                if (sol_count > 0) {
+                    result.lower_bound = result.objective_value;
+                    result.mip_gap = 0.0;
+                } else {
+                    result.lower_bound = 0.0;
+                    result.mip_gap = 100.0;
+                }
             }
         }
         
@@ -1525,14 +1375,14 @@ void write_complete_solution(const std::string& filename,
 //=============================================================================
 
 /**
- * @brief Main function that solves an OCST instance using flow-based formulation
+ * @brief Main function that solves an OCST instance using flow-based relaxed formulation
  * @param input_file Path to input instance file
  * @param output_csv Path to output CSV file for results
  * @param time_limit Time limit in seconds (default: 3600)
  * @param heuristics Gurobi heuristics level (default: 0.5)
  * @return SolutionResult containing all metrics
  */
-SolutionResult solve_flow_based_instance(const std::string& input_file,
+SolutionResult solve_flow_based_relaxed_instance(const std::string& input_file,
                                        const std::string& output_csv = "",
                                        double time_limit = 3600.0,
                                        double heuristics = 0.5) 
@@ -1546,8 +1396,8 @@ SolutionResult solve_flow_based_instance(const std::string& input_file,
                   << instance.num_edges << " edges, " << instance.requirements.size() 
                   << " requirements" << std::endl;
         
-        // Solve using flow-based formulation
-        FlowBasedSolver solver(instance);
+        // Solve using flow-based relaxed formulation
+        FlowBasedRelaxedSolver solver(instance);
         SolutionResult result = solver.solve(time_limit, heuristics);
         
         // Print results
@@ -1629,7 +1479,7 @@ int main(int argc, char* argv[])
     double time_limit = (argc > 3) ? std::atof(argv[3]) : 3600.0;
     double heuristics = (argc > 4) ? std::atof(argv[4]) : 0.5;
     
-    SolutionResult result = solve_flow_based_instance(input_file, output_csv, time_limit, heuristics);
+    SolutionResult result = solve_flow_based_relaxed_instance(input_file, output_csv, time_limit, heuristics);
     
     return result.is_optimal ? 0 : 1;
 }
