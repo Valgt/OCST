@@ -1,0 +1,217 @@
+{
+  "schema_version": "1.0",
+  "name": "ocstpin11",
+  "tags": [
+    "quick_check",
+    "beasley"
+  ],
+  "graph": {
+    "nodes": 10,
+    "edges": [
+      {
+        "source": 0,
+        "destination": 2,
+        "cost": 984.0
+      },
+      {
+        "source": 0,
+        "destination": 4,
+        "cost": 333.0
+      },
+      {
+        "source": 0,
+        "destination": 6,
+        "cost": 793.0
+      },
+      {
+        "source": 0,
+        "destination": 8,
+        "cost": 477.0
+      },
+      {
+        "source": 0,
+        "destination": 9,
+        "cost": 806.0
+      },
+      {
+        "source": 1,
+        "destination": 4,
+        "cost": 128.0
+      },
+      {
+        "source": 1,
+        "destination": 5,
+        "cost": 624.0
+      },
+      {
+        "source": 1,
+        "destination": 6,
+        "cost": 18.0
+      },
+      {
+        "source": 1,
+        "destination": 7,
+        "cost": 296.0
+      },
+      {
+        "source": 2,
+        "destination": 3,
+        "cost": 111.0
+      },
+      {
+        "source": 2,
+        "destination": 4,
+        "cost": 628.0
+      },
+      {
+        "source": 2,
+        "destination": 6,
+        "cost": 587.0
+      },
+      {
+        "source": 2,
+        "destination": 7,
+        "cost": 596.0
+      },
+      {
+        "source": 2,
+        "destination": 8,
+        "cost": 851.0
+      },
+      {
+        "source": 2,
+        "destination": 9,
+        "cost": 699.0
+      },
+      {
+        "source": 3,
+        "destination": 7,
+        "cost": 689.0
+      },
+      {
+        "source": 4,
+        "destination": 5,
+        "cost": 297.0
+      },
+      {
+        "source": 4,
+        "destination": 6,
+        "cost": 944.0
+      },
+      {
+        "source": 5,
+        "destination": 7,
+        "cost": 691.0
+      },
+      {
+        "source": 5,
+        "destination": 8,
+        "cost": 650.0
+      },
+      {
+        "source": 5,
+        "destination": 9,
+        "cost": 538.0
+      },
+      {
+        "source": 6,
+        "destination": 8,
+        "cost": 26.0
+      },
+      {
+        "source": 6,
+        "destination": 9,
+        "cost": 279.0
+      },
+      {
+        "source": 8,
+        "destination": 9,
+        "cost": 925.0
+      }
+    ]
+  },
+  "requirements": [
+    {
+      "origin": 1,
+      "destination": 3,
+      "weight": 961.0
+    },
+    {
+      "origin": 1,
+      "destination": 4,
+      "weight": 226.0
+    },
+    {
+      "origin": 1,
+      "destination": 8,
+      "weight": 120.0
+    },
+    {
+      "origin": 1,
+      "destination": 9,
+      "weight": 880.0
+    },
+    {
+      "origin": 3,
+      "destination": 4,
+      "weight": 807.0
+    },
+    {
+      "origin": 3,
+      "destination": 5,
+      "weight": 315.0
+    },
+    {
+      "origin": 3,
+      "destination": 7,
+      "weight": 866.0
+    },
+    {
+      "origin": 3,
+      "destination": 8,
+      "weight": 26.0
+    },
+    {
+      "origin": 4,
+      "destination": 7,
+      "weight": 646.0
+    },
+    {
+      "origin": 4,
+      "destination": 8,
+      "weight": 528.0
+    },
+    {
+      "origin": 5,
+      "destination": 7,
+      "weight": 95.0
+    },
+    {
+      "origin": 5,
+      "destination": 8,
+      "weight": 393.0
+    },
+    {
+      "origin": 7,
+      "destination": 8,
+      "weight": 725.0
+    },
+    {
+      "origin": 7,
+      "destination": 9,
+      "weight": 96.0
+    },
+    {
+      "origin": 8,
+      "destination": 9,
+      "weight": 158.0
+    }
+  ],
+  "metadata": {
+    "probability": 0.6,
+    "source": "Beasley OR-Library",
+    "generator": "manual",
+    "description": "Converted from legacy .ocstpin format",
+    "created_at": "2025-11-02T20:57:31.298715Z"
+  }
+}

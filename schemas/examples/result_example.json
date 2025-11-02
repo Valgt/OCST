@@ -1,0 +1,71 @@
+{
+  "schema_version": "1.0",
+  "run_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "instance": {
+    "name": "ocstpin0",
+    "tags": ["beasley", "quick_check"]
+  },
+  "solver": {
+    "id": "path_based",
+    "version": "1.0",
+    "formulation": "path_based_formulation"
+  },
+  "config": {
+    "time_limit": 3600,
+    "tolerance": 1e-6,
+    "digest": "sha256:abc123def4567890123456789012345678901234567890123456789012345678"
+  },
+  "optimization_status": {
+    "code": "OPTIMAL",
+    "description": "Solution found and proven optimal",
+    "has_solution": true,
+    "has_bound": true
+  },
+  "results": {
+    "objective": 12345.67,
+    "primal_bound": 12345.67,
+    "dual_bound": 12340.0,
+    "gap": 0.000045,
+    "gap_percent": 0.0045,
+    "best_solution_time": 10.23
+  },
+  "runtime": {
+    "wall_clock_seconds": 12.34,
+    "cpu_seconds": 11.89,
+    "solver_nodes": 156,
+    "solver_iterations": 234,
+    "termination_reason": "optimal_solution_found"
+  },
+  "solution": {
+    "tree_edges": [
+      {"source": 0, "destination": 1},
+      {"source": 0, "destination": 2},
+      {"source": 1, "destination": 3},
+      {"source": 2, "destination": 4},
+      {"source": 3, "destination": 5},
+      {"source": 4, "destination": 6},
+      {"source": 5, "destination": 7},
+      {"source": 6, "destination": 8},
+      {"source": 7, "destination": 9}
+    ],
+    "tree_cost": 12345.67,
+    "is_spanning_tree": true,
+    "is_connected": true
+  },
+  "reproducibility": {
+    "git_commit": "abc1234",
+    "git_dirty": false,
+    "seed": 42,
+    "timestamp": "2025-11-02T12:34:56Z"
+  },
+  "artifacts": {
+    "log_file": "experiments/path_based/logs/ocstpin0_550e8400.jsonl",
+    "result_file": "experiments/path_based/results/ocstpin0_550e8400.json"
+  },
+  "solver_metadata": {
+    "lazy_cuts_added": 23,
+    "callback_invocations": 45,
+    "branching_decisions": 156
+  }
+}
+

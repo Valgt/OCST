@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ocst/result.schema.v1.json",
+  "title": "OCST Result Schema v1",
+  "description": "Schema for OCST solver execution results",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "run_uuid",
+    "instance",
+    "solver",
+    "config",
+    "optimization_status",
+    "results",
+    "runtime",
+    "reproducibility"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^1\\.0$",
+      "examples": ["1.0"]
+    },
+    "run_uuid": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUIDv4 identifying this run (for correlation with logs)"
+    },
+    "instance": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {"type": "string"},
+        "tags": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      },
+      "additionalProperties": false
+    },
+    "solver": {
+      "type": "object",
+      "required": ["id", "version", "formulation"],
+      "properties": {
+        "id": {"type": "string", "examples": ["path_based", "flow_based"]},
+        "version": {"type": "string"},
+        "formulation": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "config": {
+      "type": "object",
+      "required": ["digest"],
+      "properties": {
+        "time_limit": {"type": "number", "minimum": 0},
+        "tolerance": {"type": "number", "minimum": 0},
+        "digest": {"type": "string", "description": "SHA256 hash of config for reproducibility"}
+      },
+      "additionalProperties": true
+    },
+    "optimization_status": {
+      "type": "object",
+      "required": ["code", "description", "has_solution", "has_bound"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": ["OPTIMAL", "TIME_LIMIT", "INFEASIBLE", "UNBOUNDED", "SUBOPTIMAL", "INTERRUPTED", "ERROR"]
+        },
+        "description": {"type": "string"},
+        "has_solution": {"type": "boolean"},
+        "has_bound": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "results": {
+      "type": "object",
+      "required": ["objective", "primal_bound", "dual_bound"],
+      "properties": {
+        "objective": {"type": "number"},
+        "primal_bound": {"type": "number"},
+        "dual_bound": {"type": "number"},
+        "gap": {"type": "number", "minimum": 0},
+        "gap_percent": {"type": "number", "minimum": 0},
+        "best_solution_time": {"type": "number", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "runtime": {
+      "type": "object",
+      "required": ["wall_clock_seconds"],
+      "properties": {
+        "wall_clock_seconds": {"type": "number", "minimum": 0},
+        "cpu_seconds": {"type": "number", "minimum": 0},
+        "solver_nodes": {"type": "integer", "minimum": 0},
+        "solver_iterations": {"type": "integer", "minimum": 0},
+        "termination_reason": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "solution": {
+      "type": "object",
+      "description": "Solution tree (only present if optimization_status.has_solution == true)",
+      "required": ["tree_edges", "tree_cost"],
+      "properties": {
+        "tree_edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["source", "destination"],
+            "properties": {
+              "source": {"type": "integer", "minimum": 0},
+              "destination": {"type": "integer", "minimum": 0}
+            },
+            "additionalProperties": false
+          }
+        },
+        "tree_cost": {"type": "number"},
+        "is_spanning_tree": {"type": "boolean"},
+        "is_connected": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "reproducibility": {
+      "type": "object",
+      "required": ["git_commit", "git_dirty", "seed", "timestamp"],
+      "properties": {
+        "git_commit": {"type": "string"},
+        "git_dirty": {"type": "boolean"},
+        "seed": {"type": "integer"},
+        "timestamp": {"type": "string", "format": "date-time"}
+      },
+      "additionalProperties": false
+    },
+    "artifacts": {
+      "type": "object",
+      "properties": {
+        "log_file": {"type": "string"},
+        "result_file": {"type": "string"},
+        "warm_start": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "solver_metadata": {
+      "type": "object",
+      "description": "Formulation-specific metadata (flexible JSON object)",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}
+

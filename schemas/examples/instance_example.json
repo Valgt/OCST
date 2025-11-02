@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "name": "ocstpin0",
+  "tags": ["beasley", "quick_check"],
+  "graph": {
+    "nodes": 10,
+    "edges": [
+      {"source": 2, "destination": 0, "cost": 7.0},
+      {"source": 3, "destination": 1, "cost": 7.0},
+      {"source": 4, "destination": 1, "cost": 16.0},
+      {"source": 5, "destination": 0, "cost": 3.0},
+      {"source": 5, "destination": 1, "cost": 8.0},
+      {"source": 5, "destination": 3, "cost": 5.0},
+      {"source": 5, "destination": 4, "cost": 19.0},
+      {"source": 6, "destination": 0, "cost": 19.0},
+      {"source": 6, "destination": 3, "cost": 3.0},
+      {"source": 6, "destination": 4, "cost": 6.0},
+      {"source": 7, "destination": 2, "cost": 9.0},
+      {"source": 7, "destination": 4, "cost": 18.0},
+      {"source": 7, "destination": 5, "cost": 6.0},
+      {"source": 8, "destination": 0, "cost": 11.0},
+      {"source": 8, "destination": 1, "cost": 18.0},
+      {"source": 8, "destination": 2, "cost": 16.0},
+      {"source": 8, "destination": 5, "cost": 19.0},
+      {"source": 8, "destination": 6, "cost": 1.0},
+      {"source": 9, "destination": 1, "cost": 9.0}
+    ]
+  },
+  "requirements": [
+    {"origin": 0, "destination": 3, "weight": 1.0},
+    {"origin": 1, "destination": 7, "weight": 1.0},
+    {"origin": 2, "destination": 4, "weight": 1.0},
+    {"origin": 3, "destination": 5, "weight": 1.0},
+    {"origin": 4, "destination": 6, "weight": 1.0},
+    {"origin": 5, "destination": 7, "weight": 1.0},
+    {"origin": 6, "destination": 8, "weight": 1.0},
+    {"origin": 7, "destination": 9, "weight": 1.0},
+    {"origin": 8, "destination": 0, "weight": 1.0},
+    {"origin": 9, "destination": 1, "weight": 1.0}
+  ],
+  "metadata": {
+    "probability": 0.3,
+    "source": "Beasley OR-Library",
+    "generator": "manual",
+    "description": "Small test instance for quick validation"
+  }
+}
+

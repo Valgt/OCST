@@ -1,0 +1,11 @@
+{
+  "time_limit": 3600,
+  "tolerance": 1e-6,
+  "branching_strategy": "strong",
+  "callback_frequency": 1,
+  "mip_gap": 0.0,
+  "threads": 1,
+  "presolve": true,
+  "output_flag": false
+}
+
