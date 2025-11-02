@@ -1,5 +1,0 @@
-instance_name,instance_group,algorithm_name,algorithm_description,num_nodes,num_edges,num_requirements,probability,optimal_known,best_found,is_optimal,runtime_seconds,nodes_explored,lazy_constraints,cutting_planes,mip_gap_percent,gurobi_status,time_limit,heuristics_level,algorithm_version
-ocstpin0,ocstpin,path_based_formulation,Path-Based MILP Formulation,10,24,15,0.0,1340,1340,True,0.012409210205078125,1,4,0,0.0,-1,30,0.5,1.0
-ocstpin0,ocstpin,flow_based_formulation,Flow-Based MILP Formulation,10,24,15,0.0,1340,1340,True,0.0500180721282959,14,8,10,0.0,-1,30,0.5,1.0
-ocstpin0,ocstpin,flow_based_relaxed_formulation,Flow-Based Relaxed MILP Formulation,10,24,15,0.0,1340,1340,True,0.019446134567260742,1,9,45,0.0,-1,30,0.5,1.0
-ocstpin0,ocstpin,rooted_tree_based_formulation,Rooted Tree-Based MILP Formulation,10,24,15,0.0,1340,1340,True,5.023761749267578,934,0,0,0.0,-1,30,0.5,1.0
