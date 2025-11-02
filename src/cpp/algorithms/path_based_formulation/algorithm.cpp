@@ -11,6 +11,9 @@
 #include <iomanip>
 #include <limits>
 
+// Unified instance loader (supports both legacy and JSON formats)
+#include "include/instance_loader.h"
+
 // Gurobi integration
 #include <gurobi_c++.h>
 
@@ -26,81 +29,11 @@
 // DATA STRUCTURES
 //=============================================================================
 
-/**
- * @brief Represents a graph edge with source, destination and cost
- */
-struct Edge 
-{
-    int source;
-    int destination;
-    double cost;
-    
-    Edge(int s, int d, double c) : source(s), destination(d), cost(c) {}
-};
-
-/**
- * @brief Represents a demand requirement between origin and destination
- */
-struct Requirement 
-{
-    int origin;
-    int destination;
-    double weight;
-    
-    Requirement(int o, int d, double w) : origin(o), destination(d), weight(w) {}
-};
-
-/**
- * @brief OCST problem instance data
- */
-struct OCSTInstance 
-{
-    int num_nodes;
-    int num_edges;
-    double probability;
-    std::vector<Edge> edges;
-    std::vector<Requirement> requirements;
-    
-    // Derived data structures for optimization
-    std::vector<std::vector<int>> adjacency_matrix;  // -1 if no edge, edge_index otherwise
-    std::unordered_map<std::string, int> edge_index_map;  // "(i,j)" -> edge index
-    
-    OCSTInstance(int n, double prob) : num_nodes(n), probability(prob) 
-    {
-        num_edges = 0;
-        adjacency_matrix = std::vector<std::vector<int>>(n, std::vector<int>(n, -1));
-    }
-    
-    void add_edge(int source, int dest, double cost) 
-    {
-        edges.emplace_back(source, dest, cost);
-        
-        // Update adjacency matrix (undirected graph)
-        adjacency_matrix[source][dest] = num_edges;
-        adjacency_matrix[dest][source] = num_edges;
-        
-        // Update edge index map
-        edge_index_map[std::to_string(source) + "," + std::to_string(dest)] = num_edges;
-        edge_index_map[std::to_string(dest) + "," + std::to_string(source)] = num_edges;
-        
-        num_edges++;
-    }
-    
-    void add_requirement(int origin, int dest, double weight) 
-    {
-        requirements.emplace_back(origin, dest, weight);
-    }
-    
-    bool has_edge(int i, int j) const 
-    {
-        return adjacency_matrix[i][j] != -1;
-    }
-    
-    int get_edge_index(int i, int j) const 
-    {
-        return adjacency_matrix[i][j];
-    }
-};
+// Data structures are now in include/common_types.h
+// Using aliases for backward compatibility with existing code
+using Edge = ocst::path_based::Edge;
+using Requirement = ocst::path_based::Requirement;
+using OCSTInstance = ocst::path_based::OCSTInstance;
 
 //=============================================================================
 // MAX-FLOW MIN-CUT FOR FRACTIONAL SEC SEPARATION
@@ -1258,55 +1191,13 @@ private:
  * @param filename Path to the instance file
  * @return Parsed OCSTInstance object
  */
+// Legacy parse_instance_file is now replaced by unified loader
+// Keeping this as a wrapper for backward compatibility
+// NOTE: This function is deprecated - use ocst::path_based::load_instance() instead
 OCSTInstance parse_instance_file(const std::string& filename) 
 {
-    std::ifstream file(filename);
-    if (!file.is_open()) {
-        throw std::runtime_error("Cannot open file: " + filename);
-    }
-    
-    std::string line;
-    
-    // Read first line: n m probability
-    std::getline(file, line);
-    std::istringstream iss(line);
-    int n, m;
-    double probability;
-    iss >> n >> m >> probability;
-    
-    OCSTInstance instance(n, probability);
-    
-    // Read edges
-    for (int i = 0; i < m; ++i) {
-        std::getline(file, line);
-        std::istringstream edge_iss(line);
-        int u, v;
-        double cost;
-        edge_iss >> u >> v >> cost;
-        instance.add_edge(u, v, cost);
-    }
-    
-    // Read number of requirements
-    std::getline(file, line);
-    int num_requirements = std::stoi(line);
-    
-    // Read requirements
-    for (int i = 0; i < num_requirements; ++i) {
-        std::getline(file, line);
-        std::istringstream req_iss(line);
-        int origin, dest;
-        double weight;
-        req_iss >> origin >> dest >> weight;
-        instance.add_requirement(origin, dest, weight);
-    }
-    
-    file.close();
-    
-    // CRITICAL FIX: Remove artificial connectivity requirements
-    // These don't work correctly in path-based formulation and can cause issues
-    // Connectivity will be ensured by proper SEC constraints instead
-    
-    return instance;
+    // Use unified loader which automatically detects format (legacy or JSON)
+    return ocst::path_based::load_instance(filename);
 }
 
 /**
@@ -1361,9 +1252,9 @@ SolutionResult solve_path_based_instance(const std::string& input_file,
                                        double heuristics = 0.5) 
 {
     try {
-        // Parse instance
+        // Parse instance using unified loader (supports both legacy .ocstpin and JSON formats)
         std::cout << "Parsing instance: " << input_file << std::endl;
-        OCSTInstance instance = parse_instance_file(input_file);
+        OCSTInstance instance = ocst::path_based::load_instance(input_file);
         
         std::cout << "Instance stats: " << instance.num_nodes << " nodes, " 
                   << instance.num_edges << " edges, " << instance.requirements.size() 
@@ -1428,7 +1319,7 @@ SolutionResult solve_path_based_instance(const std::string& input_file,
         return result;
         
     } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
+        std::cerr << "Error parsing instance: " << e.what() << std::endl;
         SolutionResult error_result;
         error_result.gurobi_status = -1;
         return error_result;
