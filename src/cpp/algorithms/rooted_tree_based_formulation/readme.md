@@ -1,7 +1,0 @@
-# Rooted Tree-Based Formulation
-
-
-
-
-
-
