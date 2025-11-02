@@ -1,0 +1,134 @@
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                     OCST COMPARATIVE EXPERIMENT ANALYSIS                     ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+📊 EXPERIMENT INFORMATION
+================================================================================
+CSV File: experimento_comparative_formulations_complete_20251028_005649.csv
+Total Executions: 4
+Unique Instances: 1
+Algorithms: flow_based_formulation, flow_based_relaxed_formulation, path_based_formulation, rooted_tree_based_formulation
+
+
+📈 OVERALL STATISTICS BY ALGORITHM
+================================================================================
+
+flow_based_formulation:
+────────────────────────────────────────────────────────────────────────────────
+  Instances:        1
+  Optimal:          1/1 (100.0%)
+  Avg Runtime:      0.051s
+  Median Runtime:   0.051s
+  Min Runtime:      0.051s
+  Max Runtime:      0.051s
+  Total Runtime:    0.051s
+  Avg Nodes:        14.0
+  Median Nodes:     14.0
+  Max Nodes:        14
+  Avg Lazy Cuts:    8.0
+  Avg Frac Cuts:    10.0
+  Avg Gap:          0.0000%
+  Max Gap:          0.0000%
+
+flow_based_relaxed_formulation:
+────────────────────────────────────────────────────────────────────────────────
+  Instances:        1
+  Optimal:          1/1 (100.0%)
+  Avg Runtime:      0.020s
+  Median Runtime:   0.020s
+  Min Runtime:      0.020s
+  Max Runtime:      0.020s
+  Total Runtime:    0.020s
+  Avg Nodes:        1.0
+  Median Nodes:     1.0
+  Max Nodes:        1
+  Avg Lazy Cuts:    9.0
+  Avg Frac Cuts:    45.0
+  Avg Gap:          0.0000%
+  Max Gap:          0.0000%
+
+path_based_formulation:
+────────────────────────────────────────────────────────────────────────────────
+  Instances:        1
+  Optimal:          1/1 (100.0%)
+  Avg Runtime:      0.012s
+  Median Runtime:   0.012s
+  Min Runtime:      0.012s
+  Max Runtime:      0.012s
+  Total Runtime:    0.012s
+  Avg Nodes:        1.0
+  Median Nodes:     1.0
+  Max Nodes:        1
+  Avg Lazy Cuts:    4.0
+  Avg Frac Cuts:    0.0
+  Avg Gap:          0.0000%
+  Max Gap:          0.0000%
+
+rooted_tree_based_formulation:
+────────────────────────────────────────────────────────────────────────────────
+  Instances:        1
+  Optimal:          1/1 (100.0%)
+  Avg Runtime:      4.888s
+  Median Runtime:   4.888s
+  Min Runtime:      4.888s
+  Max Runtime:      4.888s
+  Total Runtime:    4.888s
+  Avg Nodes:        934.0
+  Median Nodes:     934.0
+  Max Nodes:        934
+  Avg Lazy Cuts:    0.0
+  Avg Frac Cuts:    0.0
+  Avg Gap:          0.0000%
+  Max Gap:          0.0000%
+
+
+📊 COMPARATIVE SUMMARY TABLE
+================================================================================
+┌────────────────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┐
+│ Metric                     │ FlowRlxd │ FlowBase │ PathBase │ RootTree │   Best   │
+├────────────────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┤
+│ Avg Runtime (s)            │    0.020 │    0.051 │    0.012 │    4.888 │       PB │
+│ Avg Nodes Explored         │      1.0 │     14.0 │      1.0 │    934.0 │      FBR │
+│ Avg Lazy Constraints       │      9.0 │      8.0 │      4.0 │      0.0 │    -     │
+│ Avg Fractional Cuts        │     45.0 │     10.0 │      0.0 │      0.0 │    -     │
+│ Optimal Solutions (%)      │    100.0 │    100.0 │    100.0 │    100.0 │    -     │
+└────────────────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┘
+
+
+✅ CONSISTENCY CHECK
+================================================================================
+✓ All algorithms found the same optimal values for all instances!
+
+
+🏆 FASTEST ALGORITHM PER INSTANCE
+================================================================================
+
+Wins per algorithm:
+  path_based_formulation: 1/1 (100.0%)
+
+
+⏱️  TOP 10 SLOWEST INSTANCES (by maximum runtime)
+================================================================================
+
+1. ocstpin0 (max: 4.888s)
+   flow_based_formulation                  :    0.051s  [    14 nodes]
+   flow_based_relaxed_formulation          :    0.020s  [     1 nodes]
+   path_based_formulation                  :    0.012s  [     1 nodes]
+   rooted_tree_based_formulation           :    4.888s  [   934 nodes]
+
+
+📏 PERFORMANCE BY INSTANCE SIZE
+================================================================================
+
+Average runtime by (n, m):
+
+n=10, m=24:
+  flow_based_formulation                  : 0.051s (avg of 1 instances)
+  flow_based_relaxed_formulation          : 0.020s (avg of 1 instances)
+  path_based_formulation                  : 0.012s (avg of 1 instances)
+  rooted_tree_based_formulation           : 4.888s (avg of 1 instances)
+
+================================================================================
+                    Analysis completed: 2025-10-28 00:57:03                     
+================================================================================

@@ -1,0 +1,252 @@
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                     OCST COMPARATIVE EXPERIMENT ANALYSIS                     ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+📊 EXPERIMENT INFORMATION
+================================================================================
+CSV File: experimento_comparative_formulations_20251028_002053.csv
+Total Executions: 100
+Unique Instances: 25
+Algorithms: flow_based_formulation, flow_based_relaxed_formulation, path_based_formulation, rooted_tree_based_formulation
+
+
+📈 OVERALL STATISTICS BY ALGORITHM
+================================================================================
+
+flow_based_formulation:
+────────────────────────────────────────────────────────────────────────────────
+  Instances:        25
+  Optimal:          25/25 (100.0%)
+  Avg Runtime:      1.012s
+  Median Runtime:   0.083s
+  Min Runtime:      0.012s
+  Max Runtime:      13.343s
+  Total Runtime:    25.295s
+  Avg Nodes:        569.9
+  Median Nodes:     55.0
+  Max Nodes:        6718
+  Avg Lazy Cuts:    10.1
+  Avg Frac Cuts:    45.1
+  Avg Gap:          0.0000%
+  Max Gap:          0.0000%
+
+flow_based_relaxed_formulation:
+────────────────────────────────────────────────────────────────────────────────
+  Instances:        25
+  Optimal:          25/25 (100.0%)
+  Avg Runtime:      0.623s
+  Median Runtime:   0.031s
+  Min Runtime:      0.009s
+  Max Runtime:      10.240s
+  Total Runtime:    15.568s
+  Avg Nodes:        199.9
+  Median Nodes:     1.0
+  Max Nodes:        3665
+  Avg Lazy Cuts:    9.8
+  Avg Frac Cuts:    266.3
+  Avg Gap:          0.0008%
+  Max Gap:          0.0074%
+
+path_based_formulation:
+────────────────────────────────────────────────────────────────────────────────
+  Instances:        25
+  Optimal:          25/25 (100.0%)
+  Avg Runtime:      0.679s
+  Median Runtime:   0.042s
+  Min Runtime:      0.007s
+  Max Runtime:      14.089s
+  Total Runtime:    16.969s
+  Avg Nodes:        305.5
+  Median Nodes:     2.0
+  Max Nodes:        6832
+  Avg Lazy Cuts:    17.6
+  Avg Frac Cuts:    0.0
+  Avg Gap:          0.0000%
+  Max Gap:          0.0000%
+
+rooted_tree_based_formulation:
+────────────────────────────────────────────────────────────────────────────────
+  Instances:        25
+  Optimal:          0/25 (0.0%)
+  Avg Runtime:      31.481s
+  Median Runtime:   30.011s
+  Min Runtime:      0.039s
+  Max Runtime:      60.011s
+  Total Runtime:    787.035s
+  Avg Nodes:        1483.8
+  Median Nodes:     1789.0
+  Max Nodes:        3641
+  Avg Lazy Cuts:    0.0
+  Avg Frac Cuts:    0.0
+  Avg Gap:          100.0000%
+  Max Gap:          100.0000%
+
+
+📊 COMPARATIVE SUMMARY TABLE
+================================================================================
+┌────────────────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┐
+│ Metric                     │ FlowRlxd │ FlowBase │ PathBase │ RootTree │   Best   │
+├────────────────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┤
+│ Avg Runtime (s)            │    0.623 │    1.012 │    0.679 │   31.481 │      FBR │
+│ Avg Nodes Explored         │    199.9 │    569.9 │    305.5 │   1483.8 │      FBR │
+│ Avg Lazy Constraints       │      9.8 │     10.1 │     17.6 │      0.0 │    -     │
+│ Avg Fractional Cuts        │    266.3 │     45.1 │      0.0 │      0.0 │    -     │
+│ Optimal Solutions (%)      │    100.0 │    100.0 │    100.0 │      0.0 │    -     │
+└────────────────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┘
+
+
+✅ CONSISTENCY CHECK
+================================================================================
+✓ All algorithms found the same optimal values for all instances!
+
+
+🏆 FASTEST ALGORITHM PER INSTANCE
+================================================================================
+
+Wins per algorithm:
+  path_based_formulation: 18/25 (72.0%)
+  flow_based_relaxed_formulation: 5/25 (20.0%)
+  flow_based_formulation: 2/25 (8.0%)
+
+
+⏱️  TOP 10 SLOWEST INSTANCES (by maximum runtime)
+================================================================================
+
+1. orst2 (max: 60.011s)
+   flow_based_formulation                  :    0.154s  [    82 nodes]
+   flow_based_relaxed_formulation          :    0.117s  [     9 nodes]
+   path_based_formulation                  :    0.042s  [     5 nodes]
+   rooted_tree_based_formulation           :   60.011s  [  1959 nodes]
+
+2. orst6 (max: 60.011s)
+   flow_based_formulation                  :    8.635s  [  5382 nodes]
+   flow_based_relaxed_formulation          :   10.240s  [  3665 nodes]
+   path_based_formulation                  :   14.089s  [  6832 nodes]
+   rooted_tree_based_formulation           :   60.011s  [  2283 nodes]
+
+3. orst8 (max: 60.011s)
+   flow_based_formulation                  :    0.626s  [   361 nodes]
+   flow_based_relaxed_formulation          :    0.114s  [    24 nodes]
+   path_based_formulation                  :    0.080s  [    16 nodes]
+   rooted_tree_based_formulation           :   60.011s  [  1885 nodes]
+
+4. orst5 (max: 60.011s)
+   flow_based_formulation                  :    0.371s  [   244 nodes]
+   flow_based_relaxed_formulation          :    0.112s  [     3 nodes]
+   path_based_formulation                  :    0.058s  [     1 nodes]
+   rooted_tree_based_formulation           :   60.011s  [  1976 nodes]
+
+5. orst4 (max: 60.010s)
+   flow_based_formulation                  :    0.200s  [   156 nodes]
+   flow_based_relaxed_formulation          :    0.165s  [    40 nodes]
+   path_based_formulation                  :    0.066s  [    30 nodes]
+   rooted_tree_based_formulation           :   60.010s  [  2678 nodes]
+
+6. orst7 (max: 60.010s)
+   flow_based_formulation                  :   13.343s  [  6718 nodes]
+   flow_based_relaxed_formulation          :    3.542s  [   691 nodes]
+   path_based_formulation                  :    1.529s  [   302 nodes]
+   rooted_tree_based_formulation           :   60.010s  [  1429 nodes]
+
+7. orst1 (max: 60.010s)
+   flow_based_formulation                  :    0.331s  [   245 nodes]
+   flow_based_relaxed_formulation          :    0.122s  [     1 nodes]
+   path_based_formulation                  :    0.257s  [    74 nodes]
+   rooted_tree_based_formulation           :   60.010s  [  1951 nodes]
+
+8. orst0 (max: 60.010s)
+   flow_based_formulation                  :    0.145s  [    46 nodes]
+   flow_based_relaxed_formulation          :    0.031s  [     1 nodes]
+   path_based_formulation                  :    0.048s  [     2 nodes]
+   rooted_tree_based_formulation           :   60.010s  [  1789 nodes]
+
+9. orst3 (max: 60.010s)
+   flow_based_formulation                  :    0.413s  [   433 nodes]
+   flow_based_relaxed_formulation          :    0.152s  [    61 nodes]
+   path_based_formulation                  :    0.216s  [   160 nodes]
+   rooted_tree_based_formulation           :   60.010s  [  3641 nodes]
+
+10. orst9 (max: 60.010s)
+   flow_based_formulation                  :    0.251s  [   125 nodes]
+   flow_based_relaxed_formulation          :    0.463s  [   459 nodes]
+   path_based_formulation                  :    0.276s  [   165 nodes]
+   rooted_tree_based_formulation           :   60.010s  [  2470 nodes]
+
+
+📏 PERFORMANCE BY INSTANCE SIZE
+================================================================================
+
+Average runtime by (n, m):
+
+n=0, m=0:
+  rooted_tree_based_formulation           : 31.481s (avg of 25 instances)
+
+n=10, m=11:
+  flow_based_formulation                  : 0.021s (avg of 1 instances)
+  flow_based_relaxed_formulation          : 0.010s (avg of 1 instances)
+  path_based_formulation                  : 0.007s (avg of 1 instances)
+
+n=10, m=12:
+  flow_based_formulation                  : 0.012s (avg of 1 instances)
+  flow_based_relaxed_formulation          : 0.009s (avg of 1 instances)
+  path_based_formulation                  : 0.007s (avg of 1 instances)
+
+n=10, m=13:
+  flow_based_formulation                  : 0.020s (avg of 1 instances)
+  flow_based_relaxed_formulation          : 0.011s (avg of 1 instances)
+  path_based_formulation                  : 0.008s (avg of 1 instances)
+
+n=10, m=15:
+  flow_based_formulation                  : 0.018s (avg of 1 instances)
+  flow_based_relaxed_formulation          : 0.012s (avg of 1 instances)
+  path_based_formulation                  : 0.008s (avg of 1 instances)
+
+n=10, m=16:
+  flow_based_formulation                  : 0.021s (avg of 2 instances)
+  flow_based_relaxed_formulation          : 0.029s (avg of 2 instances)
+  path_based_formulation                  : 0.013s (avg of 2 instances)
+
+n=10, m=17:
+  flow_based_formulation                  : 0.041s (avg of 1 instances)
+  flow_based_relaxed_formulation          : 0.020s (avg of 1 instances)
+  path_based_formulation                  : 0.008s (avg of 1 instances)
+
+n=10, m=18:
+  flow_based_formulation                  : 0.017s (avg of 1 instances)
+  flow_based_relaxed_formulation          : 0.011s (avg of 1 instances)
+  path_based_formulation                  : 0.009s (avg of 1 instances)
+
+n=10, m=23:
+  flow_based_formulation                  : 0.112s (avg of 2 instances)
+  flow_based_relaxed_formulation          : 0.050s (avg of 2 instances)
+  path_based_formulation                  : 0.044s (avg of 2 instances)
+
+n=10, m=24:
+  flow_based_formulation                  : 0.067s (avg of 2 instances)
+  flow_based_relaxed_formulation          : 0.021s (avg of 2 instances)
+  path_based_formulation                  : 0.033s (avg of 2 instances)
+
+n=10, m=29:
+  flow_based_formulation                  : 0.041s (avg of 1 instances)
+  flow_based_relaxed_formulation          : 0.015s (avg of 1 instances)
+  path_based_formulation                  : 0.010s (avg of 1 instances)
+
+n=10, m=45:
+  flow_based_formulation                  : 2.447s (avg of 10 instances)
+  flow_based_relaxed_formulation          : 1.506s (avg of 10 instances)
+  path_based_formulation                  : 1.666s (avg of 10 instances)
+
+n=15, m=25:
+  flow_based_formulation                  : 0.178s (avg of 1 instances)
+  flow_based_relaxed_formulation          : 0.194s (avg of 1 instances)
+  path_based_formulation                  : 0.048s (avg of 1 instances)
+
+n=15, m=37:
+  flow_based_formulation                  : 0.077s (avg of 1 instances)
+  flow_based_relaxed_formulation          : 0.026s (avg of 1 instances)
+  path_based_formulation                  : 0.022s (avg of 1 instances)
+
+================================================================================
+                    Analysis completed: 2025-10-28 00:36:00                     
+================================================================================
