@@ -5,10 +5,10 @@ analysis:
 execution:
   executable_path: build/executables/path_based_formulation_original
   heuristics_level: 0.5
-  time_limit: 60
+  time_limit: 60  # Default fallback
   time_limits_by_group:
-    ocstpin: 30
-    orst: 60
+    ocstpin: 30    # Small instances: 30 seconds
+    orst: 60       # Small-medium instances: 1 minute
 experiment:
   algorithm: Path-Based MILP Formulation (Original Baseline)
   description: Baseline experiment using original path-based formulation before standardization. This serves as the golden reference.
@@ -48,3 +48,4 @@ output:
   - algorithm_version
   csv_filename_template: experimento_{algorithm}_{timestamp}.csv
   results_directory: experiments/results
+
