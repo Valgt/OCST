@@ -1,0 +1,317 @@
+{
+  "schema_version": "1.0",
+  "name": "orst1",
+  "tags": [
+    "quick_check",
+    "orst"
+  ],
+  "graph": {
+    "nodes": 10,
+    "edges": [
+      {
+        "source": 0,
+        "destination": 1,
+        "cost": 1.0
+      },
+      {
+        "source": 0,
+        "destination": 2,
+        "cost": 1.0
+      },
+      {
+        "source": 0,
+        "destination": 3,
+        "cost": 1.0
+      },
+      {
+        "source": 0,
+        "destination": 4,
+        "cost": 1.0
+      },
+      {
+        "source": 0,
+        "destination": 5,
+        "cost": 1.0
+      },
+      {
+        "source": 0,
+        "destination": 6,
+        "cost": 1.0
+      },
+      {
+        "source": 0,
+        "destination": 7,
+        "cost": 1.0
+      },
+      {
+        "source": 0,
+        "destination": 8,
+        "cost": 1.0
+      },
+      {
+        "source": 0,
+        "destination": 9,
+        "cost": 1.0
+      },
+      {
+        "source": 1,
+        "destination": 2,
+        "cost": 1.0
+      },
+      {
+        "source": 1,
+        "destination": 3,
+        "cost": 1.0
+      },
+      {
+        "source": 1,
+        "destination": 4,
+        "cost": 1.0
+      },
+      {
+        "source": 1,
+        "destination": 5,
+        "cost": 1.0
+      },
+      {
+        "source": 1,
+        "destination": 6,
+        "cost": 1.0
+      },
+      {
+        "source": 1,
+        "destination": 7,
+        "cost": 1.0
+      },
+      {
+        "source": 1,
+        "destination": 8,
+        "cost": 1.0
+      },
+      {
+        "source": 1,
+        "destination": 9,
+        "cost": 1.0
+      },
+      {
+        "source": 2,
+        "destination": 3,
+        "cost": 1.0
+      },
+      {
+        "source": 2,
+        "destination": 4,
+        "cost": 1.0
+      },
+      {
+        "source": 2,
+        "destination": 5,
+        "cost": 1.0
+      },
+      {
+        "source": 2,
+        "destination": 6,
+        "cost": 1.0
+      },
+      {
+        "source": 2,
+        "destination": 7,
+        "cost": 1.0
+      },
+      {
+        "source": 2,
+        "destination": 8,
+        "cost": 1.0
+      },
+      {
+        "source": 2,
+        "destination": 9,
+        "cost": 1.0
+      },
+      {
+        "source": 3,
+        "destination": 4,
+        "cost": 1.0
+      },
+      {
+        "source": 3,
+        "destination": 5,
+        "cost": 1.0
+      },
+      {
+        "source": 3,
+        "destination": 6,
+        "cost": 1.0
+      },
+      {
+        "source": 3,
+        "destination": 7,
+        "cost": 1.0
+      },
+      {
+        "source": 3,
+        "destination": 8,
+        "cost": 1.0
+      },
+      {
+        "source": 3,
+        "destination": 9,
+        "cost": 1.0
+      },
+      {
+        "source": 4,
+        "destination": 5,
+        "cost": 1.0
+      },
+      {
+        "source": 4,
+        "destination": 6,
+        "cost": 1.0
+      },
+      {
+        "source": 4,
+        "destination": 7,
+        "cost": 1.0
+      },
+      {
+        "source": 4,
+        "destination": 8,
+        "cost": 1.0
+      },
+      {
+        "source": 4,
+        "destination": 9,
+        "cost": 1.0
+      },
+      {
+        "source": 5,
+        "destination": 6,
+        "cost": 1.0
+      },
+      {
+        "source": 5,
+        "destination": 7,
+        "cost": 1.0
+      },
+      {
+        "source": 5,
+        "destination": 8,
+        "cost": 1.0
+      },
+      {
+        "source": 5,
+        "destination": 9,
+        "cost": 1.0
+      },
+      {
+        "source": 6,
+        "destination": 7,
+        "cost": 1.0
+      },
+      {
+        "source": 6,
+        "destination": 8,
+        "cost": 1.0
+      },
+      {
+        "source": 6,
+        "destination": 9,
+        "cost": 1.0
+      },
+      {
+        "source": 7,
+        "destination": 8,
+        "cost": 1.0
+      },
+      {
+        "source": 7,
+        "destination": 9,
+        "cost": 1.0
+      },
+      {
+        "source": 8,
+        "destination": 9,
+        "cost": 1.0
+      }
+    ]
+  },
+  "requirements": [
+    {
+      "origin": 0,
+      "destination": 1,
+      "weight": 34524.0
+    },
+    {
+      "origin": 0,
+      "destination": 5,
+      "weight": 17954.0
+    },
+    {
+      "origin": 0,
+      "destination": 6,
+      "weight": 94587.0
+    },
+    {
+      "origin": 1,
+      "destination": 2,
+      "weight": 59420.0
+    },
+    {
+      "origin": 1,
+      "destination": 3,
+      "weight": 6719.0
+    },
+    {
+      "origin": 1,
+      "destination": 4,
+      "weight": 26049.0
+    },
+    {
+      "origin": 1,
+      "destination": 6,
+      "weight": 23877.0
+    },
+    {
+      "origin": 2,
+      "destination": 5,
+      "weight": 57913.0
+    },
+    {
+      "origin": 2,
+      "destination": 6,
+      "weight": 46944.0
+    },
+    {
+      "origin": 2,
+      "destination": 7,
+      "weight": 99818.0
+    },
+    {
+      "origin": 2,
+      "destination": 9,
+      "weight": 25149.0
+    },
+    {
+      "origin": 4,
+      "destination": 8,
+      "weight": 90080.0
+    },
+    {
+      "origin": 6,
+      "destination": 7,
+      "weight": 67413.0
+    },
+    {
+      "origin": 7,
+      "destination": 8,
+      "weight": 70654.0
+    }
+  ],
+  "metadata": {
+    "probability": 0.3,
+    "source": "ORST Instances",
+    "generator": "manual",
+    "description": "Converted from legacy ORST format",
+    "created_at": "2025-11-02T21:08:27.878206Z"
+  }
+}

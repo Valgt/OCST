@@ -118,8 +118,14 @@ def determine_tags(instance_name: str, num_nodes: int) -> List[str]:
         tags.append("quick_check")
     
     # Extract base name for additional tags
-    if "ocstpin" in instance_name.lower():
+    instance_lower = instance_name.lower()
+    if "ocstpin" in instance_lower:
         tags.append("beasley")
+    elif "orst" in instance_lower:
+        if "big" in instance_lower:
+            tags.append("orst_big")
+        else:
+            tags.append("orst")
     
     return tags
 
@@ -140,12 +146,26 @@ def convert_to_json(input_file: str, output_file: Optional[str] = None,
     
     # Extract instance name from filename
     instance_name = Path(input_file).stem
-    if instance_name.startswith("ocstpin"):
-        instance_name = instance_name  # Keep as is
     
     # Determine tags if not provided
     if tags is None:
         tags = determine_tags(instance_name, parsed["nodes"])
+    
+    # Determine source based on instance name
+    instance_lower = instance_name.lower()
+    if "ocstpin" in instance_lower:
+        source = "Beasley OR-Library"
+        description = "Converted from legacy .ocstpin format"
+    elif "orst" in instance_lower:
+        if "big" in instance_lower:
+            source = "ORST Big Instances"
+            description = "Converted from legacy ORST Big format"
+        else:
+            source = "ORST Instances"
+            description = "Converted from legacy ORST format"
+    else:
+        source = "Unknown"
+        description = "Converted from legacy format"
     
     # Build JSON structure according to schema
     json_data = {
@@ -159,9 +179,9 @@ def convert_to_json(input_file: str, output_file: Optional[str] = None,
         "requirements": parsed["requirements"],
         "metadata": {
             "probability": parsed["probability"],
-            "source": "Beasley OR-Library",
+            "source": source,
             "generator": "manual",
-            "description": f"Converted from legacy .ocstpin format",
+            "description": description,
             "created_at": datetime.utcnow().isoformat() + "Z"
         }
     }
@@ -182,35 +202,47 @@ def convert_to_json(input_file: str, output_file: Optional[str] = None,
 
 def batch_convert(input_dir: str, output_dir: Optional[str] = None):
     """
-    Convert all .ocstpin files in a directory.
+    Convert all instance files (.ocstpin, orst*, orstBig*) in a directory.
     
     Args:
-        input_dir: Directory containing .ocstpin files
+        input_dir: Directory containing instance files
         output_dir: Output directory (default: data/input/)
     """
     if output_dir is None:
         output_dir = "data/input"
     
     input_path = Path(input_dir)
-    ocstpin_files = list(input_path.glob("*.ocstpin")) + list(input_path.glob("ocstpin*"))
+    # Find all instance files: .ocstpin extension, or files starting with ocstpin, orst, orstBig
+    instance_files = (
+        list(input_path.glob("*.ocstpin")) + 
+        list(input_path.glob("ocstpin*")) +
+        list(input_path.glob("orst*")) +
+        list(input_path.glob("orstBig*"))
+    )
     
-    if not ocstpin_files:
-        print(f"No .ocstpin files found in {input_dir}")
+    # Filter out directories and only keep files
+    instance_files = [f for f in instance_files if f.is_file()]
+    
+    # Remove duplicates (some patterns might match the same file)
+    instance_files = list(set(instance_files))
+    
+    if not instance_files:
+        print(f"No instance files found in {input_dir}")
         return
     
-    print(f"Found {len(ocstpin_files)} .ocstpin files")
+    print(f"Found {len(instance_files)} instance files to convert")
     
     converted = 0
     errors = 0
     
-    for ocstpin_file in sorted(ocstpin_files):
+    for instance_file in sorted(instance_files):
         try:
-            output_file = os.path.join(output_dir, f"{ocstpin_file.stem}.json")
-            convert_to_json(str(ocstpin_file), output_file)
-            print(f"✓ Converted {ocstpin_file.name} -> {output_file}")
+            output_file = os.path.join(output_dir, f"{instance_file.stem}.json")
+            convert_to_json(str(instance_file), output_file)
+            print(f"✓ Converted {instance_file.name} -> {output_file}")
             converted += 1
         except Exception as e:
-            print(f"✗ Error converting {ocstpin_file.name}: {e}")
+            print(f"✗ Error converting {instance_file.name}: {e}")
             errors += 1
     
     print(f"\nConversion complete: {converted} converted, {errors} errors")
