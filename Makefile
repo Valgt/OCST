@@ -52,7 +52,7 @@ rooted_tree_based: $(BIN_DIR)/rooted_tree_based_formulation
 
 $(BIN_DIR)/path_based_formulation: $(PATH_BASED_SRC) | $(BIN_DIR)
 	@echo "Compilando Path-Based Formulation..."
-	$(CXX) $(CXXFLAGS) $(PATH_BASED_INCLUDES) $< -o $@ $(GUROBI_FLAGS)
+	$(CXX) $(CXXFLAGS) $(PATH_BASED_INCLUDES) -Isrc/cpp/common -Ithird_party $(GUROBI_FLAGS) $< -o $@
 	@echo "✓ Compilación exitosa"
 
 $(BIN_DIR)/path_based_formulation_original: $(PATH_BASED_ORIGINAL_SRC) | $(BIN_DIR)

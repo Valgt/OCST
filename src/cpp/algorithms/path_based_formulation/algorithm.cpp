@@ -11,8 +11,9 @@
 #include <iomanip>
 #include <limits>
 
-// Unified instance loader (supports both legacy and JSON formats)
+// Unified instance loader (JSON only)
 #include "include/instance_loader.h"
+#include "../../common/json_output.h"
 
 // Gurobi integration
 #include <gurobi_c++.h>
@@ -1306,15 +1307,43 @@ SolutionResult solve_path_based_instance(const std::string& input_file,
             std::cout << "Results saved to: " << output_csv << std::endl;
         }
         
-        // Always generate complete solution file for validation
+        // Extract instance basename
         std::string instance_basename = input_file;
         size_t last_slash = instance_basename.find_last_of("/");
         if (last_slash != std::string::npos) {
             instance_basename = instance_basename.substr(last_slash + 1);
         }
+        // Remove .json extension if present
+        if (instance_basename.size() > 5 && instance_basename.substr(instance_basename.size() - 5) == ".json") {
+            instance_basename = instance_basename.substr(0, instance_basename.size() - 5);
+        }
         
         std::string complete_solution_file = "data/output/test_instances/complete_" + instance_basename + ".sol";
         write_complete_solution(complete_solution_file, instance, result);
+        std::cout << "DEBUG: After write_complete_solution, instance_basename=" << instance_basename << std::endl;
+        std::cout.flush();
+        
+        // Generate JSON output
+        std::cout << "Starting JSON output generation..." << std::endl;
+        std::cout.flush();
+        try {
+            std::cout << "Converting to payload..." << std::endl;
+            std::cout.flush();
+                result, instance, instance_basename, time_limit, heuristics);
+            
+            std::cout << "Payload created, writing JSON..." << std::endl;
+            std::cout.flush();
+            std::string json_output_file = "data/output/test_instances/" + instance_basename + ".result.json";
+            ocst::common::write_result_json(payload, json_output_file);
+            std::cout << "JSON result saved to: " << json_output_file << std::endl;
+            std::cout.flush();
+        } catch (const std::exception& e) {
+            std::cerr << "ERROR: Failed to generate JSON output: " << e.what() << std::endl;
+            std::cerr.flush();
+        } catch (...) {
+            std::cerr << "ERROR: Unknown exception while generating JSON output" << std::endl;
+            std::cerr.flush();
+        }
         
         return result;
         
