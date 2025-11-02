@@ -1,0 +1,86 @@
+# Complete Comparative Experiment Configuration
+# Includes ALL instances (small, medium, and BIG)
+
+experiment:
+  name: "comparative_formulations_complete"
+  algorithm: "Complete Comparative Analysis"
+  description: "Comprehensive comparison of all formulations on ALL available instances including BIG ones"
+  version: "1.0"
+
+execution:
+  algorithms:
+    - name: "path_based_formulation"
+      description: "Path-Based MILP Formulation"
+      executable_path: "build/executables/path_based_formulation"
+    - name: "flow_based_formulation"
+      description: "Flow-Based MILP Formulation"
+      executable_path: "build/executables/flow_based_formulation"
+    - name: "flow_based_relaxed_formulation"
+      description: "Flow-Based Relaxed MILP Formulation"
+      executable_path: "build/executables/flow_based_relaxed_formulation"
+    - name: "rooted_tree_based_formulation"
+      description: "Rooted Tree-Based MILP Formulation"
+      executable_path: "build/executables/rooted_tree_based_formulation"
+  
+  heuristics_level: 0.5
+  time_limit: 3600  # Default 1 hour
+  
+  # Time limits by instance group
+  time_limits_by_group:
+    ocstpin: 30      # Small instances: 30 seconds
+    orst: 60         # Medium instances: 60 seconds
+    big: 1800         # BIG instances: 30 minutes
+
+instances:
+  input_directory: "data/input/test_instances"
+  output_directory: "data/output/test_instances"
+  
+  groups:
+    - name: "ocstpin"
+      pattern: "ocstpin*"
+      description: "OCST instances (small)"
+    
+    - name: "orst"
+      pattern: "orst[0-9]"
+      description: "ORST instances (medium)"
+    
+    - name: "big"
+      pattern: "*Big*"
+      description: "BIG instances (large-scale)"
+
+output:
+  results_directory: "experiments/results"
+  csv_filename_template: "experimento_{algorithm}_{timestamp}.csv"
+  
+  columns:
+    - instance_name
+    - instance_group
+    - algorithm_name
+    - algorithm_description
+    - num_nodes
+    - num_edges
+    - num_requirements
+    - probability
+    - optimal_known
+    - best_found
+    - is_optimal
+    - runtime_seconds
+    - nodes_explored
+    - lazy_constraints
+    - cutting_planes
+    - mip_gap_percent
+    - gurobi_status
+    - time_limit
+    - heuristics_level
+    - algorithm_version
+
+logging:
+  level: "INFO"
+  log_to_file: true
+  log_filename: "experiment_{timestamp}.log"
+
+analysis:
+  generate_summary: true
+  calculate_statistics: true
+  create_plots: false
+
