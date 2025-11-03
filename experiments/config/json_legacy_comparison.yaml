@@ -1,0 +1,20 @@
+analysis:
+  generate_summary: true
+execution:
+  json_executable: build/executables/path_based_formulation
+  legacy_executable: build/executables/path_based_formulation_original
+  time_limit: 60
+  heuristics_level: 0.5
+  tolerance: 0.0001
+instances:
+  json_directory: data/input
+  legacy_directory: data/input/test_instances
+  include_patterns:
+    - ocstpin*.json
+    - orst[0-9].json
+  exclude_patterns:
+    - "*Big*.json"
+output:
+  results_directory: experiments/results
+  csv_prefix: json_legacy_comparison
+
