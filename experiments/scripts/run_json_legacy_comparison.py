@@ -97,7 +97,7 @@ def remove_if_exists(path: Path) -> None:
         path.unlink()
 
 
-def run_solver(executable: Path, instance_path: Path, output_csv: Path, time_limit: float, heuristics: float, env: Dict[str, str]) -> Tuple[int, str, str]:
+def run_solver(executable: Path, instance_path: Path, output_csv: Path, time_limit: float, heuristics: float, env: Dict[str, str], cwd: Path) -> Tuple[int, str, str]:
     command = [
         str(executable),
         str(instance_path),
@@ -111,6 +111,7 @@ def run_solver(executable: Path, instance_path: Path, output_csv: Path, time_lim
         text=True,
         timeout=time_limit + 30,
         env=env,
+        cwd=str(cwd),
     )
     return result.returncode, result.stdout, result.stderr
 
@@ -179,12 +180,12 @@ def parse_legacy_solution(path: Path) -> Tuple[Optional[float], Optional[List[Tu
     return objective, edge_lines, "ok"
 
 
-def summarize_solver_run(executable: Path, instance_path: Path, output_csv: Path, solution_path: Path, time_limit: float, heuristics: float, env: Dict[str, str], use_json: bool) -> SolverOutput:
+def summarize_solver_run(executable: Path, instance_path: Path, output_csv: Path, solution_path: Path, time_limit: float, heuristics: float, env: Dict[str, str], use_json: bool, cwd: Path) -> SolverOutput:
     remove_if_exists(output_csv)
     remove_if_exists(solution_path)
 
     try:
-        returncode, stdout, stderr = run_solver(executable, instance_path, output_csv, time_limit, heuristics, env)
+        returncode, stdout, stderr = run_solver(executable, instance_path, output_csv, time_limit, heuristics, env, cwd)
     except subprocess.TimeoutExpired:
         return SolverOutput(
             success=False,
@@ -232,15 +233,20 @@ def compare_edges(edges_a: Optional[List[Tuple[int, int]]], edges_b: Optional[Li
 
 
 def main() -> None:
-    config_path = Path("experiments/config/json_legacy_comparison.yaml")
+    # Find config file relative to script location
+    script_dir = Path(__file__).parent
+    project_root = script_dir.parent.parent
+    config_path = project_root / "experiments" / "config" / "json_legacy_comparison.yaml"
+    
     if not config_path.exists():
         print(f"❌ Configuration file not found: {config_path}", file=sys.stderr)
         sys.exit(1)
 
     config = load_config(config_path)
 
-    json_exec = Path(config["execution"]["json_executable"])
-    legacy_exec = Path(config["execution"]["legacy_executable"])
+    # Make paths absolute relative to project root
+    json_exec = (project_root / config["execution"]["json_executable"]).resolve()
+    legacy_exec = (project_root / config["execution"]["legacy_executable"]).resolve()
     time_limit = float(config["execution"]["time_limit"])
     heuristics = float(config["execution"].get("heuristics_level", 0.5))
     tolerance = float(config["execution"].get("tolerance", 1e-4))
@@ -253,8 +259,8 @@ def main() -> None:
         else:
             env[key] = value
 
-    json_dir = Path(config["instances"]["json_directory"])
-    legacy_dir = Path(config["instances"]["legacy_directory"])
+    json_dir = (project_root / config["instances"]["json_directory"]).resolve()
+    legacy_dir = (project_root / config["instances"]["legacy_directory"]).resolve()
     include_patterns = config["instances"].get("include_patterns", ["*.json"])
     exclude_patterns = config["instances"].get("exclude_patterns", [])
 
@@ -307,14 +313,14 @@ def main() -> None:
             )
             continue
 
-        output_dir = Path(config["output"].get("results_directory", "experiments/results"))
+        output_dir = (project_root / config["output"].get("results_directory", "experiments/results")).resolve()
         ensure_directory(output_dir)
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         csv_json = output_dir / f"{base_name}_json_{timestamp}.csv"
         csv_legacy = output_dir / f"{base_name}_legacy_{timestamp}.csv"
 
-        solution_dir = Path("data/output/test_instances")
+        solution_dir = (project_root / "data" / "output" / "test_instances").resolve()
         ensure_directory(solution_dir)
 
         # JSON solver outputs: filename.results.json
@@ -324,12 +330,12 @@ def main() -> None:
         legacy_solution = solution_dir / f"complete_{base_name}.sol"
 
         json_output = summarize_solver_run(
-            json_exec, json_path, csv_json, json_solution, time_limit, heuristics, env, use_json=True
+            json_exec, json_path, csv_json, json_solution, time_limit, heuristics, env, use_json=True, cwd=project_root
         )
         print(f"   JSON solver status  : {json_output.status}")
 
         legacy_output = summarize_solver_run(
-            legacy_exec, legacy_path, csv_legacy, legacy_solution, time_limit, heuristics, env, use_json=False
+            legacy_exec, legacy_path, csv_legacy, legacy_solution, time_limit, heuristics, env, use_json=False, cwd=project_root
         )
         print(f"   Legacy solver status: {legacy_output.status}")
 
@@ -379,7 +385,7 @@ def main() -> None:
     duration = time.time() - start_time
 
     csv_prefix = config["output"].get("csv_prefix", "json_legacy_comparison")
-    summary_path = Path(config["output"].get("results_directory", "experiments/results"))
+    summary_path = (project_root / config["output"].get("results_directory", "experiments/results")).resolve()
     ensure_directory(summary_path)
     summary_file = summary_path / f"{csv_prefix}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
 
