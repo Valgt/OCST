@@ -14,6 +14,9 @@
 // Unified instance loader (supports both legacy and JSON formats)
 #include "include/instance_loader.h"
 
+// Result serializer for JSON output
+#include "include/result_serializer.h"
+
 // Gurobi integration
 #include <gurobi_c++.h>
 
@@ -1201,37 +1204,119 @@ OCSTInstance parse_instance_file(const std::string& filename)
 }
 
 /**
- * @brief Writes complete solution to file for validation
+ * @brief Writes solution to JSON format using result_serializer
  * @param filename Output filename 
  * @param instance Problem instance
  * @param result Solution result
+ * @param input_file Original input file path
  */
-void write_complete_solution(const std::string& filename, 
-                           const OCSTInstance& instance, 
-                           const SolutionResult& result) 
+void write_json_solution(const std::string& filename, 
+                        const OCSTInstance& instance, 
+                        const SolutionResult& result,
+                        const std::string& input_file) 
 {
-    std::ofstream file(filename);
-    if (!file.is_open()) {
-        std::cerr << "Warning: Could not create complete solution file: " << filename << std::endl;
-        return;
+    using namespace ocst::path_based;
+    
+    ResultPayload payload;
+    
+    // Generate unique run ID
+    auto now = std::chrono::system_clock::now();
+    auto time_t = std::chrono::system_clock::to_time_t(now);
+    std::stringstream ss;
+    ss << std::put_time(std::localtime(&time_t), "%Y%m%d_%H%M%S");
+    payload.run_uuid = ss.str();
+    
+    // Extract instance name from input file
+    std::string instance_name = input_file;
+    size_t last_slash = instance_name.find_last_of("/");
+    if (last_slash != std::string::npos) {
+        instance_name = instance_name.substr(last_slash + 1);
+    }
+    size_t last_dot = instance_name.find_last_of(".");
+    if (last_dot != std::string::npos) {
+        instance_name = instance_name.substr(0, last_dot);
+    }
+    payload.instance_name = instance_name;
+    
+    // Solver information
+    payload.solver_id = "path_based_formulation";
+    payload.solver_version = "1.0";
+    payload.formulation = "path_based";
+    
+    // Configuration (simplified for now)
+    payload.config_digest = "default";
+    payload.config_params["time_limit"] = std::to_string(result.runtime_seconds);
+    payload.config_params["probability"] = std::to_string(instance.probability);
+    
+    // Optimization status
+    if (result.is_optimal) {
+        payload.optimization_status_code = OptimizationStatus::OPTIMAL;
+        payload.optimization_status_description = "Optimal solution found";
+    } else if (result.gurobi_status == GRB_TIME_LIMIT) {
+        payload.optimization_status_code = OptimizationStatus::TIME_LIMIT;
+        payload.optimization_status_description = "Time limit reached";
+    } else if (result.gurobi_status == GRB_INFEASIBLE) {
+        payload.optimization_status_code = OptimizationStatus::INFEASIBLE;
+        payload.optimization_status_description = "Problem is infeasible";
+    } else if (result.gurobi_status == GRB_UNBOUNDED) {
+        payload.optimization_status_code = OptimizationStatus::UNBOUNDED;
+        payload.optimization_status_description = "Problem is unbounded";
+    } else {
+        payload.optimization_status_code = OptimizationStatus::SUBOPTIMAL;
+        payload.optimization_status_description = "Non-optimal solution found";
     }
     
-    // Line 1: Objective value
-    file << std::fixed << std::setprecision(0) << result.objective_value << std::endl;
+    payload.has_solution = !result.selected_edges.empty();
+    payload.has_bound = result.lower_bound > 0 || result.upper_bound > 0;
     
-    // Line 2: Number of nodes
-    file << instance.num_nodes << std::endl;
+    // Result metrics (round to match legacy format)
+    payload.objective = std::round(result.objective_value);
+    payload.primal_bound = std::round(result.upper_bound);
+    payload.dual_bound = std::round(result.lower_bound);
+    payload.gap = std::round(result.objective_value - result.lower_bound);
+    payload.gap_percent = result.mip_gap;
+    payload.best_solution_time = result.runtime_seconds;
     
-    // Next n-1 lines: Selected edges (x y format)
-    for (int edge_idx : result.selected_edges) {
-        if (edge_idx >= 0 && edge_idx < static_cast<int>(instance.edges.size())) {
-            const Edge& edge = instance.edges[edge_idx];
-            file << edge.source << " " << edge.destination << std::endl;
+    // Runtime statistics
+    payload.runtime_stats.wall_clock_seconds = result.runtime_seconds;
+    payload.runtime_stats.cpu_seconds = result.runtime_seconds;
+    payload.runtime_stats.solver_nodes = result.num_nodes_explored;
+    payload.runtime_stats.solver_iterations = 0;
+    payload.runtime_stats.termination_reason = payload.optimization_status_description;
+    
+    // Solution tree
+    if (payload.has_solution) {
+        for (int edge_idx : result.selected_edges) {
+            if (edge_idx >= 0 && edge_idx < static_cast<int>(instance.edges.size())) {
+                const Edge& edge = instance.edges[edge_idx];
+                payload.solution.tree_edges.push_back({edge.source, edge.destination});
+            }
         }
+        payload.solution.tree_cost = std::round(result.objective_value);
+        payload.solution.is_spanning_tree = (result.selected_edges.size() == static_cast<size_t>(instance.num_nodes - 1));
+        payload.solution.is_connected = true;  // Assuming valid solution is connected
     }
     
-    file.close();
-    std::cout << "Complete solution written to: " << filename << std::endl;
+    // Reproducibility (simplified)
+    ss.str("");
+    ss << std::put_time(std::localtime(&time_t), "%Y-%m-%d %H:%M:%S");
+    payload.reproducibility.timestamp = ss.str();
+    payload.reproducibility.git_commit = "unknown";
+    payload.reproducibility.git_dirty = false;
+    payload.reproducibility.seed = 0;
+    
+    // Solver metadata
+    payload.solver_metadata["lazy_constraints"] = std::to_string(result.lazy_constraints_added);
+    payload.solver_metadata["cutting_planes"] = std::to_string(result.cutting_planes_added);
+    payload.solver_metadata["gurobi_status"] = std::to_string(result.gurobi_status);
+    
+    // Write to file
+    try {
+        ResultSerializer::write_to_file(payload, filename, true);
+        std::cout << "JSON solution written to: " << filename << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Warning: Could not write JSON solution file: " << e.what() << std::endl;
+    }
 }
 
 //=============================================================================
@@ -1306,15 +1391,15 @@ SolutionResult solve_path_based_instance(const std::string& input_file,
             std::cout << "Results saved to: " << output_csv << std::endl;
         }
         
-        // Always generate complete solution file for validation
+        // Always generate JSON solution file
         std::string instance_basename = input_file;
         size_t last_slash = instance_basename.find_last_of("/");
         if (last_slash != std::string::npos) {
             instance_basename = instance_basename.substr(last_slash + 1);
         }
         
-        std::string complete_solution_file = "data/output/test_instances/complete_" + instance_basename + ".sol";
-        write_complete_solution(complete_solution_file, instance, result);
+        std::string json_solution_file = "data/output/test_instances/" + instance_basename + ".results.json";
+        write_json_solution(json_solution_file, instance, result, input_file);
         
         return result;
         
