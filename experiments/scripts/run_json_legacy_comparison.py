@@ -283,8 +283,7 @@ def main() -> None:
         sys.exit(1)
 
     for index, json_path in enumerate(json_instances, 1):
-        base_name = json_path.stem  # Remove .json extension for legacy instance lookup
-        full_name = json_path.name  # Full filename (with .json) for JSON output
+        base_name = json_path.stem  # Remove .json extension for both JSON and legacy instance lookup
         legacy_path = legacy_dir / base_name
 
         print(f"[{index}/{len(json_instances)}] Instance: {base_name}")
@@ -318,8 +317,8 @@ def main() -> None:
         solution_dir = Path("data/output/test_instances")
         ensure_directory(solution_dir)
 
-        # JSON solver outputs: filename.results.json (using full filename including .json)
-        json_solution = solution_dir / f"{full_name}.results.json"
+        # JSON solver outputs: filename.results.json
+        json_solution = solution_dir / f"{base_name}.results.json"
         
         # Legacy solver outputs: complete_filename.sol
         legacy_solution = solution_dir / f"complete_{base_name}.sol"

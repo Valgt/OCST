@@ -1397,6 +1397,11 @@ SolutionResult solve_path_based_instance(const std::string& input_file,
         if (last_slash != std::string::npos) {
             instance_basename = instance_basename.substr(last_slash + 1);
         }
+        // Remove extension if present
+        size_t last_dot = instance_basename.find_last_of(".");
+        if (last_dot != std::string::npos) {
+            instance_basename = instance_basename.substr(0, last_dot);
+        }
         
         std::string json_solution_file = "data/output/test_instances/" + instance_basename + ".results.json";
         write_json_solution(json_solution_file, instance, result, input_file);
