@@ -1,0 +1,256 @@
+Objective
+Establish a repository-wide baseline focused exclusively on JSON before building visual analytics, unifying how the four existing exact formulations for OCST consume instances, expose configuration, and emit results. This “step 0” keeps the current algorithms intact while removing duplicated infrastructure.
+Important policy change: There will be no in-process coexistence of legacy and standardized paths. We will maintain two parallel versions that never mix:
+
+
+Control version: path_based_formulation_original (frozen except for minimal fixes). Serves as the stability/control reference.
+
+
+Migrating versions: remaining formulations are migrated iteratively to the standardized stack.
+
+
+All inputs/outputs are JSON-first. No solver reads or writes the legacy plain-text format. If needed, legacy files may be converted offline to JSON by a one-time converter (not part of solver I/O paths).
+Scope
+
+
+Applies to every solver under src/cpp/algorithms/, except the control version path_based_formulation_original, which remains functionally isolated.
+
+
+Coordinates with the experiment scripts in scripts/ and the datasets in data/.
+
+
+Produces documentation and lightweight tooling in Python for post-processing.
+
+
+Workstreams
+The workstreams should be executed largely in sequence, because each layer unlocks the next. A suggested order with dependency notes appears below; defer parallelization unless explicitly called out.
+
+
+Unified data model and loaders (prerequisite for everything else)
+
+
+
+
+Consolidate Edge, Requirement, OCSTInstance, and SolutionResult definitions in a shared header (src/cpp/common/).
+
+
+Implement a single JSON parser that follows the new instance schema (see JSON schema guidelines).
+
+
+Provide a standalone conversion script to migrate existing legacy .ocstpin files into JSON for one-time backfills. This tool is outside solver I/O; solvers never accept legacy text.
+
+
+
+
+Common solver interface (depends on the shared data model to guarantee type compatibility)
+
+
+
+
+Introduce a FormulationSolver base class with standard lifecycle hooks (configure, solve, collect_metrics).
+
+
+Refactor each migrating formulation to inherit from the base while preserving algorithm-specific internals.
+
+
+Centralize command-line parsing so all binaries accept identical flags.
+
+
+
+
+Standard results and metadata schema (depends on the interface work so every solver can emit metrics consistently)
+
+
+
+
+Define a JSON schema covering: instance identifiers, solver configuration, objective values, bounds, runtime, and tree structure of the solution.
+
+
+Implement a reusable writer (C++ plus Python helper) that every migrating formulation uses to store outcomes under experiments/<formulation>/standardized/. The C++ side emits a ResultPayload (src/cpp/common/result_payload.h) with fields: instance_name, instance_tags, solver_id, solver_version, config_digest, objective, primal_bound, dual_bound, runtime_stats (wall-clock, node counts), run_uuid, git_commit, git_dirty, seed, artifacts (paths to logs, warm-start dumps), and solver_metadata (JSON object for formulation-specific extras). The common writer serializes with nlohmann::json; the Python helper only post-processes or aggregates JSON files.
+
+
+Provide an optional summarized CSV view for quick diffs; JSON remains the source of truth.
+
+
+
+
+Configuration and logging conventions (can start after the loader, full integration waits until the interface refactor to avoid duplicated wiring)
+
+
+
+
+Move shared parameters (time limits, tolerances, branching toggles) into a declarative JSON config consumed by all migrating solvers.
+
+
+Version the config schema alongside instances/results (docs/standardization/phase_1_5/schemas/config.schema.v1.json) and provide a loader helper (ocst::common::Config) that applies defaults from ocst::common::ConfigDefaults and fails fast on missing required keys.
+
+
+Introduce a structured logger (JSON Lines) to capture branching events, lazy cuts, and callback statistics. Each run emits a single .jsonl file; long runs rotate after 128 MB; optional gzip after completion.
+
+
+Document logging levels and retention rules for downstream visualizers.
+
+
+
+
+Experiment pipeline unification (last step; requires standardized inputs, outputs, and configuration)
+
+
+
+
+Replace formulation-specific shell scripts with a single Python orchestrator that receives --formulation, --instance-set, and config overrides.
+
+
+Ensure reproducibility by stamping each run with git commit (short hash plus dirty boolean), seed, and timestamp inside the results JSON.
+
+
+Provide utilities to aggregate runs into Parquet/CSV for notebooks and Bokeh dashboards. Parquet is preferred for large batch analytics (include a result_payload column storing the full JSON as a string).
+
+
+Parallelizable tasks: Schema drafting (Workstream 3) and logger prototyping (Workstream 4) can begin once the loader contract is frozen; they only need structural definitions, not the final interface inheritance.
+Complexity and performance guarantees
+
+
+Parsing: Unified JSON loader must retain O(n + m) time complexity. Stream over edges/requirements; no quadratic materialization. Memory: O(n + m).
+
+
+Warm-start MST: Shared MST construction keeps O(m log n) via Kruskal plus DSU.
+
+
+Logging: Structured logging overhead at most 5–7 percent on large branching runs. Benchmark overhead on three representative scenarios (must include one tagged quick_check). Default mode records aggregate statistics only; per-event traces are opt-in.
+
+
+Validation protocol: Automate micro-benchmarks on the quick_check set comparing JSON loader and new logger before/after toggles. Slowdowns above 10 percent are blockers until optimized. Store scripts in scripts/standardization/benchmarks/ and results under experiments/benchmarks/.
+
+
+JSON schema guidelines
+
+
+Fresh schema tailored to OCST (instances and results), versioned under docs/standardization/phase_1_5/schemas/ (instance.schema.v1.json, result.schema.v1.json).
+
+
+Instances require: graph size, edge list with costs, requirements or terminals, optional coordinates, provenance; mandatory name (unique) and tags (e.g., ["beasley", "random_dense"]). quick_check is reserved.
+
+
+Results must capture: solver id, formulation version, parameters, objective, bounds, runtime, node counts, run_uuid, and logging references.
+
+
+Validate with JSON Schema draft 2020-12; provide Python or C++ helpers to fail fast.
+
+
+Legacy data handling (converter-only)
+
+
+Legacy .ocstpin files are not read by solvers. If needed, convert them once using scripts/standardization/convert_ocstpin_to_json.py to populate data/standardized/.
+
+
+Historical note (for the converter’s parser only): legacy structure is “n m p” header; “m” lines “u v cost”; number of requirements; then “u v demand” triplets.
+
+
+Parallel versions policy
+
+
+Control solver: path_based_formulation_original stays isolated. It may participate in experiments, but its code and artifacts live under src/cpp/algorithms/path_based_formulation_original/ and experiments/path_based_formulation_original/ and do not share standardized components.
+
+
+Migrating solvers: progressively adopt common headers, loader, interface, logging, and result writer. All artifacts live under experiments/<formulation>/standardized/.
+
+
+The orchestrator can run both (for comparisons) but writes to separate trees. Inputs for all solvers are JSON.
+
+
+Regression test bed
+
+
+Curate a canonical suite from data/standardized/ and public benchmarks. Identify 3–4 quick_check instances (tests/data/regression/quick_checks.json) that run under 1 minute.
+
+
+Store expected optimal costs and bounds in tests/data/regression/metadata.json. Golden artifacts live in tests/data/regression/golden/ and are produced by standardized runs.
+
+
+When comparing behaviors, use the control solver (path_based_formulation_original) as a reference formulation, not a legacy pipeline. Record diffs (objectives, bounds, runtime distributions) in approvals logs.
+
+
+Python orchestration transition plan
+
+
+Introduce the Python orchestrator now. Keep existing run_*.sh as thin wrappers that delegate to the orchestrator (optional, for convenience only).
+
+
+Document the orchestrator as the default entry point.
+
+
+Provide Make targets that drive standardized runs (make run_flow_standardized, make standardization-validate).
+
+
+Selection is explicit by name or tags. Tag expansion is deterministic (alphabetical by instance name). Log the final ordered list and requested filters.
+
+
+Repository placement and strategy
+
+
+Documentation hub: docs/standardization/phase_1_5/ (mirrored in struct.md).
+
+
+C++ integration: Introduce transitional headers within each migrating formulation; promote to src/cpp/common/ after parity. Namespace ocst::common with include guards OCST_COMMON_<FILE_STEM>_H.
+
+
+Python tooling: Converters live in scripts/standardization/; notebooks in experiments/notebooks/. Generated standardized artifacts land in data/standardized/.
+
+
+Runners: Orchestrator only; no --format switch. All solvers use the JSON loader.
+
+
+Iterative validation process
+
+
+Spike per formulation: Scaffold JSON loader usage inside each migrating solver, run unit and regression tests, and benchmark parsing cost (target O(n + m)).
+
+
+Dual-run experiments (control vs migrating): Execute control solver and migrating solver(s) on quick_check, then the full suite. Compare objectives, bounds, and runtime distributions.
+
+
+Progressive promotion: After parity, move shared pieces into src/cpp/common/, update includes, and remove per-formulation copies (control solver remains isolated).
+
+
+Sign-off checkpoints: After each migration milestone (instances, solver interface, result schema, logging), prepare short memos. Keep docs/standardization/phase_1_5/self_review_log.md with links to memos and evidence.
+
+
+Best Practices
+
+
+Exactness first: Preserve optimality guarantees; add regression tests on canonical instances before merging.
+
+
+JSON-only I/O: Solvers never read or write legacy text. Conversions happen offline.
+
+
+Single source of truth: Shared structures and metrics live in one module, not copy-pasted.
+
+
+Observability: Treat logs and metrics as first-class citizens; report via common interfaces.
+
+
+Complexity awareness: Monitor runtime and memory (O(n + m) loaders, O(m log n) MST warm-starts, minimal callback overhead).
+
+
+Documentation: Keep README and internal guides updated; archive self-review notes.
+
+
+Deliverables Checklist
+
+
+JSON schemas for instances and results.
+
+
+Shared loader, solver base class, and result writer headers with unit coverage.
+
+
+Conversion (legacy to JSON) and orchestration scripts in Python (converter is standalone).
+
+
+Updated documentation describing the JSON-only standard workflow.
+
+
+Sample standardized dataset for validation and visualization kickoff.
+

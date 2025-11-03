@@ -55,17 +55,10 @@ Thumbs.db
 *.swo
 *~
 
-# Archivos de editores
-.vscode/
-.cursor/
+# Archivos de editores (mantener config del repo)
 
 # Archivos temporales
 *.tmp
 *.temp
 
-# Carpetas de documentación y tesis (solo local)
-docs/
-thesis/
-ia_standards/
-
-
+# Evitar carpetas o archivos temporales personalizados (ajustar según necesidad)
