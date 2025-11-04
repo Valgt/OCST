@@ -245,6 +245,67 @@ def on_reorganize_click():
     requirements = current_instance.get_requirements()
     update_requirements_plot(current_req_plot, current_instance.graph, requirements, current_layout, req_title)
     
+    # CRITICAL: Re-add midpoint nodes after update_requirements_plot destroys renderers
+    from req_hover_helper import add_requirement_midpoint_nodes
+    
+    # Define callback for midpoint clicks (same logic as in on_instance_change)
+    def on_midpoint_click_for_reorganize(attr, old, new):
+        global current_solution, current_solution_plot, current_layout, selected_requirement, highlighted_requirements, current_req_plot
+        if not new or current_solution is None:
+            return
+        
+        try:
+            # Get the midpoint source from the requirements plot
+            midpoint_source = None
+            for renderer in current_req_plot.renderers:
+                if hasattr(renderer, 'data_source') and 'origin' in renderer.data_source.data:
+                    midpoint_source = renderer.data_source
+                    break
+            
+            if midpoint_source is None:
+                return
+            
+            idx = new[0]
+            origin = midpoint_source.data['origin'][idx]
+            destination = midpoint_source.data['destination'][idx]
+            selected_requirement = (origin, destination)
+            
+            # Clear any node-based requirement highlighting
+            highlighted_requirements = []
+            
+            # Clear solution tree node selection
+            try:
+                node_source = current_solution_plot.renderers[0].node_renderer.data_source
+                node_source.selected.indices = []
+            except:
+                pass
+            
+            # Find path in solution tree
+            highlight_path = find_path_in_tree(current_solution['tree_edges'], origin, destination)
+            
+            # Update solution plot with highlighted path
+            solution_title = f"Solution: {current_instance.name} (Cost: {current_solution.get('tree_cost', 'N/A')})"
+            update_solution_plot(current_solution_plot, current_instance.graph, 
+                               current_solution['tree_edges'], current_layout, solution_title, highlight_path)
+            
+            # Reconnect solution node callback after updating (helper handles cleanup)
+            reconnect_solution_node_callback()
+                
+        except Exception as e:
+            print(f"Error: {e}")
+    
+    midpoint_source, midpoint_renderer = add_requirement_midpoint_nodes(
+        current_req_plot,
+        None,
+        current_layout,
+        None,
+        requirements,
+        current_instance.graph
+    )
+    
+    # Connect callback to midpoint nodes
+    midpoint_source.selected.on_change('indices', on_midpoint_click_for_reorganize)
+    
     # Recompute highlight path if a requirement is selected
     highlight_path = None
     if selected_requirement and current_solution and 'tree_edges' in current_solution:
@@ -254,6 +315,9 @@ def on_reorganize_click():
     if current_solution and 'tree_edges' in current_solution:
         solution_title = f"Solution: {current_instance.name} (Cost: {current_solution.get('tree_cost', 'N/A')})"
         update_solution_plot(current_solution_plot, current_instance.graph, current_solution['tree_edges'], current_layout, solution_title, highlight_path)
+        
+        # CRITICAL: Reconnect solution node callback after update_solution_plot
+        reconnect_solution_node_callback()
 
 
 def reconnect_solution_node_callback():
