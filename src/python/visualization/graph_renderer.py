@@ -180,8 +180,10 @@ def update_graph_plot(plot: figure, G: nx.Graph, title: str):
         G: New NetworkX graph
         title: New title
     """
-    # Clear existing renderers
+    # Clear existing renderers and tools
     plot.renderers = []
+    # Remove old hover tools (keep pan, zoom, reset, box_zoom)
+    plot.tools = [t for t in plot.tools if not isinstance(t, HoverTool)]
     
     # Update title
     plot.title.text = title
@@ -229,6 +231,23 @@ def update_graph_plot(plot: figure, G: nx.Graph, title: str):
         line_alpha=1.0,
         line_width=4
     )
+    
+    # Add hover tool for nodes
+    node_hover = HoverTool(
+        tooltips=[("Node ID", "@index")],
+        renderers=[graph_renderer.node_renderer]
+    )
+    plot.add_tools(node_hover)
+    
+    # Add hover tool for edges (show cost with formatting)
+    edge_hover = HoverTool(
+        tooltips=[
+            ("Cost", "@cost{0.00}"),
+            ("Edge", "(@start, @end)")
+        ],
+        renderers=[graph_renderer.edge_renderer]
+    )
+    plot.add_tools(edge_hover)
     
     # Add graph to plot
     plot.renderers.append(graph_renderer)
