@@ -1,0 +1,424 @@
+================================================================================
+Phase 1.5 Validation: path_based_formulation Migration
+================================================================================
+Timestamp: 20251103_225602
+Numerical tolerance: 1e-06
+Time limit: 60s
+Instances: 25
+Output directory: experiments/validation/dual_run_20251103_225602
+
+✓ Both executables found
+
+--------------------------------------------------------------------------------
+[1/25] ocstpin0
+--------------------------------------------------------------------------------
+  Running migrating solver (path_based_formulation)...
+    ✓ Completed
+  Running control solver (path_based_formulation_original)...
+    ✓ Completed
+  Parsing results...
+    ✅ Objectives MATCH: 1340.0000000000
+    ❌ Edges DIFFER:
+       Migrating: 9 edges
+       Control:   0 edges
+       Symmetric diff: 9
+    ⚠️  EDGE MISMATCH: 9 only in migrating, 0 only in control
+    ⚠️    Control only: set()
+
+--------------------------------------------------------------------------------
+[2/25] ocstpin1
+--------------------------------------------------------------------------------
+  Running migrating solver (path_based_formulation)...
+    ✓ Completed
+  Running control solver (path_based_formulation_original)...
+    ✓ Completed
+  Parsing results...
+    ✅ Objectives MATCH: 4135577.0000000000
+    ❌ Edges DIFFER:
+       Migrating: 9 edges
+       Control:   0 edges
+       Symmetric diff: 9
+    ⚠️  EDGE MISMATCH: 9 only in migrating, 0 only in control
+    ⚠️    Control only: set()
+
+--------------------------------------------------------------------------------
+[3/25] ocstpin10
+--------------------------------------------------------------------------------
+  Running migrating solver (path_based_formulation)...
+    ✓ Completed
+  Running control solver (path_based_formulation_original)...
+    ✓ Completed
+  Parsing results...
+    ✅ Objectives MATCH: 6909911.0000000000
+    ❌ Edges DIFFER:
+       Migrating: 9 edges
+       Control:   0 edges
+       Symmetric diff: 9
+    ⚠️  EDGE MISMATCH: 9 only in migrating, 0 only in control
+    ⚠️    Control only: set()
+
+--------------------------------------------------------------------------------
+[4/25] ocstpin11
+--------------------------------------------------------------------------------
+  Running migrating solver (path_based_formulation)...
+    ✓ Completed
+  Running control solver (path_based_formulation_original)...
+    ✓ Completed
+  Parsing results...
+    ✅ Objectives MATCH: 3888533.0000000000
+    ❌ Edges DIFFER:
+       Migrating: 9 edges
+       Control:   0 edges
+       Symmetric diff: 9
+    ⚠️  EDGE MISMATCH: 9 only in migrating, 0 only in control
+    ⚠️    Control only: set()
+
+--------------------------------------------------------------------------------
+[5/25] ocstpin12
+--------------------------------------------------------------------------------
+  Running migrating solver (path_based_formulation)...
+    ✓ Completed
+  Running control solver (path_based_formulation_original)...
+    ✓ Completed
+  Parsing results...
+    ✅ Objectives MATCH: 2150236.0000000000
+    ❌ Edges DIFFER:
+       Migrating: 9 edges
+       Control:   0 edges
+       Symmetric diff: 9
+    ⚠️  EDGE MISMATCH: 9 only in migrating, 0 only in control
+    ⚠️    Control only: set()
+
+--------------------------------------------------------------------------------
+[6/25] ocstpin13
+--------------------------------------------------------------------------------
+  Running migrating solver (path_based_formulation)...
+    ✓ Completed
+  Running control solver (path_based_formulation_original)...
+    ✓ Completed
+  Parsing results...
+    ✅ Objectives MATCH: 5806363.0000000000
+    ❌ Edges DIFFER:
+       Migrating: 14 edges
+       Control:   0 edges
+       Symmetric diff: 14
+    ⚠️  EDGE MISMATCH: 14 only in migrating, 0 only in control
+    ⚠️    Control only: set()
+
+--------------------------------------------------------------------------------
+[7/25] ocstpin14
+--------------------------------------------------------------------------------
+  Running migrating solver (path_based_formulation)...
+    ✓ Completed
+  Running control solver (path_based_formulation_original)...
+    ✓ Completed
+  Parsing results...
+    ✅ Objectives MATCH: 9955439.0000000000
+    ❌ Edges DIFFER:
+       Migrating: 14 edges
+       Control:   0 edges
+       Symmetric diff: 14
+    ⚠️  EDGE MISMATCH: 14 only in migrating, 0 only in control
+    ⚠️    Control only: set()
+
+--------------------------------------------------------------------------------
+[8/25] ocstpin2
+--------------------------------------------------------------------------------
+  Running migrating solver (path_based_formulation)...
+    ✓ Completed
+  Running control solver (path_based_formulation_original)...
+    ✓ Completed
+  Parsing results...
+    ✅ Objectives MATCH: 2896545.0000000000
+    ❌ Edges DIFFER:
+       Migrating: 9 edges
+       Control:   0 edges
+       Symmetric diff: 9
+    ⚠️  EDGE MISMATCH: 9 only in migrating, 0 only in control
+    ⚠️    Control only: set()
+
+--------------------------------------------------------------------------------
+[9/25] ocstpin3
+--------------------------------------------------------------------------------
+  Running migrating solver (path_based_formulation)...
+    ✓ Completed
+  Running control solver (path_based_formulation_original)...
+    ✓ Completed
+  Parsing results...
+    ✅ Objectives MATCH: 7280790.0000000000
+    ❌ Edges DIFFER:
+       Migrating: 9 edges
+       Control:   0 edges
+       Symmetric diff: 9
+    ⚠️  EDGE MISMATCH: 9 only in migrating, 0 only in control
+    ⚠️    Control only: set()
+
+--------------------------------------------------------------------------------
+[10/25] ocstpin4
+--------------------------------------------------------------------------------
+  Running migrating solver (path_based_formulation)...
+    ✓ Completed
+  Running control solver (path_based_formulation_original)...
+    ✓ Completed
+  Parsing results...
+    ✅ Objectives MATCH: 7263378.0000000000
+    ❌ Edges DIFFER:
+       Migrating: 9 edges
+       Control:   0 edges
+       Symmetric diff: 9
+    ⚠️  EDGE MISMATCH: 9 only in migrating, 0 only in control
+    ⚠️    Control only: set()
+
+--------------------------------------------------------------------------------
+[11/25] ocstpin5
+--------------------------------------------------------------------------------
+  Running migrating solver (path_based_formulation)...
+    ✓ Completed
+  Running control solver (path_based_formulation_original)...
+    ✓ Completed
+  Parsing results...
+    ✅ Objectives MATCH: 14235693.0000000000
+    ❌ Edges DIFFER:
+       Migrating: 9 edges
+       Control:   0 edges
+       Symmetric diff: 9
+    ⚠️  EDGE MISMATCH: 9 only in migrating, 0 only in control
+    ⚠️    Control only: set()
+
+--------------------------------------------------------------------------------
+[12/25] ocstpin6
+--------------------------------------------------------------------------------
+  Running migrating solver (path_based_formulation)...
+    ✓ Completed
+  Running control solver (path_based_formulation_original)...
+    ✓ Completed
+  Parsing results...
+    ✅ Objectives MATCH: 3482519.0000000000
+    ❌ Edges DIFFER:
+       Migrating: 9 edges
+       Control:   0 edges
+       Symmetric diff: 9
+    ⚠️  EDGE MISMATCH: 9 only in migrating, 0 only in control
+    ⚠️    Control only: set()
+
+--------------------------------------------------------------------------------
+[13/25] ocstpin7
+--------------------------------------------------------------------------------
+  Running migrating solver (path_based_formulation)...
+    ✓ Completed
+  Running control solver (path_based_formulation_original)...
+    ✓ Completed
+  Parsing results...
+    ✅ Objectives MATCH: 5889141.0000000000
+    ❌ Edges DIFFER:
+       Migrating: 9 edges
+       Control:   0 edges
+       Symmetric diff: 9
+    ⚠️  EDGE MISMATCH: 9 only in migrating, 0 only in control
+    ⚠️    Control only: set()
+
+--------------------------------------------------------------------------------
+[14/25] ocstpin8
+--------------------------------------------------------------------------------
+  Running migrating solver (path_based_formulation)...
+    ✓ Completed
+  Running control solver (path_based_formulation_original)...
+    ✓ Completed
+  Parsing results...
+    ✅ Objectives MATCH: 3155658.0000000000
+    ❌ Edges DIFFER:
+       Migrating: 9 edges
+       Control:   0 edges
+       Symmetric diff: 9
+    ⚠️  EDGE MISMATCH: 9 only in migrating, 0 only in control
+    ⚠️    Control only: set()
+
+--------------------------------------------------------------------------------
+[15/25] ocstpin9
+--------------------------------------------------------------------------------
+  Running migrating solver (path_based_formulation)...
+    ✓ Completed
+  Running control solver (path_based_formulation_original)...
+    ✓ Completed
+  Parsing results...
+    ✅ Objectives MATCH: 6629218.0000000000
+    ❌ Edges DIFFER:
+       Migrating: 9 edges
+       Control:   0 edges
+       Symmetric diff: 9
+    ⚠️  EDGE MISMATCH: 9 only in migrating, 0 only in control
+    ⚠️    Control only: set()
+
+--------------------------------------------------------------------------------
+[16/25] orst0
+--------------------------------------------------------------------------------
+  Running migrating solver (path_based_formulation)...
+    ✓ Completed
+  Running control solver (path_based_formulation_original)...
+    ✓ Completed
+  Parsing results...
+    ✅ Objectives MATCH: 801846.0000000000
+    ❌ Edges DIFFER:
+       Migrating: 9 edges
+       Control:   0 edges
+       Symmetric diff: 9
+    ⚠️  EDGE MISMATCH: 9 only in migrating, 0 only in control
+    ⚠️    Control only: set()
+
+--------------------------------------------------------------------------------
+[17/25] orst1
+--------------------------------------------------------------------------------
+  Running migrating solver (path_based_formulation)...
+    ✓ Completed
+  Running control solver (path_based_formulation_original)...
+    ✓ Completed
+  Parsing results...
+    ✅ Objectives MATCH: 995494.0000000000
+    ❌ Edges DIFFER:
+       Migrating: 9 edges
+       Control:   0 edges
+       Symmetric diff: 9
+    ⚠️  EDGE MISMATCH: 9 only in migrating, 0 only in control
+    ⚠️    Control only: set()
+
+--------------------------------------------------------------------------------
+[18/25] orst2
+--------------------------------------------------------------------------------
+  Running migrating solver (path_based_formulation)...
+    ✓ Completed
+  Running control solver (path_based_formulation_original)...
+    ✓ Completed
+  Parsing results...
+    ✅ Objectives MATCH: 712327.0000000000
+    ❌ Edges DIFFER:
+       Migrating: 9 edges
+       Control:   0 edges
+       Symmetric diff: 9
+    ⚠️  EDGE MISMATCH: 9 only in migrating, 0 only in control
+    ⚠️    Control only: set()
+
+--------------------------------------------------------------------------------
+[19/25] orst3
+--------------------------------------------------------------------------------
+  Running migrating solver (path_based_formulation)...
+    ✓ Completed
+  Running control solver (path_based_formulation_original)...
+    ✓ Completed
+  Parsing results...
+    ✅ Objectives MATCH: 307480.0000000000
+    ❌ Edges DIFFER:
+       Migrating: 9 edges
+       Control:   0 edges
+       Symmetric diff: 9
+    ⚠️  EDGE MISMATCH: 9 only in migrating, 0 only in control
+    ⚠️    Control only: set()
+
+--------------------------------------------------------------------------------
+[20/25] orst4
+--------------------------------------------------------------------------------
+  Running migrating solver (path_based_formulation)...
+    ✓ Completed
+  Running control solver (path_based_formulation_original)...
+    ✓ Completed
+  Parsing results...
+    ✅ Objectives MATCH: 451519.0000000000
+    ❌ Edges DIFFER:
+       Migrating: 9 edges
+       Control:   0 edges
+       Symmetric diff: 9
+    ⚠️  EDGE MISMATCH: 9 only in migrating, 0 only in control
+    ⚠️    Control only: set()
+
+--------------------------------------------------------------------------------
+[21/25] orst5
+--------------------------------------------------------------------------------
+  Running migrating solver (path_based_formulation)...
+    ✓ Completed
+  Running control solver (path_based_formulation_original)...
+    ✓ Completed
+  Parsing results...
+    ✅ Objectives MATCH: 1147497.0000000000
+    ❌ Edges DIFFER:
+       Migrating: 9 edges
+       Control:   0 edges
+       Symmetric diff: 9
+    ⚠️  EDGE MISMATCH: 9 only in migrating, 0 only in control
+    ⚠️    Control only: set()
+
+--------------------------------------------------------------------------------
+[22/25] orst6
+--------------------------------------------------------------------------------
+  Running migrating solver (path_based_formulation)...
+    ✓ Completed
+  Running control solver (path_based_formulation_original)...
+    ✓ Completed
+  Parsing results...
+    ✅ Objectives MATCH: 1134484.0000000000
+    ❌ Edges DIFFER:
+       Migrating: 9 edges
+       Control:   0 edges
+       Symmetric diff: 9
+    ⚠️  EDGE MISMATCH: 9 only in migrating, 0 only in control
+    ⚠️    Control only: set()
+
+--------------------------------------------------------------------------------
+[23/25] orst7
+--------------------------------------------------------------------------------
+  Running migrating solver (path_based_formulation)...
+    ✓ Completed
+  Running control solver (path_based_formulation_original)...
+    ✓ Completed
+  Parsing results...
+    ✅ Objectives MATCH: 1556492.0000000000
+    ❌ Edges DIFFER:
+       Migrating: 9 edges
+       Control:   0 edges
+       Symmetric diff: 9
+    ⚠️  EDGE MISMATCH: 9 only in migrating, 0 only in control
+    ⚠️    Control only: set()
+
+--------------------------------------------------------------------------------
+[24/25] orst8
+--------------------------------------------------------------------------------
+  Running migrating solver (path_based_formulation)...
+    ✓ Completed
+  Running control solver (path_based_formulation_original)...
+    ✓ Completed
+  Parsing results...
+    ✅ Objectives MATCH: 905252.0000000000
+    ❌ Edges DIFFER:
+       Migrating: 9 edges
+       Control:   0 edges
+       Symmetric diff: 9
+    ⚠️  EDGE MISMATCH: 9 only in migrating, 0 only in control
+    ⚠️    Control only: set()
+
+--------------------------------------------------------------------------------
+[25/25] orst9
+--------------------------------------------------------------------------------
+  Running migrating solver (path_based_formulation)...
+    ✓ Completed
+  Running control solver (path_based_formulation_original)...
+    ✓ Completed
+  Parsing results...
+    ✅ Objectives MATCH: 555643.0000000000
+    ❌ Edges DIFFER:
+       Migrating: 9 edges
+       Control:   0 edges
+       Symmetric diff: 9
+    ⚠️  EDGE MISMATCH: 9 only in migrating, 0 only in control
+    ⚠️    Control only: set()
+
+================================================================================
+SUMMARY
+================================================================================
+Total instances: 25
+Objective matches: 25/25 (100.0%)
+Edge matches: 0/25 (0.0%)
+
+❌ ❌ ❌  VALIDATION FAILED  ❌ ❌ ❌
+Discrepancies found. Investigation required.
+================================================================================
+
+📊 CSV report: experiments/validation/dual_run_20251103_225602/comparison_report.csv
+📝 Detailed log: experiments/validation/dual_run_20251103_225602/detailed_log.txt
