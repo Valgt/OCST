@@ -22,7 +22,8 @@ from graph_renderer import (
     create_requirements_plot, compute_spring_layout, compute_hierarchical_layout,
     accumulate_bidirectional_requirements,
     create_solution_plot, update_solution_plot,
-    find_path_in_tree
+    find_path_in_tree,
+    compute_node_to_requirements_mapping
 )
 
 
@@ -40,6 +41,8 @@ current_layout = None
 highlight_solution = False
 layout_counter = 0  # For cycling through different hierarchical layouts
 selected_requirement = None  # Currently selected requirement (origin, destination)
+node_to_requirements = {}  # Mapping of node_id -> list of requirements passing through it
+highlighted_requirements = []  # Currently highlighted requirements in req plot
 
 
 def get_instance_options():
@@ -181,6 +184,19 @@ def on_instance_change(attr, old, new):
     if current_solution and 'tree_edges' in current_solution:
         solution_title = f"Solution: {current_instance.name} (Cost: {current_solution.get('tree_cost', 'N/A')})"
         update_solution_plot(current_solution_plot, current_instance.graph, current_solution['tree_edges'], current_layout, solution_title, None)
+        
+        # Recompute node-to-requirements mapping
+        global node_to_requirements
+        all_nodes = list(current_instance.graph.nodes())
+        node_to_requirements = compute_node_to_requirements_mapping(
+            requirements,
+            current_solution['tree_edges'],
+            all_nodes
+        )
+        
+        # Reconnect callback to solution plot nodes
+        node_source = current_solution_plot.renderers[0].node_renderer.data_source
+        node_source.selected.on_change('indices', on_solution_node_click)
     
     # Update info panel (layout is now: row(plots, controls))
     # controls = column(instance_select, reorganize_btn, highlight_checkbox, info_panel)
@@ -225,6 +241,97 @@ def on_reorganize_click():
     if current_solution and 'tree_edges' in current_solution:
         solution_title = f"Solution: {current_instance.name} (Cost: {current_solution.get('tree_cost', 'N/A')})"
         update_solution_plot(current_solution_plot, current_instance.graph, current_solution['tree_edges'], current_layout, solution_title, highlight_path)
+
+
+def highlight_requirements_in_plot(req_plot, requirements_to_highlight):
+    """
+    Highlight specific requirements in the requirements plot.
+    
+    Args:
+        req_plot: Requirements plot figure
+        requirements_to_highlight: List of (origin, dest) tuples to highlight
+    """
+    try:
+        # Access the edge renderer
+        edge_renderer = req_plot.renderers[0].edge_renderer
+        edge_source = edge_renderer.data_source
+        
+        # Get current edge data
+        origins = edge_source.data.get('origin', [])
+        destinations = edge_source.data.get('destination', [])
+        default_colors = edge_source.data.get('edge_color', [])
+        default_dashes = edge_source.data.get('line_dash', [])
+        
+        # Create set of requirements to highlight (canonical form)
+        highlight_set = set()
+        for origin, dest in requirements_to_highlight:
+            highlight_set.add((min(origin, dest), max(origin, dest)))
+        
+        # Update colors and widths for highlighted requirements
+        new_colors = []
+        new_widths = []
+        new_alphas = []
+        
+        for i in range(len(origins)):
+            canonical = (min(origins[i], destinations[i]), max(origins[i], destinations[i]))
+            
+            if canonical in highlight_set:
+                # Highlight: bright blue
+                new_colors.append("#3498db")
+                new_widths.append(6)  # Thicker
+                new_alphas.append(1.0)  # Full opacity
+            else:
+                # Normal: use default color
+                new_colors.append(default_colors[i] if i < len(default_colors) else "#808080")
+                new_widths.append(3)
+                new_alphas.append(0.3)  # Dimmed
+        
+        # Update the data source
+        edge_source.data['edge_color'] = new_colors
+        edge_source.data['edge_width'] = new_widths
+        edge_source.data['edge_alpha'] = new_alphas
+        
+    except Exception as e:
+        print(f"Error highlighting requirements: {e}")
+        import traceback
+        traceback.print_exc()
+
+
+def on_solution_node_click(attr, old, new):
+    """Callback when user clicks on a node in the solution tree."""
+    global current_instance, current_solution, current_req_plot, node_to_requirements, highlighted_requirements
+    
+    if current_instance is None or current_solution is None:
+        return
+    
+    try:
+        # Access the node renderer's data source from solution plot
+        node_source = current_solution_plot.renderers[0].node_renderer.data_source
+        selected_indices = node_source.selected.indices
+        
+        if not selected_indices:
+            # No node selected - clear highlights
+            highlighted_requirements = []
+            highlight_requirements_in_plot(current_req_plot, [])
+        else:
+            # Get the selected node ID
+            node_idx = selected_indices[0]
+            node_ids = list(node_source.data['index'])
+            selected_node = node_ids[node_idx]
+            
+            # Get requirements passing through this node
+            reqs_through_node = node_to_requirements.get(selected_node, [])
+            highlighted_requirements = reqs_through_node
+            
+            # Highlight these requirements in the requirements plot
+            highlight_requirements_in_plot(current_req_plot, reqs_through_node)
+            
+            print(f"Node {selected_node} selected: {len(reqs_through_node)} requirements pass through it")
+    
+    except Exception as e:
+        print(f"Error in solution node click handler: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 def on_highlight_change(attr, old, new):
@@ -547,6 +654,8 @@ def update_requirements_plot(plot, G, requirements, layout, title):
         graph_renderer.edge_renderer.data_source.data['line_dash'] = edge_line_dashes
         graph_renderer.edge_renderer.data_source.data['origin'] = edge_origins
         graph_renderer.edge_renderer.data_source.data['destination'] = edge_destinations
+        graph_renderer.edge_renderer.data_source.data['edge_width'] = [3] * len(edge_list)  # Default width
+        graph_renderer.edge_renderer.data_source.data['edge_alpha'] = [0.8] * len(edge_list)  # Default alpha
     
     # Configure appearance (RED nodes for requirements)
     graph_renderer.node_renderer.glyph = Circle(
@@ -562,12 +671,12 @@ def update_requirements_plot(plot, G, requirements, layout, title):
         line_width=2
     )
     
-    # Configure edge appearance (grayscale based on weight, dashed for zero-weight)
+    # Configure edge appearance (grayscale based on weight, dashed for zero-weight, dynamic width/alpha)
     graph_renderer.edge_renderer.glyph = MultiLine(
         line_color="edge_color",
         line_dash="line_dash",
-        line_alpha=0.8,
-        line_width=3
+        line_alpha="edge_alpha",  # Use dynamic alpha
+        line_width="edge_width"   # Use dynamic width
     )
     graph_renderer.edge_renderer.hover_glyph = MultiLine(
         line_color="#e74c3c",
@@ -728,6 +837,25 @@ def initialize_app():
             current_layout,
             solution_title
         )
+        
+        # Compute node-to-requirements mapping for bidirectional interaction
+        global node_to_requirements
+        all_nodes = list(current_instance.graph.nodes())
+        node_to_requirements = compute_node_to_requirements_mapping(
+            requirements,
+            current_solution['tree_edges'],
+            all_nodes
+        )
+        
+        # Make solution plot nodes clickable
+        from bokeh.models import TapTool
+        tap_tool = TapTool()
+        current_solution_plot.add_tools(tap_tool)
+        
+        # Connect click callback to solution plot nodes
+        node_source = current_solution_plot.renderers[0].node_renderer.data_source
+        node_source.selected.on_change('indices', on_solution_node_click)
+        
     else:
         # Create empty spacer if no solution
         current_solution_plot = Div(text="<h3>No solution available</h3>", width=900, height=700)

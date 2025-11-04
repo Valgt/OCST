@@ -326,6 +326,8 @@ def create_requirements_plot(G: nx.Graph, requirements: list, layout: Dict, titl
         graph_renderer.edge_renderer.data_source.data['line_dash'] = edge_line_dashes
         graph_renderer.edge_renderer.data_source.data['origin'] = edge_origins
         graph_renderer.edge_renderer.data_source.data['destination'] = edge_destinations
+        graph_renderer.edge_renderer.data_source.data['edge_width'] = [3] * len(edge_list)  # Default width
+        graph_renderer.edge_renderer.data_source.data['edge_alpha'] = [0.8] * len(edge_list)  # Default alpha
     
     # Configure node appearance (RED nodes for requirements)
     graph_renderer.node_renderer.glyph = Circle(
@@ -341,12 +343,12 @@ def create_requirements_plot(G: nx.Graph, requirements: list, layout: Dict, titl
         line_width=2
     )
     
-    # Configure edge appearance (grayscale based on weight, dashed for zero-weight)
+    # Configure edge appearance (grayscale based on weight, dashed for zero-weight, dynamic width/alpha)
     graph_renderer.edge_renderer.glyph = MultiLine(
         line_color="edge_color",
         line_dash="line_dash",
-        line_alpha=0.8,
-        line_width=3
+        line_alpha="edge_alpha",  # Dynamic alpha for highlighting
+        line_width="edge_width"   # Dynamic width for highlighting
     )
     graph_renderer.edge_renderer.hover_glyph = MultiLine(
         line_color="#e74c3c",
@@ -632,6 +634,41 @@ def compute_requirement_to_edges_mapping(requirements: list, solution_edges: lis
         mapping[key_rev] = edge_indices
     
     return mapping
+
+
+def compute_node_to_requirements_mapping(requirements: list, solution_edges: list, all_nodes: list) -> dict:
+    """
+    Pre-compute which requirements pass through each node in the solution tree.
+    
+    Args:
+        requirements: List of (origin, destination, weight) tuples
+        solution_edges: List of solution tree edges
+        all_nodes: List of all node IDs in the graph
+        
+    Returns:
+        Dictionary mapping node_id -> list of (origin, dest) tuples for requirements passing through that node
+    """
+    accumulated = accumulate_bidirectional_requirements(requirements)
+    
+    # Initialize mapping: each node maps to list of requirements
+    node_to_reqs = {node: [] for node in all_nodes}
+    
+    # For each requirement, find its path and mark all nodes in that path
+    for origin, dest, weight in accumulated:
+        path_edges = find_path_in_tree(solution_edges, origin, dest)
+        
+        # Extract nodes from path edges
+        nodes_in_path = set([origin, dest])  # Always include endpoints
+        for u, v in path_edges:
+            nodes_in_path.add(u)
+            nodes_in_path.add(v)
+        
+        # Add this requirement to all nodes in its path
+        for node in nodes_in_path:
+            if node in node_to_reqs:
+                node_to_reqs[node].append((origin, dest))
+    
+    return node_to_reqs
 
 
 def create_solution_plot(G: nx.Graph, solution_edges: list, layout: Dict, title: str = "Solution Tree", 

@@ -143,16 +143,25 @@ Build a basic interactive graph viewer that:
 - **Instance Selector:** Dropdown to switch between instances
 - **Reorganize Layout:** Button to recompute graph layout (hierarchical for trees)
 - **Marcar OCST:** Checkbox to highlight solution edges in the cost graph (green with intensity)
-- **Trace Requirement Path:** ⭐ **CLICK-BASED INTERACTION** (v2 - Improved)
-  - **Hover over requirement edges** to see a tooltip with origin → destination
-  - **Click on the tooltip area** (invisible node at edge midpoint) to trace its path in the solution tree
-  - Uses invisible clickable nodes at requirement edge midpoints for reliable interaction
-  - Computes shortest path in solution tree using NetworkX
-  - Highlights path edges in **bright pink/magenta** with **very thick width (12px)** for maximum visibility
-  - Selected requirement shows as darker red circle at midpoint
-  - Updates dynamically when layout changes
-  - Click another requirement to switch, or click elsewhere to deselect
-  - Technical: Edge clicking is unreliable in Bokeh, so we use midpoint nodes as a workaround
+
+#### **Bidirectional Graph Interaction:** 🔄 ⭐⭐
+1. **Requirement → Tree Path Tracing** (Click requirement edge)
+   - **Hover over requirement edges** to see a tooltip with origin → destination
+   - **Click on the tooltip area** (invisible blue node at edge midpoint) to trace its path in the solution tree
+   - Uses invisible clickable nodes at requirement edge midpoints for reliable interaction
+   - Computes shortest path in solution tree using NetworkX
+   - Highlights path edges in **bright pink/magenta** with **very thick width (12px)** for maximum visibility
+   - Selected requirement shows as darker blue circle at midpoint
+   - Technical: Edge clicking is unreliable in Bokeh, so we use midpoint nodes as a workaround
+
+2. **Tree Node → Requirements Flow** ⭐ **NEW** (Click tree node)
+   - **Click on any node in the solution tree** (bottom-right) to see all requirements that flow through it
+   - Highlights ALL requirement edges passing through that node
+   - Highlighted requirements: **bright blue (#3498db), thick (6px), full opacity**
+   - Dimmed requirements: **grayscale, normal width (3px), 30% opacity**
+   - Pre-computes paths for all requirements using NetworkX shortest_path
+   - Useful for understanding node importance and traffic patterns
+   - Click another node to switch, or click elsewhere to clear highlighting
 
 ### Visual Encoding
 - **Requirements Graph:**
