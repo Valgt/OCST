@@ -161,6 +161,8 @@ def on_instance_change(attr, old, new):
                 solution_title = f"Solution: {current_instance.name} (Cost: {current_solution.get('tree_cost', 'N/A')})"
                 update_solution_plot(current_solution_plot, current_instance.graph, 
                                    current_solution['tree_edges'], current_layout, solution_title, None)
+                # CRITICAL: Reconnect callback after clearing highlight (deselection path)
+                reconnect_solution_node_callback()
             selected_requirement = None
             return
         try:
@@ -908,6 +910,8 @@ def initialize_app():
                 solution_title = f"Solution: {current_instance.name} (Cost: {current_solution.get('tree_cost', 'N/A')})"
                 update_solution_plot(current_solution_plot, current_instance.graph, 
                                    current_solution['tree_edges'], current_layout, solution_title, None)
+                # CRITICAL: Reconnect callback after clearing highlight (deselection path)
+                reconnect_solution_node_callback()
             selected_requirement = None
             return
         
