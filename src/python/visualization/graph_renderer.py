@@ -69,6 +69,133 @@ def compute_edge_colors(G: nx.Graph) -> List[str]:
     return colors
 
 
+def create_requirements_plot(G: nx.Graph, requirements: list, layout: Dict, title: str = "Requirements") -> figure:
+    """
+    Create a Bokeh plot showing requirements overlaid on the graph topology.
+    
+    Args:
+        G: NetworkX graph (for topology/layout)
+        requirements: List of (origin, destination, weight) tuples
+        layout: Node positions (same as main graph)
+        title: Plot title
+        
+    Returns:
+        Bokeh figure object
+    """
+    # Create figure with same dimensions as main plot
+    plot = figure(
+        title=title,
+        width=900,
+        height=700,
+        x_range=(-1.2, 1.2),
+        y_range=(-1.2, 1.2),
+        toolbar_location="above",
+        tools=""
+    )
+    
+    # Add tools
+    plot.add_tools(
+        PanTool(),
+        WheelZoomTool(),
+        BoxZoomTool(),
+        ResetTool()
+    )
+    
+    # Configure plot appearance
+    plot.background_fill_color = "#f5f5f5"
+    plot.grid.grid_line_color = None
+    plot.axis.visible = False
+    
+    # Create a graph with only nodes (no edges from original graph)
+    req_graph = nx.Graph()
+    req_graph.add_nodes_from(G.nodes())
+    
+    # Add requirement edges
+    req_weights = []
+    for origin, destination, weight in requirements:
+        if origin in G.nodes() and destination in G.nodes():
+            req_graph.add_edge(origin, destination, weight=weight)
+            req_weights.append(weight)
+    
+    # Normalize requirement weights for coloring (red intensity)
+    if req_weights:
+        min_weight = min(req_weights)
+        max_weight = max(req_weights)
+        
+        if max_weight == min_weight:
+            req_colors = ["#e74c3c"] * len(req_weights)
+        else:
+            req_colors = []
+            for weight in req_weights:
+                norm = (weight - min_weight) / (max_weight - min_weight)
+                # Light red to dark red
+                intensity = int(255 - norm * 100)
+                color = f"#ff{intensity:02x}{intensity:02x}"
+                req_colors.append(color)
+        
+        # Add colors as edge attribute
+        for i, (u, v) in enumerate(req_graph.edges()):
+            req_graph[u][v]['edge_color'] = req_colors[i]
+    
+    # Create graph renderer with provided layout
+    graph_renderer = from_networkx(req_graph, layout, scale=1, center=(0, 0))
+    
+    # Add weight data for hover
+    if req_graph.edges():
+        edge_weights = [req_graph[u][v]['weight'] for u, v in req_graph.edges()]
+        edge_colors = [req_graph[u][v].get('edge_color', '#e74c3c') for u, v in req_graph.edges()]
+        graph_renderer.edge_renderer.data_source.data['weight'] = edge_weights
+        graph_renderer.edge_renderer.data_source.data['edge_color'] = edge_colors
+    
+    # Configure node appearance (smaller, gray)
+    graph_renderer.node_renderer.glyph = Circle(
+        radius=0.04,
+        fill_color="#95a5a6",
+        line_color="#7f8c8d",
+        line_width=1
+    )
+    graph_renderer.node_renderer.hover_glyph = Circle(
+        radius=0.04,
+        fill_color="#3498db",
+        line_color="#2980b9",
+        line_width=2
+    )
+    
+    # Configure edge appearance (requirements in red tones)
+    graph_renderer.edge_renderer.glyph = MultiLine(
+        line_color="edge_color",
+        line_alpha=0.7,
+        line_width=3
+    )
+    graph_renderer.edge_renderer.hover_glyph = MultiLine(
+        line_color="#c0392b",
+        line_alpha=1.0,
+        line_width=5
+    )
+    
+    # Add hover tool for nodes
+    node_hover = HoverTool(
+        tooltips=[("Node ID", "@index")],
+        renderers=[graph_renderer.node_renderer]
+    )
+    plot.add_tools(node_hover)
+    
+    # Add hover tool for requirement edges
+    edge_hover = HoverTool(
+        tooltips=[
+            ("Weight", "@weight{0.00}"),
+            ("Requirement", "(@start, @end)")
+        ],
+        renderers=[graph_renderer.edge_renderer]
+    )
+    plot.add_tools(edge_hover)
+    
+    # Add graph to plot
+    plot.renderers.append(graph_renderer)
+    
+    return plot
+
+
 def create_graph_plot(G: nx.Graph, title: str = "OCST Instance") -> figure:
     """
     Create a Bokeh plot for the given graph.
