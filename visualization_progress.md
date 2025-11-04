@@ -106,7 +106,14 @@ Build a basic interactive graph viewer that:
 
 ## 🐛 Issues and Blockers
 
-*None yet - just starting!*
+### ✅ Resolved
+**Issue #1: Bokeh 3.x API Compatibility**
+- **Problem:** Blank page on initial load
+- **Root Cause:** 
+  - `from_networkx` import location changed in Bokeh 3.x (was in `bokeh.models.graphs`, now in `bokeh.plotting`)
+  - `Circle` glyph no longer accepts `size` parameter, must use `radius` instead
+- **Solution:** Updated imports and changed `size=20` to `radius=0.05`
+- **Status:** ✅ Fixed in commit d360b4b
 
 ---
 
