@@ -12,8 +12,9 @@ Then navigate to: http://localhost:5006/app
 
 from pathlib import Path
 from bokeh.layouts import column, row
-from bokeh.models import Select, Div
+from bokeh.models import Select, Div, Button
 from bokeh.plotting import curdoc
+import random
 
 from graph_loader import get_available_instances, load_instance
 from graph_renderer import (
@@ -109,7 +110,29 @@ def on_instance_change(attr, old, new):
     
     # Update info panel
     new_info_panel = create_info_panel(current_instance)
-    layout.children[2].children[1] = new_info_panel
+    layout.children[2].children[2] = new_info_panel
+
+
+def on_reorganize_click():
+    """Callback when reorganize button is clicked."""
+    global current_instance, current_graph_plot, current_req_plot, current_layout
+    
+    if current_instance is None:
+        return
+    
+    # Generate new random seed
+    new_seed = random.randint(1, 10000)
+    
+    # Compute new layout with different seed
+    current_layout = compute_spring_layout(current_instance.graph, seed=new_seed)
+    
+    # Update both plots with new layout
+    graph_title = f"Graph: {current_instance.name}"
+    update_graph_plot_with_layout(current_graph_plot, current_instance.graph, current_layout, graph_title)
+    
+    req_title = f"Requirements: {current_instance.name}"
+    requirements = current_instance.get_requirements()
+    update_requirements_plot(current_req_plot, current_instance.graph, requirements, current_layout, req_title)
 
 
 def create_graph_plot_with_layout(G, layout, title):
@@ -384,6 +407,14 @@ def initialize_app():
     )
     instance_select.on_change('value', on_instance_change)
     
+    # Create reorganize button
+    reorganize_btn = Button(
+        label="🔄 Reorganize Layout",
+        button_type="primary",
+        width=300
+    )
+    reorganize_btn.on_click(on_reorganize_click)
+    
     # Compute layout once (shared by both plots)
     current_layout = compute_spring_layout(current_instance.graph)
     
@@ -409,7 +440,7 @@ def initialize_app():
     info_panel = create_info_panel(current_instance)
     
     # Create layout: requirements | graph | controls
-    controls = column(instance_select, info_panel)
+    controls = column(instance_select, reorganize_btn, info_panel)
     layout = row(current_req_plot, current_graph_plot, controls)
     
     # Add to document

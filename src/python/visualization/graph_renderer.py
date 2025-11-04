@@ -10,7 +10,7 @@ import networkx as nx
 from bokeh.plotting import figure, from_networkx
 from bokeh.models import (
     Circle, MultiLine, HoverTool, BoxZoomTool, 
-    ResetTool, WheelZoomTool, PanTool
+    ResetTool, WheelZoomTool, PanTool, CustomJS
 )
 from bokeh.transform import linear_cmap
 from bokeh.palettes import Greys256
