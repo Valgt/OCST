@@ -3,9 +3,10 @@
 **Document Purpose:** Track incremental development of the interactive OCST instance visualization tool.
 
 **Last Updated:** 2025-11-04  
-**Current Phase:** Phase 1 - Basic Visualization + Interactive Path Tracing ✅  
+**Current Phase:** Phase 1 - Basic Visualization + Bidirectional Interaction ✅ (STABLE)  
 **Branch:** `visualizacion`  
-**Technology:** Python + Bokeh + NetworkX
+**Technology:** Python + Bokeh + NetworkX  
+**Status:** Production-ready interactive visualizer with robust callback management
 
 ---
 
@@ -118,15 +119,78 @@ Build a basic interactive graph viewer that:
 - **Solution:** Updated imports and changed `size=20` to `radius=0.05`
 - **Status:** ✅ Fixed in commit d360b4b
 
+**Issue #2: Callback Accumulation Bug** ⚠️ **CRITICAL**
+- **Problem:** Interactions worked once, then stopped working or behaved erratically
+- **Root Cause:** Bokeh's `on_change()` ACCUMULATES callbacks instead of replacing them. Every time `update_solution_plot()` destroyed renderers, we reconnected with `on_change()`, leading to exponential accumulation (1, 2, 4, 8... callbacks per click)
+- **Solution:** Created `reconnect_solution_node_callback()` helper that:
+  1. Removes old callback with `remove_on_change()` first
+  2. Adds fresh callback with `on_change()`
+  3. Ensures exactly ONE callback exists at any time
+- **Impact:** Solved "clicks only work once or twice" issue
+- **Status:** ✅ Fixed in commit fbf434d
+
+**Issue #3: Reorganize Layout Breaks Interactions** ⚠️ **CRITICAL**
+- **Problem:** After clicking "Reorganize Layout", ALL interactions stopped working (both midpoint clicks and node clicks)
+- **Root Cause:** `on_reorganize_click()` called `update_requirements_plot()` (destroying midpoint nodes) and `update_solution_plot()` (destroying node callbacks) but never reconnected them
+- **Solution:** 
+  1. Re-add midpoint nodes after `update_requirements_plot()`
+  2. Call `reconnect_solution_node_callback()` after `update_solution_plot()`
+- **Impact:** All interactions now survive layout reorganization
+- **Status:** ✅ Fixed in commit 92e8a7e
+
+**Issue #4: Callback Loss on Deselection (Hidden Path Bug)** ⚠️ **CRITICAL**
+- **Problem:** "Node clicks stop working after using visualizer for a while" - seemed random and intermittent
+- **Root Cause:** When user clicks on background/empty space to deselect a requirement, Bokeh triggers midpoint callback with `new=[]`. Two callbacks had early-return paths that called `update_solution_plot()` to clear highlighting but didn't reconnect the node callback:
+  - `on_midpoint_click_updated()` in `on_instance_change()`
+  - `on_requirement_midpoint_click()` in `initialize_app()`
+- **Why it seemed random:** Bug only manifested after deselecting (clicking background), not during normal interactions. Users naturally do this while exploring, so it appeared "after a while" rather than immediately
+- **Solution:** Added `reconnect_solution_node_callback()` to BOTH deselection early-return paths
+- **Impact:** Interactions now work reliably through ANY sequence of selections/deselections
+- **Status:** ✅ Fixed in commit 5ec745a
+
+**Issue #5: Bidirectional Interaction Interference**
+- **Problem:** After using midpoint click, tree node clicks stopped working (and vice-versa)
+- **Root Cause:** Selection states weren't being cleared mutually between the two interaction modes
+- **Solution:** Each interaction now explicitly clears the other's selection state before activating
+- **Status:** ✅ Fixed in commit 0968761
+
+**Issue #6: Automatic Node Dimming on Selection**
+- **Problem:** When clicking a tree node, other nodes became opaque/dimmed automatically
+- **Root Cause:** Bokeh's default selection behavior dims non-selected glyphs
+- **Solution:** Set `selection_glyph` and `nonselection_glyph` to normal appearance, disabling automatic dimming
+- **Status:** ✅ Fixed in commit 495adcd
+
 ---
 
 ## 💡 Ideas and Future Enhancements
 
-- Compare multiple instances side-by-side
-- Animate SEC cuts during solving
-- Visualize requirement paths in solution tree
-- Heatmap of edge usage across different formulations
-- Interactive graph editing (for instance generation)
+### High Priority (Quick Wins)
+- **Export visualization to PNG/SVG:** Save current view as image for papers/reports
+- **Show requirement weight on hover:** Currently only shows origin→destination, add weight value
+- **Filter requirements by weight threshold:** Slider to hide low-weight requirements, focus on critical flows
+- **Highlight multiple nodes simultaneously:** Ctrl+Click to select multiple tree nodes, see combined requirement flow
+- **Path cost display:** When clicking requirement, show total path cost in solution tree
+
+### Medium Priority (UX Improvements)
+- **Color scheme selector:** Dark mode, colorblind-friendly palettes
+- **Layout persistence:** Remember layout across instance switches (cache positions)
+- **Instance comparison mode:** Side-by-side view of two instances
+- **Search/filter nodes:** Text input to highlight specific node IDs
+- **Edge thickness scale control:** Slider to adjust visibility of edge intensity differences
+- **Legend panel:** Color/style guide for graph elements
+
+### Research/Analysis Features
+- **Structural properties overlay:** Bridges, articulation points, leaves (from Phase 2 roadmap)
+- **Solution comparison:** Overlay solutions from different formulations, highlight differences
+- **Heatmap of edge usage:** Across multiple instances or formulations
+- **Requirement flow statistics:** Most-used paths, bottleneck nodes, flow distribution
+- **Animate SEC cuts:** Show subtour elimination constraint iterations during solving
+- **Sensitivity analysis:** Show impact of cost changes on solution
+
+### Advanced/Future
+- **Interactive graph editing:** Create/modify instances visually
+- **Time-series analysis:** If we add timestamp data, animate graph evolution
+- **3D visualization:** For very large graphs (WebGL-based)
 
 ---
 
