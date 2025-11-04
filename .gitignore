@@ -62,3 +62,4 @@ Thumbs.db
 *.temp
 
 # Evitar carpetas o archivos temporales personalizados (ajustar según necesidad)
+venv/

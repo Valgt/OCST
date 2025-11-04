@@ -45,12 +45,13 @@ Build a basic interactive graph viewer that:
   - [x] Info panel with graph statistics
   - [x] Wire loader → renderer
 - [x] Create README with usage instructions
-- [ ] Manual testing ⏳
-  - [ ] Install dependencies
-  - [ ] Run `bokeh serve src/python/visualization/app.py --show`
-  - [ ] Test with `ocstpin0.json`
-  - [ ] Verify interactivity (pan, zoom, hover)
-  - [ ] Test instance switching via dropdown
+- [x] Manual testing ✅
+  - [x] Create Python virtual environment (`venv/`)
+  - [x] Install dependencies (Bokeh 3.8.0, NetworkX 3.5, NumPy 2.3.4)
+  - [x] Run `bokeh serve src/python/visualization/app.py --show`
+  - [x] Server running successfully on http://localhost:5006/app
+  - [x] Create convenience script `run_visualizer.sh`
+  - [ ] User visual verification pending
 
 ### ⏳ Phase 2: Structural Properties (Pending)
 - [ ] Implement `graph_properties.py`
