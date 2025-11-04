@@ -117,6 +117,11 @@ def create_graph_plot(G: nx.Graph, title: str = "OCST Instance") -> figure:
     # Create graph renderer from NetworkX
     graph_renderer = from_networkx(G, layout, scale=1, center=(0, 0))
     
+    # Add cost data to edge renderer for hover tooltips
+    edge_costs = [G[u][v]['cost'] for u, v in G.edges()]
+    graph_renderer.edge_renderer.data_source.data['cost'] = edge_costs
+    graph_renderer.edge_renderer.data_source.data['edge_color'] = edge_colors
+    
     # Configure node appearance
     graph_renderer.node_renderer.glyph = Circle(
         radius=0.05,
@@ -150,9 +155,12 @@ def create_graph_plot(G: nx.Graph, title: str = "OCST Instance") -> figure:
     )
     plot.add_tools(node_hover)
     
-    # Add hover tool for edges (show cost)
+    # Add hover tool for edges (show cost with formatting)
     edge_hover = HoverTool(
-        tooltips=[("Cost", "@cost")],
+        tooltips=[
+            ("Cost", "@cost{0.00}"),
+            ("Edge", "(@start, @end)")
+        ],
         renderers=[graph_renderer.edge_renderer]
     )
     plot.add_tools(edge_hover)
@@ -190,6 +198,11 @@ def update_graph_plot(plot: figure, G: nx.Graph, title: str):
     
     # Create new graph renderer
     graph_renderer = from_networkx(G, layout, scale=1, center=(0, 0))
+    
+    # Add cost data to edge renderer for hover tooltips
+    edge_costs = [G[u][v]['cost'] for u, v in G.edges()]
+    graph_renderer.edge_renderer.data_source.data['cost'] = edge_costs
+    graph_renderer.edge_renderer.data_source.data['edge_color'] = edge_colors
     
     # Configure node appearance
     graph_renderer.node_renderer.glyph = Circle(
