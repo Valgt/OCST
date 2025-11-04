@@ -108,3 +108,19 @@ def load_instance(filepath: Path) -> OCSTInstance:
     """
     return OCSTInstance(filepath)
 
+
+def load_solution(filepath: Path):
+    """
+    Load solution from JSON file.
+    
+    Args:
+        filepath: Path to solution JSON file
+        
+    Returns:
+        Dictionary with solution data (tree_edges, tree_cost, etc.) or None if not found
+    """
+    with open(filepath, 'r') as f:
+        data = json.load(f)
+    
+    return data.get('solution', None)
+

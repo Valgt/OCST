@@ -11,27 +11,33 @@ Then navigate to: http://localhost:5006/app
 """
 
 from pathlib import Path
-from bokeh.layouts import column, row
-from bokeh.models import Select, Div, Button
+from bokeh.layouts import column, row, gridplot
+from bokeh.models import Select, Div, Button, Spacer, CheckboxGroup
 from bokeh.plotting import curdoc
 import random
 
-from graph_loader import get_available_instances, load_instance
+from graph_loader import get_available_instances, load_instance, load_solution
 from graph_renderer import (
     create_graph_plot, update_graph_plot,
-    create_requirements_plot, compute_spring_layout,
-    accumulate_bidirectional_requirements
+    create_requirements_plot, compute_spring_layout, compute_hierarchical_layout,
+    accumulate_bidirectional_requirements,
+    create_solution_plot, update_solution_plot
 )
 
 
 # Configuration
 DATA_DIR = Path(__file__).parent.parent.parent.parent / "data" / "input"
+DATA_OUTPUT_DIR = Path(__file__).parent.parent.parent.parent / "data" / "output" / "test_instances"
 
 # Global state
 current_instance = None
+current_solution = None
 current_graph_plot = None
 current_req_plot = None
+current_solution_plot = None
 current_layout = None
+highlight_solution = False
+layout_counter = 0  # For cycling through different hierarchical layouts
 
 
 def get_instance_options():
@@ -98,52 +104,184 @@ def create_info_panel(instance):
 
 def on_instance_change(attr, old, new):
     """Callback when user selects a different instance."""
-    global current_instance, current_graph_plot, current_req_plot, current_layout
+    global current_instance, current_solution, current_graph_plot, current_req_plot, current_solution_plot, current_layout
     
     # Load new instance
     instance_path = DATA_DIR / f"{new}.json"
     current_instance = load_instance(instance_path)
     
-    # Compute new layout (consistent for both plots)
-    current_layout = compute_spring_layout(current_instance.graph)
+    # Load solution (if available)
+    solution_path = DATA_OUTPUT_DIR / f"{new}.results.json"
+    if solution_path.exists():
+        current_solution = load_solution(solution_path)
+    else:
+        current_solution = None
+    
+    # Compute new layout (hierarchical if solution available, spring otherwise)
+    if current_solution and 'tree_edges' in current_solution:
+        current_layout = compute_hierarchical_layout(current_instance.graph, current_solution['tree_edges'])
+    else:
+        current_layout = compute_spring_layout(current_instance.graph)
     
     # Update graph plot (edges with costs) - using shared layout
+    solution_edges = current_solution.get('tree_edges', []) if current_solution else []
     graph_title = f"Graph: {current_instance.name}"
-    update_graph_plot_with_layout(current_graph_plot, current_instance.graph, current_layout, graph_title)
+    update_graph_plot_with_layout(current_graph_plot, current_instance.graph, current_layout, graph_title, solution_edges, highlight_solution)
     
     # Update requirements plot
     req_title = f"Requirements: {current_instance.name}"
     requirements = current_instance.get_requirements()
     update_requirements_plot(current_req_plot, current_instance.graph, requirements, current_layout, req_title)
     
-    # Update info panel
+    # Update solution plot
+    if current_solution and 'tree_edges' in current_solution:
+        solution_title = f"Solution: {current_instance.name} (Cost: {current_solution.get('tree_cost', 'N/A')})"
+        update_solution_plot(current_solution_plot, current_instance.graph, current_solution['tree_edges'], current_layout, solution_title)
+    
+    # Update info panel (layout is now: row(plots, controls))
+    # controls = column(instance_select, reorganize_btn, highlight_checkbox, info_panel)
     new_info_panel = create_info_panel(current_instance)
-    layout.children[2].children[2] = new_info_panel
+    layout.children[1].children[3] = new_info_panel
 
 
 def on_reorganize_click():
     """Callback when reorganize button is clicked."""
-    global current_instance, current_graph_plot, current_req_plot, current_layout
+    global current_instance, current_solution, current_graph_plot, current_req_plot, current_solution_plot, current_layout, layout_counter
     
     if current_instance is None:
         return
     
-    # Generate new random seed
-    new_seed = random.randint(1, 10000)
+    # Increment counter for variety
+    layout_counter += 1
     
-    # Compute new layout with different seed
-    current_layout = compute_spring_layout(current_instance.graph, seed=new_seed)
+    # Compute new layout
+    if current_solution and 'tree_edges' in current_solution:
+        # Use hierarchical layout with different root
+        current_layout = compute_hierarchical_layout(current_instance.graph, current_solution['tree_edges'], layout_counter)
+    else:
+        # Use spring layout with new random seed
+        new_seed = random.randint(1, 10000)
+        current_layout = compute_spring_layout(current_instance.graph, seed=new_seed)
     
-    # Update both plots with new layout
+    # Update all plots with new layout
+    solution_edges = current_solution.get('tree_edges', []) if current_solution else []
     graph_title = f"Graph: {current_instance.name}"
-    update_graph_plot_with_layout(current_graph_plot, current_instance.graph, current_layout, graph_title)
+    update_graph_plot_with_layout(current_graph_plot, current_instance.graph, current_layout, graph_title, solution_edges, highlight_solution)
     
     req_title = f"Requirements: {current_instance.name}"
     requirements = current_instance.get_requirements()
     update_requirements_plot(current_req_plot, current_instance.graph, requirements, current_layout, req_title)
+    
+    if current_solution and 'tree_edges' in current_solution:
+        solution_title = f"Solution: {current_instance.name} (Cost: {current_solution.get('tree_cost', 'N/A')})"
+        update_solution_plot(current_solution_plot, current_instance.graph, current_solution['tree_edges'], current_layout, solution_title)
 
 
-def create_graph_plot_with_layout(G, layout, title):
+def on_highlight_change(attr, old, new):
+    """Callback when highlight checkbox changes."""
+    global current_instance, current_solution, current_graph_plot, current_layout, highlight_solution
+    
+    if current_instance is None:
+        return
+    
+    # Update highlight state
+    highlight_solution = len(new) > 0  # True if checkbox is checked
+    
+    # Redraw graph plot with/without highlighting
+    solution_edges = current_solution.get('tree_edges', []) if current_solution else []
+    graph_title = f"Graph: {current_instance.name}"
+    update_graph_plot_with_layout(current_graph_plot, current_instance.graph, current_layout, graph_title, solution_edges, highlight_solution)
+
+
+def compute_edge_colors_with_solution(G, solution_edges, attribute='cost'):
+    """
+    Compute edge colors highlighting solution edges in green, others in gray.
+    Green intensity based on cost (darker = higher cost).
+    
+    Args:
+        G: NetworkX graph
+        solution_edges: List of dicts with 'source' and 'destination' keys
+        attribute: Edge attribute to use for coloring
+        
+    Returns:
+        Tuple of (colors list, line_dash list)
+    """
+    # Create set of solution edges (undirected)
+    solution_set = set()
+    for edge in solution_edges:
+        u, v = edge['source'], edge['destination']
+        solution_set.add((min(u, v), max(u, v)))
+    
+    # Get all edge values
+    edges_list = list(G.edges())
+    values = [G[u][v][attribute] for u, v in edges_list]
+    
+    if not values:
+        return [], []
+    
+    colors = []
+    line_dashes = []
+    
+    # Separate solution and non-solution edges for normalization
+    solution_values = []
+    non_solution_values = []
+    
+    for i, (u, v) in enumerate(edges_list):
+        canonical = (min(u, v), max(u, v))
+        value = values[i]
+        if canonical in solution_set and value > 0:
+            solution_values.append(value)
+        elif value > 0:
+            non_solution_values.append(value)
+    
+    # Normalize solution edges (green scale)
+    min_sol = min(solution_values) if solution_values else 0
+    max_sol = max(solution_values) if solution_values else 0
+    
+    # Normalize non-solution edges (gray scale)
+    min_non = min(non_solution_values) if non_solution_values else 0
+    max_non = max(non_solution_values) if non_solution_values else 0
+    
+    for i, (u, v) in enumerate(edges_list):
+        canonical = (min(u, v), max(u, v))
+        value = values[i]
+        
+        if canonical in solution_set:
+            # Solution edge = green with intensity based on cost
+            if value == 0 or abs(value) < 1e-9:
+                # Zero cost solution edge = light green + dashed
+                colors.append("#52c985")  # Light green
+                line_dashes.append("dashed")
+            elif max_sol == min_sol:
+                colors.append("#27ae60")  # Medium green
+                line_dashes.append("solid")
+            else:
+                norm = (value - min_sol) / (max_sol - min_sol)
+                # Map [0, 1] to [light green, dark green]
+                # Light: #52c985, Dark: #1e7e34
+                intensity_r = int(82 - norm * 52)   # 82 -> 30
+                intensity_g = int(201 - norm * 75)  # 201 -> 126
+                intensity_b = int(133 - norm * 81)  # 133 -> 52
+                colors.append(f"#{intensity_r:02x}{intensity_g:02x}{intensity_b:02x}")
+                line_dashes.append("solid")
+        elif value == 0 or abs(value) < 1e-9:
+            # Non-solution zero cost = light gray + dashed
+            colors.append("#c8c8c8")
+            line_dashes.append("dashed")
+        else:
+            # Non-solution edge = gray with intensity
+            if max_non == min_non:
+                colors.append("#a0a0a0")  # Medium gray
+            else:
+                norm = (value - min_non) / (max_non - min_non)
+                intensity = int(200 - norm * 150)  # Light to dark gray
+                colors.append(f"#{intensity:02x}{intensity:02x}{intensity:02x}")
+            line_dashes.append("solid")
+    
+    return colors, line_dashes
+
+
+def create_graph_plot_with_layout(G, layout, title, solution_edges=None, highlight=False):
     """Create graph plot using a specific layout."""
     from bokeh.models import Circle, MultiLine, HoverTool, BoxZoomTool, ResetTool, WheelZoomTool, PanTool
     from bokeh.plotting import figure, from_networkx
@@ -165,7 +303,11 @@ def create_graph_plot_with_layout(G, layout, title):
     plot.axis.visible = False
     
     # Compute edge colors and styles
-    edge_colors, edge_line_dashes = compute_edge_colors_and_styles(G, attribute='cost')
+    if highlight and solution_edges:
+        edge_colors, edge_line_dashes = compute_edge_colors_with_solution(G, solution_edges, attribute='cost')
+    else:
+        edge_colors, edge_line_dashes = compute_edge_colors_and_styles(G, attribute='cost')
+    
     for i, (u, v) in enumerate(G.edges()):
         G[u][v]['edge_color'] = edge_colors[i] if edge_colors else "#95a5a6"
         G[u][v]['line_dash'] = edge_line_dashes[i] if edge_line_dashes else "solid"
@@ -225,7 +367,7 @@ def create_graph_plot_with_layout(G, layout, title):
     return plot
 
 
-def update_graph_plot_with_layout(plot, G, layout, title):
+def update_graph_plot_with_layout(plot, G, layout, title, solution_edges=None, highlight=False):
     """Update graph plot with new data using provided layout."""
     from bokeh.models import HoverTool, Circle, MultiLine
     from bokeh.plotting import from_networkx
@@ -239,7 +381,11 @@ def update_graph_plot_with_layout(plot, G, layout, title):
     plot.title.text = title
     
     # Compute edge colors and styles
-    edge_colors, edge_line_dashes = compute_edge_colors_and_styles(G, attribute='cost')
+    if highlight and solution_edges:
+        edge_colors, edge_line_dashes = compute_edge_colors_with_solution(G, solution_edges, attribute='cost')
+    else:
+        edge_colors, edge_line_dashes = compute_edge_colors_and_styles(G, attribute='cost')
+    
     for i, (u, v) in enumerate(G.edges()):
         G[u][v]['edge_color'] = edge_colors[i] if edge_colors else "#95a5a6"
         G[u][v]['line_dash'] = edge_line_dashes[i] if edge_line_dashes else "solid"
@@ -394,7 +540,7 @@ def update_requirements_plot(plot, G, requirements, layout, title):
 # Initialize application
 def initialize_app():
     """Initialize the Bokeh application."""
-    global current_instance, current_graph_plot, current_req_plot, current_layout, layout
+    global current_instance, current_solution, current_graph_plot, current_req_plot, current_solution_plot, current_layout, layout
     
     # Get available instances
     instance_options = get_instance_options()
@@ -409,6 +555,13 @@ def initialize_app():
     first_instance = instance_options[0]
     instance_path = DATA_DIR / f"{first_instance}.json"
     current_instance = load_instance(instance_path)
+    
+    # Load solution (if available)
+    solution_path = DATA_OUTPUT_DIR / f"{first_instance}.results.json"
+    if solution_path.exists():
+        current_solution = load_solution(solution_path)
+    else:
+        current_solution = None
     
     # Create dropdown for instance selection
     instance_select = Select(
@@ -427,10 +580,21 @@ def initialize_app():
     )
     reorganize_btn.on_click(on_reorganize_click)
     
-    # Compute layout once (shared by both plots)
-    current_layout = compute_spring_layout(current_instance.graph)
+    # Create checkbox for highlighting OCST solution
+    highlight_checkbox = CheckboxGroup(
+        labels=["Marcar OCST"],
+        active=[],
+        width=300
+    )
+    highlight_checkbox.on_change('active', on_highlight_change)
     
-    # Create requirements plot (left)
+    # Compute layout once (shared by all plots) - hierarchical if solution available
+    if current_solution and 'tree_edges' in current_solution:
+        current_layout = compute_hierarchical_layout(current_instance.graph, current_solution['tree_edges'])
+    else:
+        current_layout = compute_spring_layout(current_instance.graph)
+    
+    # Create requirements plot (top-left)
     req_title = f"Requirements: {current_instance.name}"
     requirements = current_instance.get_requirements()
     current_req_plot = create_requirements_plot(
@@ -440,20 +604,42 @@ def initialize_app():
         req_title
     )
     
-    # Create graph plot (center) - using the same layout
+    # Create graph plot (top-right) - using the same layout
+    solution_edges = current_solution.get('tree_edges', []) if current_solution else []
     graph_title = f"Graph: {current_instance.name}"
     current_graph_plot = create_graph_plot_with_layout(
         current_instance.graph, 
         current_layout, 
-        graph_title
+        graph_title,
+        solution_edges,
+        highlight_solution
     )
+    
+    # Create solution plot (bottom-right) - using the same layout
+    if current_solution and 'tree_edges' in current_solution:
+        solution_title = f"Solution: {current_instance.name} (Cost: {current_solution.get('tree_cost', 'N/A')})"
+        current_solution_plot = create_solution_plot(
+            current_instance.graph,
+            current_solution['tree_edges'],
+            current_layout,
+            solution_title
+        )
+    else:
+        # Create empty spacer if no solution
+        current_solution_plot = Div(text="<h3>No solution available</h3>", width=900, height=700)
     
     # Create info panel
     info_panel = create_info_panel(current_instance)
     
-    # Create layout: requirements | graph | controls
-    controls = column(instance_select, reorganize_btn, info_panel)
-    layout = row(current_req_plot, current_graph_plot, controls)
+    # Create 2x2 layout:
+    # Top row: requirements | graph
+    # Bottom row: spacer | solution
+    # Right sidebar: controls
+    top_row = row(current_req_plot, current_graph_plot)
+    bottom_row = row(Spacer(width=900, height=700), current_solution_plot)
+    plots = column(top_row, bottom_row)
+    controls = column(instance_select, reorganize_btn, highlight_checkbox, info_panel)
+    layout = row(plots, controls)
     
     # Add to document
     curdoc().add_root(layout)
