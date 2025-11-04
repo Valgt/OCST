@@ -155,7 +155,7 @@ def on_instance_change(attr, old, new):
     
     # Reconnect callback
     def on_midpoint_click_updated(attr, old, new):
-        global current_solution, current_solution_plot, current_layout, selected_requirement
+        global current_solution, current_solution_plot, current_layout, selected_requirement, highlighted_requirements, current_req_plot
         if not new or current_solution is None:
             if current_solution and 'tree_edges' in current_solution:
                 solution_title = f"Solution: {current_instance.name} (Cost: {current_solution.get('tree_cost', 'N/A')})"
@@ -164,6 +164,17 @@ def on_instance_change(attr, old, new):
             selected_requirement = None
             return
         try:
+            # Clear node-based requirement highlighting (inverse interaction)
+            highlighted_requirements = []
+            highlight_requirements_in_plot(current_req_plot, [])
+            
+            # Clear solution tree node selection
+            try:
+                node_source = current_solution_plot.renderers[0].node_renderer.data_source
+                node_source.selected.indices = []
+            except:
+                pass
+            
             idx = new[0]
             origin = midpoint_source.data['origin'][idx]
             destination = midpoint_source.data['destination'][idx]
@@ -173,6 +184,13 @@ def on_instance_change(attr, old, new):
             solution_title = f"Solution: {current_instance.name} (Cost: {current_solution.get('tree_cost', 'N/A')})"
             update_solution_plot(current_solution_plot, current_instance.graph, 
                                current_solution['tree_edges'], current_layout, solution_title, highlight_path)
+            
+            # Reconnect solution node callback after updating
+            try:
+                node_source = current_solution_plot.renderers[0].node_renderer.data_source
+                node_source.selected.on_change('indices', on_solution_node_click)
+            except:
+                pass
         except Exception as e:
             print(f"Error: {e}")
             import traceback
@@ -299,7 +317,7 @@ def highlight_requirements_in_plot(req_plot, requirements_to_highlight):
 
 def on_solution_node_click(attr, old, new):
     """Callback when user clicks on a node in the solution tree."""
-    global current_instance, current_solution, current_req_plot, node_to_requirements, highlighted_requirements
+    global current_instance, current_solution, current_req_plot, current_solution_plot, node_to_requirements, highlighted_requirements, selected_requirement
     
     if current_instance is None or current_solution is None:
         return
@@ -313,7 +331,27 @@ def on_solution_node_click(attr, old, new):
             # No node selected - clear highlights
             highlighted_requirements = []
             highlight_requirements_in_plot(current_req_plot, [])
+            selected_requirement = None
         else:
+            # Clear requirement path highlighting (inverse interaction)
+            selected_requirement = None
+            solution_title = f"Solution: {current_instance.name} (Cost: {current_solution.get('tree_cost', 'N/A')})"
+            update_solution_plot(current_solution_plot, current_instance.graph, 
+                               current_solution['tree_edges'], current_layout, solution_title, None)
+            
+            # Reconnect this callback after updating plot
+            node_source = current_solution_plot.renderers[0].node_renderer.data_source
+            node_source.selected.on_change('indices', on_solution_node_click)
+            
+            # Clear midpoint selection from requirements plot
+            try:
+                # Find midpoint renderer (should be last renderer added)
+                for renderer in current_req_plot.renderers:
+                    if hasattr(renderer, 'data_source') and 'origin' in renderer.data_source.data:
+                        renderer.data_source.selected.indices = []
+            except:
+                pass
+            
             # Get the selected node ID
             node_idx = selected_indices[0]
             node_ids = list(node_source.data['index'])
@@ -784,7 +822,7 @@ def initialize_app():
     # Connect selection callback to midpoint nodes
     def on_requirement_midpoint_click(attr, old, new):
         """Callback when user clicks on a requirement midpoint node."""
-        global current_solution, current_solution_plot, current_layout, selected_requirement
+        global current_solution, current_solution_plot, current_layout, selected_requirement, highlighted_requirements, current_req_plot
         
         if not new or current_solution is None:
             # No selection or no solution - clear highlight
@@ -796,6 +834,17 @@ def initialize_app():
             return
         
         try:
+            # Clear node-based requirement highlighting (inverse interaction)
+            highlighted_requirements = []
+            highlight_requirements_in_plot(current_req_plot, [])
+            
+            # Clear solution tree node selection
+            try:
+                node_source = current_solution_plot.renderers[0].node_renderer.data_source
+                node_source.selected.indices = []
+            except:
+                pass
+            
             # Get the selected midpoint
             idx = new[0]
             origin = midpoint_source.data['origin'][idx]
@@ -810,6 +859,14 @@ def initialize_app():
             solution_title = f"Solution: {current_instance.name} (Cost: {current_solution.get('tree_cost', 'N/A')})"
             update_solution_plot(current_solution_plot, current_instance.graph, 
                                current_solution['tree_edges'], current_layout, solution_title, highlight_path)
+            
+            # Reconnect solution node callback after updating
+            try:
+                node_source = current_solution_plot.renderers[0].node_renderer.data_source
+                node_source.selected.on_change('indices', on_solution_node_click)
+            except:
+                pass
+                
         except Exception as e:
             print(f"Error in requirement midpoint click handler: {e}")
             import traceback
