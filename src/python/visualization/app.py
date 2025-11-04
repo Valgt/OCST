@@ -185,12 +185,8 @@ def on_instance_change(attr, old, new):
             update_solution_plot(current_solution_plot, current_instance.graph, 
                                current_solution['tree_edges'], current_layout, solution_title, highlight_path)
             
-            # Reconnect solution node callback after updating
-            try:
-                node_source = current_solution_plot.renderers[0].node_renderer.data_source
-                node_source.selected.on_change('indices', on_solution_node_click)
-            except:
-                pass
+            # Reconnect solution node callback after updating (helper handles cleanup)
+            reconnect_solution_node_callback()
         except Exception as e:
             print(f"Error: {e}")
             import traceback
@@ -212,9 +208,8 @@ def on_instance_change(attr, old, new):
             all_nodes
         )
         
-        # Reconnect callback to solution plot nodes
-        node_source = current_solution_plot.renderers[0].node_renderer.data_source
-        node_source.selected.on_change('indices', on_solution_node_click)
+        # Reconnect callback to solution plot nodes (helper handles cleanup)
+        reconnect_solution_node_callback()
     
     # Update info panel (layout is now: row(plots, controls))
     # controls = column(instance_select, reorganize_btn, highlight_checkbox, info_panel)
@@ -259,6 +254,26 @@ def on_reorganize_click():
     if current_solution and 'tree_edges' in current_solution:
         solution_title = f"Solution: {current_instance.name} (Cost: {current_solution.get('tree_cost', 'N/A')})"
         update_solution_plot(current_solution_plot, current_instance.graph, current_solution['tree_edges'], current_layout, solution_title, highlight_path)
+
+
+def reconnect_solution_node_callback():
+    """
+    Safely reconnect the solution node click callback.
+    This is needed after update_solution_plot() destroys renderers.
+    Removes old callback first to avoid accumulation.
+    """
+    global current_solution_plot
+    try:
+        node_source = current_solution_plot.renderers[0].node_renderer.data_source
+        # Remove old callback if exists (prevents accumulation)
+        try:
+            node_source.selected.remove_on_change('indices', on_solution_node_click)
+        except:
+            pass  # First time, no callback to remove
+        # Add fresh callback
+        node_source.selected.on_change('indices', on_solution_node_click)
+    except Exception as e:
+        print(f"Warning: Could not reconnect solution node callback: {e}")
 
 
 def highlight_requirements_in_plot(req_plot, requirements_to_highlight):
@@ -339,9 +354,8 @@ def on_solution_node_click(attr, old, new):
             update_solution_plot(current_solution_plot, current_instance.graph, 
                                current_solution['tree_edges'], current_layout, solution_title, None)
             
-            # Reconnect this callback after updating plot
-            node_source = current_solution_plot.renderers[0].node_renderer.data_source
-            node_source.selected.on_change('indices', on_solution_node_click)
+            # Reconnect this callback after updating plot (helper handles cleanup)
+            reconnect_solution_node_callback()
             
             # Clear midpoint selection from requirements plot
             try:
@@ -860,12 +874,8 @@ def initialize_app():
             update_solution_plot(current_solution_plot, current_instance.graph, 
                                current_solution['tree_edges'], current_layout, solution_title, highlight_path)
             
-            # Reconnect solution node callback after updating
-            try:
-                node_source = current_solution_plot.renderers[0].node_renderer.data_source
-                node_source.selected.on_change('indices', on_solution_node_click)
-            except:
-                pass
+            # Reconnect solution node callback after updating (helper handles cleanup)
+            reconnect_solution_node_callback()
                 
         except Exception as e:
             print(f"Error in requirement midpoint click handler: {e}")
@@ -909,9 +919,8 @@ def initialize_app():
         tap_tool = TapTool()
         current_solution_plot.add_tools(tap_tool)
         
-        # Connect click callback to solution plot nodes
-        node_source = current_solution_plot.renderers[0].node_renderer.data_source
-        node_source.selected.on_change('indices', on_solution_node_click)
+        # Connect click callback to solution plot nodes (using helper for consistency)
+        reconnect_solution_node_callback()
         
     else:
         # Create empty spacer if no solution
