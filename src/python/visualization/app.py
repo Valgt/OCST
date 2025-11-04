@@ -147,7 +147,7 @@ def create_graph_plot_with_layout(G, layout, title):
     """Create graph plot using a specific layout."""
     from bokeh.models import Circle, MultiLine, HoverTool, BoxZoomTool, ResetTool, WheelZoomTool, PanTool
     from bokeh.plotting import figure, from_networkx
-    from graph_renderer import compute_edge_colors
+    from graph_renderer import compute_edge_colors_and_styles
     
     plot = figure(
         title=title,
@@ -164,10 +164,11 @@ def create_graph_plot_with_layout(G, layout, title):
     plot.grid.grid_line_color = None
     plot.axis.visible = False
     
-    # Compute edge colors
-    edge_colors = compute_edge_colors(G)
+    # Compute edge colors and styles
+    edge_colors, edge_line_dashes = compute_edge_colors_and_styles(G, attribute='cost')
     for i, (u, v) in enumerate(G.edges()):
         G[u][v]['edge_color'] = edge_colors[i] if edge_colors else "#95a5a6"
+        G[u][v]['line_dash'] = edge_line_dashes[i] if edge_line_dashes else "solid"
     
     # Create renderer with provided layout
     graph_renderer = from_networkx(G, layout, scale=1, center=(0, 0))
@@ -176,6 +177,7 @@ def create_graph_plot_with_layout(G, layout, title):
     edge_costs = [G[u][v]['cost'] for u, v in G.edges()]
     graph_renderer.edge_renderer.data_source.data['cost'] = edge_costs
     graph_renderer.edge_renderer.data_source.data['edge_color'] = edge_colors
+    graph_renderer.edge_renderer.data_source.data['line_dash'] = edge_line_dashes
     
     # Configure appearance
     graph_renderer.node_renderer.glyph = Circle(
@@ -193,6 +195,7 @@ def create_graph_plot_with_layout(G, layout, title):
     
     graph_renderer.edge_renderer.glyph = MultiLine(
         line_color="edge_color",
+        line_dash="line_dash",
         line_alpha=0.8,
         line_width=2.5
     )
@@ -226,7 +229,7 @@ def update_graph_plot_with_layout(plot, G, layout, title):
     """Update graph plot with new data using provided layout."""
     from bokeh.models import HoverTool, Circle, MultiLine
     from bokeh.plotting import from_networkx
-    from graph_renderer import compute_edge_colors
+    from graph_renderer import compute_edge_colors_and_styles
     
     # Clear existing renderers and hover tools
     plot.renderers = []
@@ -235,10 +238,11 @@ def update_graph_plot_with_layout(plot, G, layout, title):
     # Update title
     plot.title.text = title
     
-    # Compute edge colors
-    edge_colors = compute_edge_colors(G)
+    # Compute edge colors and styles
+    edge_colors, edge_line_dashes = compute_edge_colors_and_styles(G, attribute='cost')
     for i, (u, v) in enumerate(G.edges()):
         G[u][v]['edge_color'] = edge_colors[i] if edge_colors else "#95a5a6"
+        G[u][v]['line_dash'] = edge_line_dashes[i] if edge_line_dashes else "solid"
     
     # Create renderer with provided layout
     graph_renderer = from_networkx(G, layout, scale=1, center=(0, 0))
@@ -247,6 +251,7 @@ def update_graph_plot_with_layout(plot, G, layout, title):
     edge_costs = [G[u][v]['cost'] for u, v in G.edges()]
     graph_renderer.edge_renderer.data_source.data['cost'] = edge_costs
     graph_renderer.edge_renderer.data_source.data['edge_color'] = edge_colors
+    graph_renderer.edge_renderer.data_source.data['line_dash'] = edge_line_dashes
     
     # Configure appearance
     graph_renderer.node_renderer.glyph = Circle(
@@ -264,6 +269,7 @@ def update_graph_plot_with_layout(plot, G, layout, title):
     
     graph_renderer.edge_renderer.glyph = MultiLine(
         line_color="edge_color",
+        line_dash="line_dash",
         line_alpha=0.8,
         line_width=2.5
     )
@@ -297,6 +303,7 @@ def update_requirements_plot(plot, G, requirements, layout, title):
     from bokeh.models import HoverTool, Circle, MultiLine
     import networkx as nx
     from bokeh.plotting import from_networkx
+    from graph_renderer import compute_edge_colors_and_styles
     
     # Clear existing renderers and hover tools
     plot.renderers = []
@@ -318,23 +325,13 @@ def update_requirements_plot(plot, G, requirements, layout, title):
             req_graph.add_edge(u, v, weight=weight)
             req_weights.append(weight)
     
-    # Compute colors
-    if req_weights:
-        min_weight = min(req_weights)
-        max_weight = max(req_weights)
-        
-        if max_weight == min_weight:
-            req_colors = ["#e74c3c"] * len(req_weights)
-        else:
-            req_colors = []
-            for weight in req_weights:
-                norm = (weight - min_weight) / (max_weight - min_weight)
-                intensity = int(255 - norm * 100)
-                color = f"#ff{intensity:02x}{intensity:02x}"
-                req_colors.append(color)
-        
-        for i, (u, v) in enumerate(req_graph.edges()):
-            req_graph[u][v]['edge_color'] = req_colors[i]
+    # Compute edge colors and styles (same grayscale as graph, based on weight)
+    req_colors, req_line_dashes = compute_edge_colors_and_styles(req_graph, attribute='weight')
+    
+    # Add colors and line dash as edge attributes
+    for i, (u, v) in enumerate(req_graph.edges()):
+        req_graph[u][v]['edge_color'] = req_colors[i] if req_colors else "#808080"
+        req_graph[u][v]['line_dash'] = req_line_dashes[i] if req_line_dashes else "solid"
     
     # Create renderer
     graph_renderer = from_networkx(req_graph, layout, scale=1, center=(0, 0))
@@ -342,31 +339,35 @@ def update_requirements_plot(plot, G, requirements, layout, title):
     # Add data
     if req_graph.edges():
         edge_weights = [req_graph[u][v]['weight'] for u, v in req_graph.edges()]
-        edge_colors = [req_graph[u][v].get('edge_color', '#e74c3c') for u, v in req_graph.edges()]
+        edge_colors = [req_graph[u][v].get('edge_color', '#808080') for u, v in req_graph.edges()]
+        edge_line_dashes = [req_graph[u][v].get('line_dash', 'solid') for u, v in req_graph.edges()]
         graph_renderer.edge_renderer.data_source.data['weight'] = edge_weights
         graph_renderer.edge_renderer.data_source.data['edge_color'] = edge_colors
+        graph_renderer.edge_renderer.data_source.data['line_dash'] = edge_line_dashes
     
-    # Configure appearance
+    # Configure appearance (RED nodes for requirements)
     graph_renderer.node_renderer.glyph = Circle(
         radius=0.04,
-        fill_color="#95a5a6",
-        line_color="#7f8c8d",
-        line_width=1
+        fill_color="#e74c3c",
+        line_color="#c0392b",
+        line_width=2
     )
     graph_renderer.node_renderer.hover_glyph = Circle(
         radius=0.04,
-        fill_color="#3498db",
-        line_color="#2980b9",
+        fill_color="#c0392b",
+        line_color="#a93226",
         line_width=2
     )
     
+    # Configure edge appearance (grayscale based on weight, dashed for zero-weight)
     graph_renderer.edge_renderer.glyph = MultiLine(
         line_color="edge_color",
-        line_alpha=0.7,
+        line_dash="line_dash",
+        line_alpha=0.8,
         line_width=3
     )
     graph_renderer.edge_renderer.hover_glyph = MultiLine(
-        line_color="#c0392b",
+        line_color="#e74c3c",
         line_alpha=1.0,
         line_width=5
     )

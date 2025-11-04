@@ -31,51 +31,55 @@ def compute_spring_layout(G: nx.Graph, seed: int = 42) -> Dict[int, Tuple[float,
     return nx.spring_layout(G, seed=seed, k=1.5, iterations=50)
 
 
-def compute_edge_colors(G: nx.Graph) -> List[str]:
+def compute_edge_colors_and_styles(G: nx.Graph, attribute: str = 'cost') -> tuple:
     """
-    Compute edge colors based on cost (darker = higher cost).
-    Special handling for cost=0 edges (shown in green as "free" edges).
+    Compute edge colors based on cost/weight (darker = higher value).
+    Special handling for value=0 edges (shown as dashed lines).
     
     Args:
-        G: NetworkX graph with 'cost' edge attribute
+        G: NetworkX graph with cost/weight edge attribute
+        attribute: Edge attribute to use ('cost' for graph, 'weight' for requirements)
         
     Returns:
-        List of color hex strings for each edge
+        Tuple of (colors list, line_dash list) where line_dash is 'solid' or 'dashed'
     """
-    # Get all edge costs
-    costs = [G[u][v]['cost'] for u, v in G.edges()]
+    # Get all edge values
+    values = [G[u][v][attribute] for u, v in G.edges()]
     
-    if not costs:
-        return []
+    if not values:
+        return [], []
     
-    # Separate zero-cost edges (special case)
     colors = []
-    non_zero_costs = [c for c in costs if c > 0]
+    line_dashes = []
+    non_zero_values = [v for v in values if v > 0]
     
-    if not non_zero_costs:
-        # All edges have cost 0 - make them green (free edges)
-        return ["#27ae60"] * len(costs)
+    if not non_zero_values:
+        # All edges have value 0 - light gray dashed
+        return ["#c8c8c8"] * len(values), ["dashed"] * len(values)
     
-    # Normalize only non-zero costs
-    min_cost = min(non_zero_costs)
-    max_cost = max(non_zero_costs)
+    # Normalize only non-zero values
+    min_val = min(non_zero_values)
+    max_val = max(non_zero_values)
     
-    for cost in costs:
-        if cost == 0:
-            # Cost 0 = green (free edge - very important!)
-            colors.append("#27ae60")
-        elif max_cost == min_cost:
-            # All non-zero costs are the same
+    for value in values:
+        if value == 0 or abs(value) < 1e-9:
+            # Value 0 = light gray + dashed (free edge)
+            colors.append("#c8c8c8")
+            line_dashes.append("dashed")
+        elif max_val == min_val:
+            # All non-zero values are the same
             colors.append("#808080")
+            line_dashes.append("solid")
         else:
             # Normalize and map to grayscale
-            norm_cost = (cost - min_cost) / (max_cost - min_cost)
+            norm_val = (value - min_val) / (max_val - min_val)
             # Map [0, 1] to [200, 50] for RGB values (light to dark)
-            intensity = int(200 - norm_cost * 150)
+            intensity = int(200 - norm_val * 150)
             color = f"#{intensity:02x}{intensity:02x}{intensity:02x}"
             colors.append(color)
+            line_dashes.append("solid")
     
-    return colors
+    return colors, line_dashes
 
 
 def accumulate_bidirectional_requirements(requirements: list) -> list:
@@ -161,25 +165,13 @@ def create_requirements_plot(G: nx.Graph, requirements: list, layout: Dict, titl
             req_graph.add_edge(u, v, weight=weight)
             req_weights.append(weight)
     
-    # Normalize requirement weights for coloring (red intensity)
-    if req_weights:
-        min_weight = min(req_weights)
-        max_weight = max(req_weights)
-        
-        if max_weight == min_weight:
-            req_colors = ["#e74c3c"] * len(req_weights)
-        else:
-            req_colors = []
-            for weight in req_weights:
-                norm = (weight - min_weight) / (max_weight - min_weight)
-                # Light red to dark red
-                intensity = int(255 - norm * 100)
-                color = f"#ff{intensity:02x}{intensity:02x}"
-                req_colors.append(color)
-        
-        # Add colors as edge attribute
-        for i, (u, v) in enumerate(req_graph.edges()):
-            req_graph[u][v]['edge_color'] = req_colors[i]
+    # Compute edge colors and styles (same grayscale as graph, based on weight)
+    req_colors, req_line_dashes = compute_edge_colors_and_styles(req_graph, attribute='weight')
+    
+    # Add colors and line dash as edge attributes
+    for i, (u, v) in enumerate(req_graph.edges()):
+        req_graph[u][v]['edge_color'] = req_colors[i] if req_colors else "#808080"
+        req_graph[u][v]['line_dash'] = req_line_dashes[i] if req_line_dashes else "solid"
     
     # Create graph renderer with provided layout
     graph_renderer = from_networkx(req_graph, layout, scale=1, center=(0, 0))
@@ -187,32 +179,35 @@ def create_requirements_plot(G: nx.Graph, requirements: list, layout: Dict, titl
     # Add weight data for hover
     if req_graph.edges():
         edge_weights = [req_graph[u][v]['weight'] for u, v in req_graph.edges()]
-        edge_colors = [req_graph[u][v].get('edge_color', '#e74c3c') for u, v in req_graph.edges()]
+        edge_colors = [req_graph[u][v].get('edge_color', '#808080') for u, v in req_graph.edges()]
+        edge_line_dashes = [req_graph[u][v].get('line_dash', 'solid') for u, v in req_graph.edges()]
         graph_renderer.edge_renderer.data_source.data['weight'] = edge_weights
         graph_renderer.edge_renderer.data_source.data['edge_color'] = edge_colors
+        graph_renderer.edge_renderer.data_source.data['line_dash'] = edge_line_dashes
     
-    # Configure node appearance (smaller, gray)
+    # Configure node appearance (RED nodes for requirements)
     graph_renderer.node_renderer.glyph = Circle(
         radius=0.04,
-        fill_color="#95a5a6",
-        line_color="#7f8c8d",
-        line_width=1
+        fill_color="#e74c3c",
+        line_color="#c0392b",
+        line_width=2
     )
     graph_renderer.node_renderer.hover_glyph = Circle(
         radius=0.04,
-        fill_color="#3498db",
-        line_color="#2980b9",
+        fill_color="#c0392b",
+        line_color="#a93226",
         line_width=2
     )
     
-    # Configure edge appearance (requirements in red tones)
+    # Configure edge appearance (grayscale based on weight, dashed for zero-weight)
     graph_renderer.edge_renderer.glyph = MultiLine(
         line_color="edge_color",
-        line_alpha=0.7,
+        line_dash="line_dash",
+        line_alpha=0.8,
         line_width=3
     )
     graph_renderer.edge_renderer.hover_glyph = MultiLine(
-        line_color="#c0392b",
+        line_color="#e74c3c",
         line_alpha=1.0,
         line_width=5
     )
@@ -278,12 +273,13 @@ def create_graph_plot(G: nx.Graph, title: str = "OCST Instance") -> figure:
     # Compute layout
     layout = compute_spring_layout(G)
     
-    # Compute edge colors based on cost
-    edge_colors = compute_edge_colors(G)
+    # Compute edge colors and styles based on cost
+    edge_colors, edge_line_dashes = compute_edge_colors_and_styles(G, attribute='cost')
     
-    # Add colors as edge attribute
+    # Add colors and line dash as edge attributes
     for i, (u, v) in enumerate(G.edges()):
         G[u][v]['edge_color'] = edge_colors[i] if edge_colors else "#95a5a6"
+        G[u][v]['line_dash'] = edge_line_dashes[i] if edge_line_dashes else "solid"
     
     # Create graph renderer from NetworkX
     graph_renderer = from_networkx(G, layout, scale=1, center=(0, 0))
@@ -292,6 +288,7 @@ def create_graph_plot(G: nx.Graph, title: str = "OCST Instance") -> figure:
     edge_costs = [G[u][v]['cost'] for u, v in G.edges()]
     graph_renderer.edge_renderer.data_source.data['cost'] = edge_costs
     graph_renderer.edge_renderer.data_source.data['edge_color'] = edge_colors
+    graph_renderer.edge_renderer.data_source.data['line_dash'] = edge_line_dashes
     
     # Configure node appearance
     graph_renderer.node_renderer.glyph = Circle(
@@ -307,9 +304,10 @@ def create_graph_plot(G: nx.Graph, title: str = "OCST Instance") -> figure:
         line_width=2
     )
     
-    # Configure edge appearance with cost-based colors
+    # Configure edge appearance with cost-based colors and line dash
     graph_renderer.edge_renderer.glyph = MultiLine(
         line_color="edge_color",
+        line_dash="line_dash",
         line_alpha=0.8,
         line_width=2.5
     )
@@ -362,12 +360,13 @@ def update_graph_plot(plot: figure, G: nx.Graph, title: str):
     # Compute new layout
     layout = compute_spring_layout(G)
     
-    # Compute edge colors based on cost
-    edge_colors = compute_edge_colors(G)
+    # Compute edge colors and styles based on cost
+    edge_colors, edge_line_dashes = compute_edge_colors_and_styles(G, attribute='cost')
     
-    # Add colors as edge attribute
+    # Add colors and line dash as edge attributes
     for i, (u, v) in enumerate(G.edges()):
         G[u][v]['edge_color'] = edge_colors[i] if edge_colors else "#95a5a6"
+        G[u][v]['line_dash'] = edge_line_dashes[i] if edge_line_dashes else "solid"
     
     # Create new graph renderer
     graph_renderer = from_networkx(G, layout, scale=1, center=(0, 0))
@@ -376,6 +375,7 @@ def update_graph_plot(plot: figure, G: nx.Graph, title: str):
     edge_costs = [G[u][v]['cost'] for u, v in G.edges()]
     graph_renderer.edge_renderer.data_source.data['cost'] = edge_costs
     graph_renderer.edge_renderer.data_source.data['edge_color'] = edge_colors
+    graph_renderer.edge_renderer.data_source.data['line_dash'] = edge_line_dashes
     
     # Configure node appearance
     graph_renderer.node_renderer.glyph = Circle(
@@ -391,9 +391,10 @@ def update_graph_plot(plot: figure, G: nx.Graph, title: str):
         line_width=2
     )
     
-    # Configure edge appearance with cost-based colors
+    # Configure edge appearance with cost-based colors and line dash
     graph_renderer.edge_renderer.glyph = MultiLine(
         line_color="edge_color",
+        line_dash="line_dash",
         line_alpha=0.8,
         line_width=2.5
     )
