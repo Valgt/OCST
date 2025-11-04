@@ -12,7 +12,9 @@ from bokeh.models import (
     Circle, MultiLine, HoverTool, BoxZoomTool, 
     ResetTool, WheelZoomTool, PanTool
 )
-from typing import Dict, Tuple
+from bokeh.transform import linear_cmap
+from bokeh.palettes import Greys256
+from typing import Dict, Tuple, List
 
 
 def compute_spring_layout(G: nx.Graph, seed: int = 42) -> Dict[int, Tuple[float, float]]:
@@ -27,6 +29,44 @@ def compute_spring_layout(G: nx.Graph, seed: int = 42) -> Dict[int, Tuple[float,
         Dictionary mapping node ID to (x, y) coordinates
     """
     return nx.spring_layout(G, seed=seed, k=1.5, iterations=50)
+
+
+def compute_edge_colors(G: nx.Graph) -> List[str]:
+    """
+    Compute edge colors based on cost (darker = higher cost).
+    
+    Args:
+        G: NetworkX graph with 'cost' edge attribute
+        
+    Returns:
+        List of color hex strings for each edge
+    """
+    # Get all edge costs
+    costs = [G[u][v]['cost'] for u, v in G.edges()]
+    
+    if not costs:
+        return []
+    
+    # Normalize costs to [0, 1]
+    min_cost = min(costs)
+    max_cost = max(costs)
+    
+    if max_cost == min_cost:
+        # All edges have same cost
+        normalized = [0.5] * len(costs)
+    else:
+        normalized = [(cost - min_cost) / (max_cost - min_cost) for cost in costs]
+    
+    # Map to grayscale (0 = light gray, 1 = dark gray/black)
+    # Using reversed scale: low cost = light, high cost = dark
+    colors = []
+    for norm_cost in normalized:
+        # Map [0, 1] to [200, 50] for RGB values (light to dark)
+        intensity = int(200 - norm_cost * 150)
+        color = f"#{intensity:02x}{intensity:02x}{intensity:02x}"
+        colors.append(color)
+    
+    return colors
 
 
 def create_graph_plot(G: nx.Graph, title: str = "OCST Instance") -> figure:
@@ -67,6 +107,13 @@ def create_graph_plot(G: nx.Graph, title: str = "OCST Instance") -> figure:
     # Compute layout
     layout = compute_spring_layout(G)
     
+    # Compute edge colors based on cost
+    edge_colors = compute_edge_colors(G)
+    
+    # Add colors as edge attribute
+    for i, (u, v) in enumerate(G.edges()):
+        G[u][v]['edge_color'] = edge_colors[i] if edge_colors else "#95a5a6"
+    
     # Create graph renderer from NetworkX
     graph_renderer = from_networkx(G, layout, scale=1, center=(0, 0))
     
@@ -84,16 +131,16 @@ def create_graph_plot(G: nx.Graph, title: str = "OCST Instance") -> figure:
         line_width=2
     )
     
-    # Configure edge appearance
+    # Configure edge appearance with cost-based colors
     graph_renderer.edge_renderer.glyph = MultiLine(
-        line_color="#95a5a6",
-        line_alpha=0.6,
-        line_width=2
+        line_color="edge_color",
+        line_alpha=0.8,
+        line_width=2.5
     )
     graph_renderer.edge_renderer.hover_glyph = MultiLine(
         line_color="#e74c3c",
-        line_alpha=0.8,
-        line_width=3
+        line_alpha=1.0,
+        line_width=4
     )
     
     # Add hover tool for nodes
@@ -134,6 +181,13 @@ def update_graph_plot(plot: figure, G: nx.Graph, title: str):
     # Compute new layout
     layout = compute_spring_layout(G)
     
+    # Compute edge colors based on cost
+    edge_colors = compute_edge_colors(G)
+    
+    # Add colors as edge attribute
+    for i, (u, v) in enumerate(G.edges()):
+        G[u][v]['edge_color'] = edge_colors[i] if edge_colors else "#95a5a6"
+    
     # Create new graph renderer
     graph_renderer = from_networkx(G, layout, scale=1, center=(0, 0))
     
@@ -151,16 +205,16 @@ def update_graph_plot(plot: figure, G: nx.Graph, title: str):
         line_width=2
     )
     
-    # Configure edge appearance
+    # Configure edge appearance with cost-based colors
     graph_renderer.edge_renderer.glyph = MultiLine(
-        line_color="#95a5a6",
-        line_alpha=0.6,
-        line_width=2
+        line_color="edge_color",
+        line_alpha=0.8,
+        line_width=2.5
     )
     graph_renderer.edge_renderer.hover_glyph = MultiLine(
         line_color="#e74c3c",
-        line_alpha=0.8,
-        line_width=3
+        line_alpha=1.0,
+        line_width=4
     )
     
     # Add graph to plot

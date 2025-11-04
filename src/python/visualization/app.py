@@ -40,6 +40,12 @@ def create_info_panel(instance):
     metadata = instance.get_metadata()
     tags = instance.get_tags()
     
+    # Compute edge cost statistics
+    costs = [graph[u][v]['cost'] for u, v in graph.edges()]
+    min_cost = min(costs) if costs else 0
+    max_cost = max(costs) if costs else 0
+    avg_cost = sum(costs) / len(costs) if costs else 0
+    
     info_html = f"""
     <div style="background-color: #ecf0f1; padding: 15px; border-radius: 5px; margin-bottom: 10px;">
         <h3 style="margin-top: 0; color: #2c3e50;">Instance: {instance.name}</h3>
@@ -50,6 +56,13 @@ def create_info_panel(instance):
             <li><b>Edges:</b> {graph.number_of_edges()}</li>
             <li><b>Density:</b> {nx.density(graph):.3f}</li>
             <li><b>Connected:</b> {"Yes" if nx.is_connected(graph) else "No"}</li>
+        </ul>
+        
+        <h4 style="color: #34495e;">Edge Costs:</h4>
+        <ul style="margin: 5px 0;">
+            <li><b>Min:</b> {min_cost:.2f} <span style="color: #c8c8c8;">●</span> (light)</li>
+            <li><b>Max:</b> {max_cost:.2f} <span style="color: #323232;">●</span> (dark)</li>
+            <li><b>Avg:</b> {avg_cost:.2f}</li>
         </ul>
         
         <h4 style="color: #34495e;">Requirements:</h4>
