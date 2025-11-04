@@ -19,7 +19,8 @@ import random
 from graph_loader import get_available_instances, load_instance
 from graph_renderer import (
     create_graph_plot, update_graph_plot,
-    create_requirements_plot, compute_spring_layout
+    create_requirements_plot, compute_spring_layout,
+    accumulate_bidirectional_requirements
 )
 
 
@@ -48,9 +49,14 @@ def create_info_panel(instance):
     
     # Compute edge cost statistics
     costs = [graph[u][v]['cost'] for u, v in graph.edges()]
+    zero_cost_edges = sum(1 for c in costs if c == 0)
     min_cost = min(costs) if costs else 0
     max_cost = max(costs) if costs else 0
     avg_cost = sum(costs) / len(costs) if costs else 0
+    
+    # Compute accumulated requirements
+    accumulated_reqs = accumulate_bidirectional_requirements(requirements)
+    total_accumulated_weight = sum(w for _, _, w in accumulated_reqs)
     
     info_html = f"""
     <div style="background-color: #ecf0f1; padding: 15px; border-radius: 5px; margin-bottom: 10px;">
@@ -69,12 +75,14 @@ def create_info_panel(instance):
             <li><b>Min:</b> {min_cost:.2f} <span style="color: #c8c8c8;">●</span> (light)</li>
             <li><b>Max:</b> {max_cost:.2f} <span style="color: #323232;">●</span> (dark)</li>
             <li><b>Avg:</b> {avg_cost:.2f}</li>
+            <li><b>Free (cost=0):</b> {zero_cost_edges} <span style="color: #27ae60;">●</span></li>
         </ul>
         
         <h4 style="color: #34495e;">Requirements:</h4>
         <ul style="margin: 5px 0;">
-            <li><b>Count:</b> {len(requirements)}</li>
-            <li><b>Total Weight:</b> {sum(r[2] for r in requirements):.2f}</li>
+            <li><b>Original:</b> {len(requirements)}</li>
+            <li><b>Accumulated:</b> {len(accumulated_reqs)}</li>
+            <li><b>Total Weight:</b> {total_accumulated_weight:.2f}</li>
         </ul>
         
         <h4 style="color: #34495e;">Metadata:</h4>
@@ -297,14 +305,17 @@ def update_requirements_plot(plot, G, requirements, layout, title):
     # Update title
     plot.title.text = title
     
+    # Accumulate bidirectional requirements and filter zeros
+    accumulated_reqs = accumulate_bidirectional_requirements(requirements)
+    
     # Create requirements graph
     req_graph = nx.Graph()
     req_graph.add_nodes_from(G.nodes())
     
     req_weights = []
-    for origin, destination, weight in requirements:
-        if origin in G.nodes() and destination in G.nodes():
-            req_graph.add_edge(origin, destination, weight=weight)
+    for u, v, weight in accumulated_reqs:
+        if u in G.nodes() and v in G.nodes():
+            req_graph.add_edge(u, v, weight=weight)
             req_weights.append(weight)
     
     # Compute colors

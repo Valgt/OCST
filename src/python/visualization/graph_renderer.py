@@ -34,6 +34,7 @@ def compute_spring_layout(G: nx.Graph, seed: int = 42) -> Dict[int, Tuple[float,
 def compute_edge_colors(G: nx.Graph) -> List[str]:
     """
     Compute edge colors based on cost (darker = higher cost).
+    Special handling for cost=0 edges (shown in green as "free" edges).
     
     Args:
         G: NetworkX graph with 'cost' edge attribute
@@ -47,31 +48,71 @@ def compute_edge_colors(G: nx.Graph) -> List[str]:
     if not costs:
         return []
     
-    # Normalize costs to [0, 1]
-    min_cost = min(costs)
-    max_cost = max(costs)
-    
-    if max_cost == min_cost:
-        # All edges have same cost
-        normalized = [0.5] * len(costs)
-    else:
-        normalized = [(cost - min_cost) / (max_cost - min_cost) for cost in costs]
-    
-    # Map to grayscale (0 = light gray, 1 = dark gray/black)
-    # Using reversed scale: low cost = light, high cost = dark
+    # Separate zero-cost edges (special case)
     colors = []
-    for norm_cost in normalized:
-        # Map [0, 1] to [200, 50] for RGB values (light to dark)
-        intensity = int(200 - norm_cost * 150)
-        color = f"#{intensity:02x}{intensity:02x}{intensity:02x}"
-        colors.append(color)
+    non_zero_costs = [c for c in costs if c > 0]
+    
+    if not non_zero_costs:
+        # All edges have cost 0 - make them green (free edges)
+        return ["#27ae60"] * len(costs)
+    
+    # Normalize only non-zero costs
+    min_cost = min(non_zero_costs)
+    max_cost = max(non_zero_costs)
+    
+    for cost in costs:
+        if cost == 0:
+            # Cost 0 = green (free edge - very important!)
+            colors.append("#27ae60")
+        elif max_cost == min_cost:
+            # All non-zero costs are the same
+            colors.append("#808080")
+        else:
+            # Normalize and map to grayscale
+            norm_cost = (cost - min_cost) / (max_cost - min_cost)
+            # Map [0, 1] to [200, 50] for RGB values (light to dark)
+            intensity = int(200 - norm_cost * 150)
+            color = f"#{intensity:02x}{intensity:02x}{intensity:02x}"
+            colors.append(color)
     
     return colors
+
+
+def accumulate_bidirectional_requirements(requirements: list) -> list:
+    """
+    Accumulate requirements in both directions and filter zero-weight ones.
+    
+    If requirement (u,v,a) and (v,u,b) exist, they become a single (u,v,a+b).
+    Requirements with accumulated weight = 0 are removed.
+    
+    Args:
+        requirements: List of (origin, destination, weight) tuples
+        
+    Returns:
+        List of (u, v, accumulated_weight) tuples with u < v (canonical form)
+    """
+    # Dictionary to accumulate weights: {(u,v): total_weight}
+    accumulated = {}
+    
+    for origin, destination, weight in requirements:
+        # Canonical form: always (min, max) to treat as undirected
+        u, v = min(origin, destination), max(origin, destination)
+        
+        if (u, v) not in accumulated:
+            accumulated[(u, v)] = 0
+        accumulated[(u, v)] += weight
+    
+    # Filter out zero-weight requirements and convert to list
+    result = [(u, v, w) for (u, v), w in accumulated.items() if abs(w) > 1e-9]
+    
+    return result
 
 
 def create_requirements_plot(G: nx.Graph, requirements: list, layout: Dict, title: str = "Requirements") -> figure:
     """
     Create a Bokeh plot showing requirements overlaid on the graph topology.
+    
+    Requirements are accumulated bidirectionally (u→v + v→u) and zero-weight ones are filtered.
     
     Args:
         G: NetworkX graph (for topology/layout)
@@ -106,15 +147,18 @@ def create_requirements_plot(G: nx.Graph, requirements: list, layout: Dict, titl
     plot.grid.grid_line_color = None
     plot.axis.visible = False
     
+    # Accumulate bidirectional requirements and filter zeros
+    accumulated_reqs = accumulate_bidirectional_requirements(requirements)
+    
     # Create a graph with only nodes (no edges from original graph)
     req_graph = nx.Graph()
     req_graph.add_nodes_from(G.nodes())
     
-    # Add requirement edges
+    # Add accumulated requirement edges
     req_weights = []
-    for origin, destination, weight in requirements:
-        if origin in G.nodes() and destination in G.nodes():
-            req_graph.add_edge(origin, destination, weight=weight)
+    for u, v, weight in accumulated_reqs:
+        if u in G.nodes() and v in G.nodes():
+            req_graph.add_edge(u, v, weight=weight)
             req_weights.append(weight)
     
     # Normalize requirement weights for coloring (red intensity)
