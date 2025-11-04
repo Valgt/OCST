@@ -25,25 +25,32 @@ Build a basic interactive graph viewer that:
 - [x] Create visualization branch (`visualizacion`)
 - [x] Define project rules (`.cursor/rules/Visualization Phase.mdc`)
 - [x] Create progress tracking document
-- [ ] Create project directory structure (`src/python/visualization/`)
-- [ ] Install dependencies (Bokeh, NetworkX)
+- [x] Create project directory structure (`src/python/visualization/`)
+- [ ] Install dependencies (Bokeh, NetworkX) - _User will test_
 
-### 🚧 Phase 1: Basic Visualization (In Progress)
-- [ ] Implement `graph_loader.py`
-  - [ ] Read JSON instance files
-  - [ ] Parse into NetworkX graph
-  - [ ] Handle edges and nodes
-- [ ] Implement `graph_renderer.py`
-  - [ ] Convert NetworkX to Bokeh graph
-  - [ ] Apply basic layout (spring layout)
-  - [ ] Configure hover tooltips
-- [ ] Create `app.py`
-  - [ ] Bokeh server application
-  - [ ] Instance selection dropdown
-  - [ ] Wire loader → renderer
-- [ ] Manual testing
+### 🚧 Phase 1: Basic Visualization (Ready for Testing)
+- [x] Implement `graph_loader.py`
+  - [x] Read JSON instance files
+  - [x] Parse into NetworkX graph
+  - [x] Handle edges and nodes
+  - [x] Extract requirements and metadata
+- [x] Implement `graph_renderer.py`
+  - [x] Convert NetworkX to Bokeh graph
+  - [x] Apply spring layout (NetworkX)
+  - [x] Configure hover tooltips (nodes show ID, edges show cost)
+  - [x] Interactive tools (pan, zoom, reset)
+- [x] Create `app.py`
+  - [x] Bokeh server application
+  - [x] Instance selection dropdown
+  - [x] Info panel with graph statistics
+  - [x] Wire loader → renderer
+- [x] Create README with usage instructions
+- [ ] Manual testing ⏳
+  - [ ] Install dependencies
+  - [ ] Run `bokeh serve src/python/visualization/app.py --show`
   - [ ] Test with `ocstpin0.json`
   - [ ] Verify interactivity (pan, zoom, hover)
+  - [ ] Test instance switching via dropdown
 
 ### ⏳ Phase 2: Structural Properties (Pending)
 - [ ] Implement `graph_properties.py`
@@ -72,7 +79,23 @@ Build a basic interactive graph viewer that:
 
 *This section will capture insights about instance properties as we visualize them.*
 
-### Instance Characteristics (To be filled)
+### Technical Implementation Notes
+
+**Phase 1 Implementation Details:**
+- **Data Loading:** Reads from `data/input/*.json` using standardized schema v1.0
+- **Graph Library:** NetworkX for graph representation and algorithms
+- **Layout Algorithm:** Spring layout (Fruchterman-Reingold) with k=1.5, 50 iterations
+- **Visualization:** Bokeh server app with interactive callbacks
+- **Node Rendering:** Circle glyphs, size=20, blue (#3498db), red on hover
+- **Edge Rendering:** MultiLine, grey (#95a5a6), red on hover, thickness=2
+- **Hover Info:** Node ID for vertices, edge cost for edges
+- **Info Panel:** Real-time statistics (nodes, edges, density, connectivity, requirements)
+
+**Instance Paths:**
+- Input: `data/input/*.json`
+- Future: `data/output/test_instances/*.results.json` (for solutions)
+
+### Instance Characteristics (To be observed during testing)
 - **Bridges:** Count, distribution, impact on solution
 - **Articulation Points:** Critical nodes, connectivity implications
 - **Graph Density:** Sparse vs dense instances
