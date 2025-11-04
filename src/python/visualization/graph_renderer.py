@@ -687,6 +687,7 @@ def create_solution_plot(G: nx.Graph, solution_edges: list, layout: Dict, title:
         Bokeh figure object
     """
     # Create figure
+    # IMPORTANT: Nodes are clickable - selection behavior configured below
     plot = figure(
         title=title,
         width=900,
@@ -694,7 +695,8 @@ def create_solution_plot(G: nx.Graph, solution_edges: list, layout: Dict, title:
         x_range=(-1.2, 1.2),
         y_range=(-1.2, 1.2),
         toolbar_location="above",
-        tools=""
+        tools="",
+        active_inspect=None  # Disable inspect tools to reduce interference
     )
     
     # Add tools
@@ -781,18 +783,24 @@ def create_solution_plot(G: nx.Graph, solution_edges: list, layout: Dict, title:
         graph_renderer.node_renderer.data_source.data['degree'] = node_degree_list
     
     # Configure node appearance (colored by degree)
-    graph_renderer.node_renderer.glyph = Circle(
+    node_normal_glyph = Circle(
         radius=0.05,
         fill_color="node_color",
         line_color="#2c3e50",
         line_width=2
     )
+    graph_renderer.node_renderer.glyph = node_normal_glyph
     graph_renderer.node_renderer.hover_glyph = Circle(
         radius=0.06,
         fill_color="node_color",
         line_color="#000000",
         line_width=3
     )
+    # CRITICAL FIX: Disable Bokeh's automatic selection visual feedback
+    # When a node is selected, Bokeh by default makes it opaque and dims others
+    # We handle highlighting manually through callbacks, so keep all nodes looking the same
+    graph_renderer.node_renderer.selection_glyph = node_normal_glyph  # Same appearance when selected
+    graph_renderer.node_renderer.nonselection_glyph = node_normal_glyph  # Same appearance when not selected
     
     # Configure edge appearance (colored by endpoint degrees, variable width for highlights)
     graph_renderer.edge_renderer.glyph = MultiLine(
@@ -919,18 +927,22 @@ def update_solution_plot(plot: figure, G: nx.Graph, solution_edges: list, layout
         graph_renderer.node_renderer.data_source.data['degree'] = node_degree_list
     
     # Configure node appearance (colored by degree)
-    graph_renderer.node_renderer.glyph = Circle(
+    node_normal_glyph = Circle(
         radius=0.05,
         fill_color="node_color",
         line_color="#2c3e50",
         line_width=2
     )
+    graph_renderer.node_renderer.glyph = node_normal_glyph
     graph_renderer.node_renderer.hover_glyph = Circle(
         radius=0.06,
         fill_color="node_color",
         line_color="#000000",
         line_width=3
     )
+    # CRITICAL FIX: Disable Bokeh's automatic selection visual feedback (same fix as create_solution_plot)
+    graph_renderer.node_renderer.selection_glyph = node_normal_glyph
+    graph_renderer.node_renderer.nonselection_glyph = node_normal_glyph
     
     # Configure edge appearance (colored by endpoint degrees, variable width for highlights)
     graph_renderer.edge_renderer.glyph = MultiLine(
