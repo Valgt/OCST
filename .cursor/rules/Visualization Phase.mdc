@@ -1,0 +1,215 @@
+# Visualization Phase - Interactive Graph Analysis 📊
+
+**Phase Goal:** Build an interactive Bokeh-based visualization tool to explore OCST problem instances and their structural properties.
+
+**Status:** Active Development  
+**Branch:** `visualizacion`  
+**Technology Stack:** Python + Bokeh + NetworkX
+
+---
+
+## 1. Overview and Objectives 🎯
+
+### Primary Goal
+Create an interactive visualization tool to analyze and understand the structural properties of OCST instances, enabling:
+- Visual inspection of graph topology
+- Identification of critical graph features (bridges, articulation points, leaves)
+- Analysis of solved instances to understand problem characteristics
+- Hypothesis generation for algorithmic improvements
+
+### Development Approach
+**Incremental and Iterative:**
+1. Start with basic graph visualization
+2. Add structural property overlays (bridges, articulation points, leaves)
+3. Incorporate solution visualization (optimal spanning tree)
+4. Add interactive filtering and property analysis
+5. Extend with comparative visualizations and metrics
+
+---
+
+## 2. Core Features (Incremental Roadmap) 🗺️
+
+### Phase 1: Basic Visualization (MVP)
+- **Instance Selection:** Dropdown to select from available instances
+- **Graph Rendering:** Display network topology using Bokeh
+- **Node Properties:** Show node IDs and basic attributes
+- **Edge Properties:** Display edge costs
+- **Basic Interactivity:** Pan, zoom, hover tooltips
+
+### Phase 2: Structural Properties
+- **Bridges:** Highlight edges whose removal disconnects the graph
+- **Articulation Points:** Highlight vertices whose removal disconnects the graph
+- **Leaves:** Mark degree-1 vertices
+- **Property Toggle:** Enable/disable property overlays via UI controls
+- **Color Coding:** Use distinct colors for different property types
+
+### Phase 3: Solution Overlay
+- **Optimal Tree:** Display the optimal spanning tree from solved results
+- **Cost Visualization:** Color/thickness based on edge cost or usage
+- **Path Highlighting:** Show requirement paths in the solution
+- **Comparison Mode:** Compare solution tree vs full graph
+
+### Phase 4: Advanced Analysis
+- **Property Statistics:** Display counts (# bridges, # articulation points, etc.)
+- **Degree Distribution:** Histogram of node degrees
+- **Instance Metadata:** Show problem size, density, requirement count
+- **Export:** Save visualizations as images or interactive HTML
+
+---
+
+## 3. Technical Architecture 🏗️
+
+### Directory Structure
+```
+src/python/visualization/
+├── app.py                    # Main Bokeh application entry point
+├── graph_loader.py           # Load OCST instances from JSON
+├── graph_properties.py       # Compute bridges, articulation points, etc.
+├── graph_renderer.py         # Bokeh graph rendering logic
+├── solution_loader.py        # Load solver results from JSON
+├── layouts.py                # Graph layout algorithms (spring, circular, etc.)
+└── widgets.py                # UI components (dropdowns, toggles, sliders)
+
+data/
+├── input/*.json              # OCST instance files (already available)
+└── output/*.results.json     # Solver results (Phase 1.5 output)
+
+visualization_progress.md     # Track development progress (root level)
+```
+
+### Data Flow
+1. **Load Instance:** Read JSON instance from `data/input/`
+2. **Parse Graph:** Convert to NetworkX graph object
+3. **Compute Properties:** Calculate bridges, articulation points, leaves
+4. **Load Solution (optional):** Read result JSON from `data/output/`
+5. **Render:** Create Bokeh visualization with property overlays
+6. **Interact:** User toggles properties, selects instances via UI
+
+---
+
+## 4. Code Standards and Conventions 📏
+
+### Language and Naming
+- **Code Language:** English ONLY (variables, functions, comments, docstrings)
+- **Naming Convention:** `snake_case` for all Python code
+- **Documentation:** English docstrings for all public functions/classes
+
+### Dependencies
+- **Bokeh:** Interactive web-based visualizations
+- **NetworkX:** Graph algorithms (bridges, articulation points)
+- **JSON:** Load instances and results (use `json` or `nlohmann` schemas)
+- **NumPy/Pandas:** Data manipulation (if needed)
+
+### Code Quality
+- **Type Hints:** Use Python type annotations where appropriate
+- **Docstrings:** Google-style docstrings for all public APIs
+- **Modular Design:** Separate concerns (loading, computation, rendering)
+- **Incremental Testing:** Manually verify each feature before adding next
+
+---
+
+## 5. Graph Properties Reference 🔍
+
+### Bridges (Cut Edges)
+- **Definition:** Edges whose removal increases the number of connected components
+- **Algorithm:** Tarjan's bridge-finding algorithm (NetworkX: `nx.bridges(G)`)
+- **Visualization:** Highlight with distinct color (e.g., red)
+- **Interpretation:** Critical edges for connectivity
+
+### Articulation Points (Cut Vertices)
+- **Definition:** Vertices whose removal increases the number of connected components
+- **Algorithm:** Tarjan's articulation point algorithm (NetworkX: `nx.articulation_points(G)`)
+- **Visualization:** Highlight with distinct shape/color (e.g., square nodes, orange)
+- **Interpretation:** Critical nodes for connectivity
+
+### Leaves (Degree-1 Nodes)
+- **Definition:** Nodes with exactly one incident edge
+- **Algorithm:** Filter nodes by degree (NetworkX: `G.degree(node) == 1`)
+- **Visualization:** Highlight with distinct color (e.g., green)
+- **Interpretation:** Terminal nodes, often requirement endpoints
+
+### Connected Components
+- **Definition:** Maximal subgraphs where every pair of nodes is connected
+- **Algorithm:** NetworkX: `nx.connected_components(G)`
+- **Visualization:** Color nodes by component (if graph is disconnected)
+- **Interpretation:** Graph connectivity structure
+
+---
+
+## 6. Development Workflow 🔄
+
+### Iterative Process (Per Feature)
+1. **Clarify:** Define feature scope and expected behavior
+2. **Implement:** Write minimal code to achieve feature
+3. **Test Manually:** Run Bokeh app (`bokeh serve app.py`) and verify
+4. **Update Progress:** Document completion in `visualization_progress.md`
+5. **Commit:** Git commit with descriptive message
+
+### User Interaction
+- **Incremental Feedback:** Show progress after each feature
+- **No Over-Engineering:** Start simple, add complexity only when needed
+- **Visual Verification:** Always show output/screenshot for validation
+
+### Dependencies Installation
+```bash
+pip install bokeh networkx numpy pandas
+```
+
+---
+
+## 7. Current Phase: MVP Development 🚀
+
+**Goal:** Basic graph visualization with instance selection
+
+**Tasks:**
+1. Create project structure (`src/python/visualization/`)
+2. Implement `graph_loader.py` to read JSON instances
+3. Implement `graph_renderer.py` for basic Bokeh graph display
+4. Create `app.py` with instance dropdown
+5. Test with sample instance (e.g., `ocstpin0.json`)
+
+**Acceptance Criteria:**
+- ✓ App launches with `bokeh serve`
+- ✓ Dropdown lists available instances
+- ✓ Graph renders with nodes and edges
+- ✓ Hover shows node/edge info
+- ✓ Pan/zoom works correctly
+
+---
+
+## 8. Notes and Considerations 📝
+
+### Graph Layouts
+- **Spring Layout:** Good for small/medium graphs (NetworkX: `spring_layout`)
+- **Circular Layout:** Good for showing structure (NetworkX: `circular_layout`)
+- **Hierarchical Layout:** If tree structure exists (custom implementation)
+- **User Choice:** Allow layout selection via UI dropdown
+
+### Performance
+- **Large Graphs:** May need optimization (sampling, level-of-detail)
+- **Responsive UI:** Compute properties once, cache results
+- **Progressive Loading:** Load graph first, compute properties async if slow
+
+### Future Extensions
+- **Multi-instance Comparison:** Side-by-side visualization
+- **Animation:** Show algorithm execution (e.g., SEC cuts)
+- **3D Visualization:** If graph structure benefits from it
+- **Dashboard:** Integrate with experiment results (Phase 1.5 data)
+
+---
+
+## 9. Integration with Phase 1.5 🔗
+
+### Data Sources
+- **Instances:** Use standardized JSON instances from `data/input/`
+- **Solutions:** Use Phase 1.5 result format (`*.results.json`)
+- **Schemas:** Leverage existing JSON schemas for validation
+
+### Validation Use Case
+- Visualize instances where different formulations disagree
+- Identify graph properties that correlate with solver performance
+- Debug SEC cuts by visualizing violated subtours
+
+---
+
+**Remember:** This is an exploratory and incremental phase. Build one feature at a time, validate visually, and iterate based on findings. The goal is insight, not perfection.
