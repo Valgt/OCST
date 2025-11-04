@@ -7,12 +7,11 @@ with interactive features (hover, zoom, pan).
 """
 
 import networkx as nx
-from bokeh.plotting import figure
+from bokeh.plotting import figure, from_networkx
 from bokeh.models import (
     Circle, MultiLine, HoverTool, BoxZoomTool, 
     ResetTool, WheelZoomTool, PanTool
 )
-from bokeh.models.graphs import from_networkx
 from typing import Dict, Tuple
 
 
@@ -73,13 +72,13 @@ def create_graph_plot(G: nx.Graph, title: str = "OCST Instance") -> figure:
     
     # Configure node appearance
     graph_renderer.node_renderer.glyph = Circle(
-        size=20,
+        radius=0.05,
         fill_color="#3498db",
         line_color="#2c3e50",
         line_width=2
     )
     graph_renderer.node_renderer.hover_glyph = Circle(
-        size=20,
+        radius=0.05,
         fill_color="#e74c3c",
         line_color="#c0392b",
         line_width=2
@@ -140,13 +139,13 @@ def update_graph_plot(plot: figure, G: nx.Graph, title: str):
     
     # Configure node appearance
     graph_renderer.node_renderer.glyph = Circle(
-        size=20,
+        radius=0.05,
         fill_color="#3498db",
         line_color="#2c3e50",
         line_width=2
     )
     graph_renderer.node_renderer.hover_glyph = Circle(
-        size=20,
+        radius=0.05,
         fill_color="#e74c3c",
         line_color="#c0392b",
         line_width=2
