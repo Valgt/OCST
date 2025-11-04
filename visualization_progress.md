@@ -130,12 +130,20 @@ Build a basic interactive graph viewer that:
 
 ---
 
-## 📊 Next Steps
+## 📊 Current Features
 
-1. Create `src/python/visualization/` directory structure
-2. Implement `graph_loader.py` to read first instance
-3. Test loading and parsing with `ocstpin0.json`
-4. Start basic Bokeh rendering
+### Dual-Plot Visualization ✨
+- **Left Plot:** Requirements graph (red tones, weight-based intensity)
+- **Center Plot:** Infrastructure graph (gray scale, cost-based intensity)
+- **Right Panel:** Instance selector + statistics
+- **Shared Layout:** Identical node positions for easy comparison
+- **Interactive Sync:** Both plots update together when changing instances
+
+### Visual Encoding
+- **Requirements (Red):** Light = low weight, Dark = high weight
+- **Graph Edges (Gray):** Light = low cost, Dark = high cost
+- **Node Size:** Requirements nodes smaller (0.04), graph nodes standard (0.05)
+- **Edge Width:** Requirements thicker (3px), graph standard (2.5px)
 
 ---
 
