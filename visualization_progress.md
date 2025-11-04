@@ -28,7 +28,7 @@ Build a basic interactive graph viewer that:
 - [x] Create project directory structure (`src/python/visualization/`)
 - [ ] Install dependencies (Bokeh, NetworkX) - _User will test_
 
-### 🚧 Phase 1: Basic Visualization (Ready for Testing)
+### ✅ Phase 1: Basic Visualization (Complete)
 - [x] Implement `graph_loader.py`
   - [x] Read JSON instance files
   - [x] Parse into NetworkX graph
@@ -39,10 +39,12 @@ Build a basic interactive graph viewer that:
   - [x] Apply spring layout (NetworkX)
   - [x] Configure hover tooltips (nodes show ID, edges show cost)
   - [x] Interactive tools (pan, zoom, reset)
+  - [x] **Cost-based edge coloring** (darker = higher cost)
 - [x] Create `app.py`
   - [x] Bokeh server application
   - [x] Instance selection dropdown
   - [x] Info panel with graph statistics
+  - [x] Info panel with edge cost statistics (min/max/avg)
   - [x] Wire loader → renderer
 - [x] Create README with usage instructions
 - [x] Manual testing ✅
@@ -51,7 +53,8 @@ Build a basic interactive graph viewer that:
   - [x] Run `bokeh serve src/python/visualization/app.py --show`
   - [x] Server running successfully on http://localhost:5006/app
   - [x] Create convenience script `run_visualizer.sh`
-  - [ ] User visual verification pending
+  - [x] Fix Bokeh 3.x API compatibility issues
+  - [x] Add cost-based edge intensity visualization
 
 ### ⏳ Phase 2: Structural Properties (Pending)
 - [ ] Implement `graph_properties.py`
