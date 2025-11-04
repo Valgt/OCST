@@ -21,7 +21,8 @@ from graph_renderer import (
     create_graph_plot, update_graph_plot,
     create_requirements_plot, compute_spring_layout, compute_hierarchical_layout,
     accumulate_bidirectional_requirements,
-    create_solution_plot, update_solution_plot
+    create_solution_plot, update_solution_plot,
+    find_path_in_tree
 )
 
 
@@ -38,6 +39,7 @@ current_solution_plot = None
 current_layout = None
 highlight_solution = False
 layout_counter = 0  # For cycling through different hierarchical layouts
+selected_requirement = None  # Currently selected requirement (origin, destination)
 
 
 def get_instance_options():
@@ -104,7 +106,7 @@ def create_info_panel(instance):
 
 def on_instance_change(attr, old, new):
     """Callback when user selects a different instance."""
-    global current_instance, current_solution, current_graph_plot, current_req_plot, current_solution_plot, current_layout
+    global current_instance, current_solution, current_graph_plot, current_req_plot, current_solution_plot, current_layout, selected_requirement
     
     # Load new instance
     instance_path = DATA_DIR / f"{new}.json"
@@ -116,6 +118,9 @@ def on_instance_change(attr, old, new):
         current_solution = load_solution(solution_path)
     else:
         current_solution = None
+    
+    # Reset selected requirement
+    selected_requirement = None
     
     # Compute new layout (hierarchical if solution available, spring otherwise)
     if current_solution and 'tree_edges' in current_solution:
@@ -133,10 +138,49 @@ def on_instance_change(attr, old, new):
     requirements = current_instance.get_requirements()
     update_requirements_plot(current_req_plot, current_instance.graph, requirements, current_layout, req_title)
     
-    # Update solution plot
+    # Re-add midpoint nodes for new instance (note: this adds to existing renderers)
+    # TODO: Should clear old midpoint renderers first, but for now they'll be replaced
+    from req_hover_helper import add_requirement_midpoint_nodes
+    midpoint_source, midpoint_renderer = add_requirement_midpoint_nodes(
+        current_req_plot,
+        None,
+        current_layout,
+        None,
+        requirements,
+        current_solution.get('tree_edges', []) if current_solution else []
+    )
+    
+    # Reconnect callback
+    def on_midpoint_click_updated(attr, old, new):
+        global current_solution, current_solution_plot, current_layout, selected_requirement
+        if not new or current_solution is None:
+            if current_solution and 'tree_edges' in current_solution:
+                solution_title = f"Solution: {current_instance.name} (Cost: {current_solution.get('tree_cost', 'N/A')})"
+                update_solution_plot(current_solution_plot, current_instance.graph, 
+                                   current_solution['tree_edges'], current_layout, solution_title, None)
+            selected_requirement = None
+            return
+        try:
+            idx = new[0]
+            origin = midpoint_source.data['origin'][idx]
+            destination = midpoint_source.data['destination'][idx]
+            selected_requirement = (origin, destination)
+            solution_edges = current_solution.get('tree_edges', [])
+            highlight_path = find_path_in_tree(solution_edges, origin, destination)
+            solution_title = f"Solution: {current_instance.name} (Cost: {current_solution.get('tree_cost', 'N/A')})"
+            update_solution_plot(current_solution_plot, current_instance.graph, 
+                               current_solution['tree_edges'], current_layout, solution_title, highlight_path)
+        except Exception as e:
+            print(f"Error: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    midpoint_source.selected.on_change('indices', on_midpoint_click_updated)
+    
+    # Update solution plot (no highlighting since requirement was reset)
     if current_solution and 'tree_edges' in current_solution:
         solution_title = f"Solution: {current_instance.name} (Cost: {current_solution.get('tree_cost', 'N/A')})"
-        update_solution_plot(current_solution_plot, current_instance.graph, current_solution['tree_edges'], current_layout, solution_title)
+        update_solution_plot(current_solution_plot, current_instance.graph, current_solution['tree_edges'], current_layout, solution_title, None)
     
     # Update info panel (layout is now: row(plots, controls))
     # controls = column(instance_select, reorganize_btn, highlight_checkbox, info_panel)
@@ -146,7 +190,7 @@ def on_instance_change(attr, old, new):
 
 def on_reorganize_click():
     """Callback when reorganize button is clicked."""
-    global current_instance, current_solution, current_graph_plot, current_req_plot, current_solution_plot, current_layout, layout_counter
+    global current_instance, current_solution, current_graph_plot, current_req_plot, current_solution_plot, current_layout, layout_counter, selected_requirement
     
     if current_instance is None:
         return
@@ -172,9 +216,15 @@ def on_reorganize_click():
     requirements = current_instance.get_requirements()
     update_requirements_plot(current_req_plot, current_instance.graph, requirements, current_layout, req_title)
     
+    # Recompute highlight path if a requirement is selected
+    highlight_path = None
+    if selected_requirement and current_solution and 'tree_edges' in current_solution:
+        origin, destination = selected_requirement
+        highlight_path = find_path_in_tree(current_solution['tree_edges'], origin, destination)
+    
     if current_solution and 'tree_edges' in current_solution:
         solution_title = f"Solution: {current_instance.name} (Cost: {current_solution.get('tree_cost', 'N/A')})"
-        update_solution_plot(current_solution_plot, current_instance.graph, current_solution['tree_edges'], current_layout, solution_title)
+        update_solution_plot(current_solution_plot, current_instance.graph, current_solution['tree_edges'], current_layout, solution_title, highlight_path)
 
 
 def on_highlight_change(attr, old, new):
@@ -482,14 +532,21 @@ def update_requirements_plot(plot, G, requirements, layout, title):
     # Create renderer
     graph_renderer = from_networkx(req_graph, layout, scale=1, center=(0, 0))
     
-    # Add data
+    # Add data and edge info for interaction
     if req_graph.edges():
-        edge_weights = [req_graph[u][v]['weight'] for u, v in req_graph.edges()]
-        edge_colors = [req_graph[u][v].get('edge_color', '#808080') for u, v in req_graph.edges()]
-        edge_line_dashes = [req_graph[u][v].get('line_dash', 'solid') for u, v in req_graph.edges()]
+        edge_list = list(req_graph.edges())
+        edge_weights = [req_graph[u][v]['weight'] for u, v in edge_list]
+        edge_colors = [req_graph[u][v].get('edge_color', '#808080') for u, v in edge_list]
+        edge_line_dashes = [req_graph[u][v].get('line_dash', 'solid') for u, v in edge_list]
+        # Store origin and destination for click handling
+        edge_origins = [u for u, v in edge_list]
+        edge_destinations = [v for u, v in edge_list]
+        
         graph_renderer.edge_renderer.data_source.data['weight'] = edge_weights
         graph_renderer.edge_renderer.data_source.data['edge_color'] = edge_colors
         graph_renderer.edge_renderer.data_source.data['line_dash'] = edge_line_dashes
+        graph_renderer.edge_renderer.data_source.data['origin'] = edge_origins
+        graph_renderer.edge_renderer.data_source.data['destination'] = edge_destinations
     
     # Configure appearance (RED nodes for requirements)
     graph_renderer.node_renderer.glyph = Circle(
@@ -604,6 +661,53 @@ def initialize_app():
         req_title
     )
     
+    # Add invisible clickable nodes at midpoints of requirement edges
+    from req_hover_helper import add_requirement_midpoint_nodes
+    midpoint_source, midpoint_renderer = add_requirement_midpoint_nodes(
+        current_req_plot,
+        None,  # Will create internally
+        current_layout,
+        None,  # Solution plot reference (set later)
+        requirements,
+        current_solution.get('tree_edges', []) if current_solution else []
+    )
+    
+    # Connect selection callback to midpoint nodes
+    def on_requirement_midpoint_click(attr, old, new):
+        """Callback when user clicks on a requirement midpoint node."""
+        global current_solution, current_solution_plot, current_layout, selected_requirement
+        
+        if not new or current_solution is None:
+            # No selection or no solution - clear highlight
+            if current_solution and 'tree_edges' in current_solution:
+                solution_title = f"Solution: {current_instance.name} (Cost: {current_solution.get('tree_cost', 'N/A')})"
+                update_solution_plot(current_solution_plot, current_instance.graph, 
+                                   current_solution['tree_edges'], current_layout, solution_title, None)
+            selected_requirement = None
+            return
+        
+        try:
+            # Get the selected midpoint
+            idx = new[0]
+            origin = midpoint_source.data['origin'][idx]
+            destination = midpoint_source.data['destination'][idx]
+            selected_requirement = (origin, destination)
+            
+            # Find path in solution tree
+            solution_edges = current_solution.get('tree_edges', [])
+            highlight_path = find_path_in_tree(solution_edges, origin, destination)
+            
+            # Redraw solution plot with highlighting
+            solution_title = f"Solution: {current_instance.name} (Cost: {current_solution.get('tree_cost', 'N/A')})"
+            update_solution_plot(current_solution_plot, current_instance.graph, 
+                               current_solution['tree_edges'], current_layout, solution_title, highlight_path)
+        except Exception as e:
+            print(f"Error in requirement midpoint click handler: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    midpoint_source.selected.on_change('indices', on_requirement_midpoint_click)
+    
     # Create graph plot (top-right) - using the same layout
     solution_edges = current_solution.get('tree_edges', []) if current_solution else []
     graph_title = f"Graph: {current_instance.name}"
@@ -632,9 +736,10 @@ def initialize_app():
     info_panel = create_info_panel(current_instance)
     
     # Create 2x2 layout:
-    # Top row: requirements | graph
-    # Bottom row: spacer | solution
+    # Top row: requirements (clickable) | graph
+    # Bottom row: spacer | solution (shows traced paths)
     # Right sidebar: controls
+    # Note: Click on requirement edges to trace their path in the solution tree
     top_row = row(current_req_plot, current_graph_plot)
     bottom_row = row(Spacer(width=900, height=700), current_solution_plot)
     plots = column(top_row, bottom_row)

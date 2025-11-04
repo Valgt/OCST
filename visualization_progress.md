@@ -132,18 +132,51 @@ Build a basic interactive graph viewer that:
 
 ## 📊 Current Features
 
-### Dual-Plot Visualization ✨
-- **Left Plot:** Requirements graph (red tones, weight-based intensity)
-- **Center Plot:** Infrastructure graph (gray scale, cost-based intensity)
-- **Right Panel:** Instance selector + statistics
-- **Shared Layout:** Identical node positions for easy comparison
-- **Interactive Sync:** Both plots update together when changing instances
+### Quad-Plot Visualization (2x2 Grid) ✨
+- **Top-Left:** Requirements graph (red nodes, grayscale edges, weight-based intensity)
+- **Top-Right:** Infrastructure graph (grayscale, cost-based intensity)
+- **Bottom-Left:** Spacer (reserved for future features)
+- **Bottom-Right:** Solution tree (blue/orange nodes by degree, color-coded edges)
+- **Right Panel:** Controls + statistics
+
+### Interactive Features 🎮
+- **Instance Selector:** Dropdown to switch between instances
+- **Reorganize Layout:** Button to recompute graph layout (hierarchical for trees)
+- **Marcar OCST:** Checkbox to highlight solution edges in the cost graph (green with intensity)
+- **Trace Requirement Path:** ⭐ **CLICK-BASED INTERACTION** (v2 - Improved)
+  - **Hover over requirement edges** to see a tooltip with origin → destination
+  - **Click on the tooltip area** (invisible node at edge midpoint) to trace its path in the solution tree
+  - Uses invisible clickable nodes at requirement edge midpoints for reliable interaction
+  - Computes shortest path in solution tree using NetworkX
+  - Highlights path edges in **bright pink/magenta** with **very thick width (12px)** for maximum visibility
+  - Selected requirement shows as darker red circle at midpoint
+  - Updates dynamically when layout changes
+  - Click another requirement to switch, or click elsewhere to deselect
+  - Technical: Edge clicking is unreliable in Bokeh, so we use midpoint nodes as a workaround
 
 ### Visual Encoding
-- **Requirements (Red):** Light = low weight, Dark = high weight
-- **Graph Edges (Gray):** Light = low cost, Dark = high cost
-- **Node Size:** Requirements nodes smaller (0.04), graph nodes standard (0.05)
-- **Edge Width:** Requirements thicker (3px), graph standard (2.5px)
+- **Requirements Graph:**
+  - Red nodes (#e74c3c)
+  - Grayscale edges based on accumulated bidirectional weight
+  - Zero-weight requirements filtered out
+  - Dashed lines for zero-cost edges
+- **Cost Graph:**
+  - Grayscale edges based on cost (darker = more expensive)
+  - Dashed lines for zero-cost edges
+  - Optional green highlighting for solution edges (when "Marcar OCST" is checked)
+- **Solution Tree:**
+  - Node color by degree: Blue (low degree/leaves), Orange (high degree/hubs)
+  - Edge color by endpoint degrees: Blue (branches), Orange (backbone)
+  - **Pink/Magenta (#e91e63):** Highlighted requirement path (width: **12px** - VERY visible!)
+  - Edge width: Normal 4px, Highlighted **12px** (3x thicker for clear visibility)
+
+### Layout Algorithms
+- **Hierarchical Layout:** For solution trees (minimizes crossings, BFS-based levels)
+  - Parabolic vertical offset (curve_depth = 0.8 * y_spacing) for horizontal separation
+  - Degree-based vertical offset to spread high-degree nodes
+  - Horizontal jitter (±0.175) to prevent perfect vertical alignment
+  - Multiple root candidates (center, periphery, all nodes) for layout variety
+- **Spring Layout (Fruchterman-Reingold):** For graphs without solutions
 
 ---
 

@@ -311,14 +311,21 @@ def create_requirements_plot(G: nx.Graph, requirements: list, layout: Dict, titl
     # Create graph renderer with provided layout
     graph_renderer = from_networkx(req_graph, layout, scale=1, center=(0, 0))
     
-    # Add weight data for hover
+    # Add weight data and edge info for hover and interaction
     if req_graph.edges():
-        edge_weights = [req_graph[u][v]['weight'] for u, v in req_graph.edges()]
-        edge_colors = [req_graph[u][v].get('edge_color', '#808080') for u, v in req_graph.edges()]
-        edge_line_dashes = [req_graph[u][v].get('line_dash', 'solid') for u, v in req_graph.edges()]
+        edge_list = list(req_graph.edges())
+        edge_weights = [req_graph[u][v]['weight'] for u, v in edge_list]
+        edge_colors = [req_graph[u][v].get('edge_color', '#808080') for u, v in edge_list]
+        edge_line_dashes = [req_graph[u][v].get('line_dash', 'solid') for u, v in edge_list]
+        # Store origin and destination for click handling
+        edge_origins = [u for u, v in edge_list]
+        edge_destinations = [v for u, v in edge_list]
+        
         graph_renderer.edge_renderer.data_source.data['weight'] = edge_weights
         graph_renderer.edge_renderer.data_source.data['edge_color'] = edge_colors
         graph_renderer.edge_renderer.data_source.data['line_dash'] = edge_line_dashes
+        graph_renderer.edge_renderer.data_source.data['origin'] = edge_origins
+        graph_renderer.edge_renderer.data_source.data['destination'] = edge_destinations
     
     # Configure node appearance (RED nodes for requirements)
     graph_renderer.node_renderer.glyph = Circle(
@@ -560,7 +567,75 @@ def update_graph_plot(plot: figure, G: nx.Graph, title: str):
     plot.renderers.append(graph_renderer)
 
 
-def create_solution_plot(G: nx.Graph, solution_edges: list, layout: Dict, title: str = "Solution Tree") -> figure:
+def find_path_in_tree(solution_edges: list, origin: int, destination: int) -> list:
+    """
+    Find the path between two nodes in the solution tree.
+    
+    Args:
+        solution_edges: List of edges in the solution tree
+        origin: Origin node
+        destination: Destination node
+        
+    Returns:
+        List of edges in the path (as tuples), or empty list if no path
+    """
+    # Build tree
+    tree = nx.Graph()
+    for edge in solution_edges:
+        u, v = edge['source'], edge['destination']
+        tree.add_edge(u, v)
+    
+    # Find path using NetworkX
+    try:
+        node_path = nx.shortest_path(tree, origin, destination)
+        # Convert node path to edge path
+        edge_path = []
+        for i in range(len(node_path) - 1):
+            u, v = node_path[i], node_path[i + 1]
+            edge_path.append((min(u, v), max(u, v)))
+        return edge_path
+    except (nx.NetworkXNoPath, nx.NodeNotFound):
+        return []
+
+
+def compute_requirement_to_edges_mapping(requirements: list, solution_edges: list) -> dict:
+    """
+    Pre-compute which solution tree edges are used by each requirement.
+    
+    Args:
+        requirements: List of (origin, destination, weight) tuples
+        solution_edges: List of solution tree edges
+        
+    Returns:
+        Dictionary mapping "origin_dest" -> list of solution edge indices
+    """
+    accumulated = accumulate_bidirectional_requirements(requirements)
+    
+    # Create edge list and index mapping
+    edge_list = []
+    edge_to_idx = {}
+    for i, edge_dict in enumerate(solution_edges):
+        u, v = edge_dict['source'], edge_dict['destination']
+        canonical = (min(u, v), max(u, v))
+        edge_list.append(canonical)
+        edge_to_idx[canonical] = i
+    
+    # Map each requirement to solution edge indices
+    mapping = {}
+    for origin, dest, weight in accumulated:
+        path_edges = find_path_in_tree(solution_edges, origin, dest)
+        edge_indices = [edge_to_idx.get(edge, -1) for edge in path_edges if edge in edge_to_idx]
+        key = f"{origin}_{dest}"
+        mapping[key] = edge_indices
+        # Also store reverse
+        key_rev = f"{dest}_{origin}"
+        mapping[key_rev] = edge_indices
+    
+    return mapping
+
+
+def create_solution_plot(G: nx.Graph, solution_edges: list, layout: Dict, title: str = "Solution Tree", 
+                        highlight_path: list = None, requirement_paths: dict = None) -> figure:
     """
     Create a Bokeh plot for the solution tree.
     
@@ -569,6 +644,7 @@ def create_solution_plot(G: nx.Graph, solution_edges: list, layout: Dict, title:
         solution_edges: List of edges in the solution (dicts with 'source' and 'destination')
         layout: Node position layout (same as main graph)
         title: Plot title
+        highlight_path: List of edge tuples to highlight (for requirement path visualization)
         
     Returns:
         Bokeh figure object
@@ -613,45 +689,89 @@ def create_solution_plot(G: nx.Graph, solution_edges: list, layout: Dict, title:
             cost = 0  # Fallback
         solution_graph.add_edge(u, v, cost=cost)
     
+    # Compute node colors based on degree in the solution tree
+    node_colors = {}
+    node_degrees = {}
+    for node in solution_graph.nodes():
+        degree = solution_graph.degree(node)
+        node_degrees[node] = degree
+        if degree <= 2:
+            # Low degree (leaves/branches): Light blue/cyan
+            node_colors[node] = "#5dade2"  # Light blue
+        else:
+            # High degree (backbone): Orange/amber
+            node_colors[node] = "#f39c12"  # Orange
+    
+    # Create set of highlighted edges for quick lookup
+    highlight_set = set(highlight_path) if highlight_path else set()
+    
+    # Compute edge colors and widths based on endpoint degrees and highlight status
+    edge_colors = []
+    edge_widths = []
+    for u, v in solution_graph.edges():
+        canonical_edge = (min(u, v), max(u, v))
+        degree_u = node_degrees.get(u, 0)
+        degree_v = node_degrees.get(v, 0)
+        
+        if canonical_edge in highlight_set:
+            # Highlighted edge: Bright magenta/pink for maximum visibility
+            edge_colors.append("#e91e63")  # Bright pink/magenta
+            edge_widths.append(12)  # VERY thick for visibility
+        elif degree_u > 2 and degree_v > 2:
+            # Both high degree: Intense/dark color (backbone)
+            edge_colors.append("#d35400")  # Dark orange
+            edge_widths.append(4)
+        else:
+            # At least one low degree: Soft color (branches)
+            edge_colors.append("#85c1e9")  # Soft blue
+            edge_widths.append(4)
+    
     # Create graph renderer with provided layout
     graph_renderer = from_networkx(solution_graph, layout, scale=1, center=(0, 0))
     
-    # Add cost data for hover
+    # Add cost data, colors, and widths for hover
     if solution_graph.edges():
         edge_costs = [solution_graph[u][v]['cost'] for u, v in solution_graph.edges()]
-        edge_colors = ["#27ae60"] * len(list(solution_graph.edges()))  # Green for solution
         graph_renderer.edge_renderer.data_source.data['cost'] = edge_costs
         graph_renderer.edge_renderer.data_source.data['edge_color'] = edge_colors
+        graph_renderer.edge_renderer.data_source.data['edge_width'] = edge_widths
     
-    # Configure node appearance (solution nodes in green)
+    # Add node colors to data source
+    if solution_graph.nodes():
+        node_color_list = [node_colors.get(node, "#27ae60") for node in solution_graph.nodes()]
+        node_degree_list = [node_degrees.get(node, 0) for node in solution_graph.nodes()]
+        graph_renderer.node_renderer.data_source.data['node_color'] = node_color_list
+        graph_renderer.node_renderer.data_source.data['degree'] = node_degree_list
+    
+    # Configure node appearance (colored by degree)
     graph_renderer.node_renderer.glyph = Circle(
         radius=0.05,
-        fill_color="#27ae60",
-        line_color="#229954",
+        fill_color="node_color",
+        line_color="#2c3e50",
         line_width=2
     )
     graph_renderer.node_renderer.hover_glyph = Circle(
-        radius=0.05,
-        fill_color="#229954",
-        line_color="#1e8449",
+        radius=0.06,
+        fill_color="node_color",
+        line_color="#000000",
         line_width=3
     )
     
-    # Configure edge appearance (solution edges in green)
+    # Configure edge appearance (colored by endpoint degrees, variable width for highlights)
     graph_renderer.edge_renderer.glyph = MultiLine(
         line_color="edge_color",
         line_alpha=0.9,
-        line_width=4
+        line_width="edge_width"
     )
     graph_renderer.edge_renderer.hover_glyph = MultiLine(
-        line_color="#1e8449",
+        line_color="#e74c3c",
         line_alpha=1.0,
-        line_width=6
+        line_width=8
     )
     
-    # Add hover tool for nodes
+    # Add hover tool for nodes (now showing degree)
     node_hover = HoverTool(
-        tooltips=[("Node ID", "@index")],
+        tooltips=[("Node ID", "@index"), ("Degree", "@degree")],
         renderers=[graph_renderer.node_renderer]
     )
     plot.add_tools(node_hover)
@@ -671,7 +791,8 @@ def create_solution_plot(G: nx.Graph, solution_edges: list, layout: Dict, title:
     return plot
 
 
-def update_solution_plot(plot: figure, G: nx.Graph, solution_edges: list, layout: Dict, title: str):
+def update_solution_plot(plot: figure, G: nx.Graph, solution_edges: list, layout: Dict, title: str, 
+                        highlight_path: list = None):
     """
     Update solution plot with new data.
     
@@ -681,6 +802,7 @@ def update_solution_plot(plot: figure, G: nx.Graph, solution_edges: list, layout
         solution_edges: List of edges in the solution
         layout: Node position layout
         title: New title
+        highlight_path: List of edge tuples to highlight (for requirement path visualization)
     """
     # Clear existing renderers and hover tools
     plot.renderers = []
@@ -705,45 +827,89 @@ def update_solution_plot(plot: figure, G: nx.Graph, solution_edges: list, layout
             cost = 0  # Fallback
         solution_graph.add_edge(u, v, cost=cost)
     
+    # Compute node colors based on degree in the solution tree
+    node_colors = {}
+    node_degrees = {}
+    for node in solution_graph.nodes():
+        degree = solution_graph.degree(node)
+        node_degrees[node] = degree
+        if degree <= 2:
+            # Low degree (leaves/branches): Light blue/cyan
+            node_colors[node] = "#5dade2"  # Light blue
+        else:
+            # High degree (backbone): Orange/amber
+            node_colors[node] = "#f39c12"  # Orange
+    
+    # Create set of highlighted edges for quick lookup
+    highlight_set = set(highlight_path) if highlight_path else set()
+    
+    # Compute edge colors and widths based on endpoint degrees and highlight status
+    edge_colors = []
+    edge_widths = []
+    for u, v in solution_graph.edges():
+        canonical_edge = (min(u, v), max(u, v))
+        degree_u = node_degrees.get(u, 0)
+        degree_v = node_degrees.get(v, 0)
+        
+        if canonical_edge in highlight_set:
+            # Highlighted edge: Bright magenta/pink for maximum visibility
+            edge_colors.append("#e91e63")  # Bright pink/magenta
+            edge_widths.append(12)  # VERY thick for visibility
+        elif degree_u > 2 and degree_v > 2:
+            # Both high degree: Intense/dark color (backbone)
+            edge_colors.append("#d35400")  # Dark orange
+            edge_widths.append(4)
+        else:
+            # At least one low degree: Soft color (branches)
+            edge_colors.append("#85c1e9")  # Soft blue
+            edge_widths.append(4)
+    
     # Create graph renderer with provided layout
     graph_renderer = from_networkx(solution_graph, layout, scale=1, center=(0, 0))
     
-    # Add cost data for hover
+    # Add cost data, colors, and widths for hover
     if solution_graph.edges():
         edge_costs = [solution_graph[u][v]['cost'] for u, v in solution_graph.edges()]
-        edge_colors = ["#27ae60"] * len(list(solution_graph.edges()))  # Green for solution
         graph_renderer.edge_renderer.data_source.data['cost'] = edge_costs
         graph_renderer.edge_renderer.data_source.data['edge_color'] = edge_colors
+        graph_renderer.edge_renderer.data_source.data['edge_width'] = edge_widths
     
-    # Configure node appearance (solution nodes in green)
+    # Add node colors to data source
+    if solution_graph.nodes():
+        node_color_list = [node_colors.get(node, "#27ae60") for node in solution_graph.nodes()]
+        node_degree_list = [node_degrees.get(node, 0) for node in solution_graph.nodes()]
+        graph_renderer.node_renderer.data_source.data['node_color'] = node_color_list
+        graph_renderer.node_renderer.data_source.data['degree'] = node_degree_list
+    
+    # Configure node appearance (colored by degree)
     graph_renderer.node_renderer.glyph = Circle(
         radius=0.05,
-        fill_color="#27ae60",
-        line_color="#229954",
+        fill_color="node_color",
+        line_color="#2c3e50",
         line_width=2
     )
     graph_renderer.node_renderer.hover_glyph = Circle(
-        radius=0.05,
-        fill_color="#229954",
-        line_color="#1e8449",
+        radius=0.06,
+        fill_color="node_color",
+        line_color="#000000",
         line_width=3
     )
     
-    # Configure edge appearance (solution edges in green)
+    # Configure edge appearance (colored by endpoint degrees, variable width for highlights)
     graph_renderer.edge_renderer.glyph = MultiLine(
         line_color="edge_color",
         line_alpha=0.9,
-        line_width=4
+        line_width="edge_width"
     )
     graph_renderer.edge_renderer.hover_glyph = MultiLine(
-        line_color="#1e8449",
+        line_color="#e74c3c",
         line_alpha=1.0,
-        line_width=6
+        line_width=8
     )
     
-    # Add hover tool for nodes
+    # Add hover tool for nodes (now showing degree)
     node_hover = HoverTool(
-        tooltips=[("Node ID", "@index")],
+        tooltips=[("Node ID", "@index"), ("Degree", "@degree")],
         renderers=[graph_renderer.node_renderer]
     )
     plot.add_tools(node_hover)
