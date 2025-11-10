@@ -1,0 +1,50 @@
+{
+  "config": {
+    "digest": "default",
+    "probability": "0.300000",
+    "time_limit": "0.000000"
+  },
+  "instance": {
+    "name": "orst2",
+    "tags": []
+  },
+  "optimization_status": {
+    "code": "SUBOPTIMAL",
+    "description": "Non-optimal solution found",
+    "has_bound": false,
+    "has_solution": false
+  },
+  "reproducibility": {
+    "git_commit": "unknown",
+    "git_dirty": false,
+    "seed": 0,
+    "timestamp": "2025-11-10 00:42:49"
+  },
+  "results": {
+    "best_solution_time": 0.0,
+    "dual_bound": 0.0,
+    "gap": -1.0,
+    "gap_percent": 100.0,
+    "objective": -1.0,
+    "primal_bound": 0.0
+  },
+  "run_uuid": "20251110_004249",
+  "runtime": {
+    "cpu_seconds": 0.0,
+    "solver_iterations": 0,
+    "solver_nodes": 0,
+    "termination_reason": "Non-optimal solution found",
+    "wall_clock_seconds": 0.0
+  },
+  "schema_version": "1.0",
+  "solver": {
+    "formulation": "path_based",
+    "id": "path_based_formulation",
+    "version": "1.0"
+  },
+  "solver_metadata": {
+    "cutting_planes": "0",
+    "gurobi_status": "10005",
+    "lazy_constraints": "0"
+  }
+}
