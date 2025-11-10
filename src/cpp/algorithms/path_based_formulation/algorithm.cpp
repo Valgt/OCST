@@ -664,38 +664,38 @@ protected:
         int included_requirements = 0;
         int skipped_requirements = 0;
         
-        if (config.verbose) {
+    if (config.verbose) {
             std::cout << "[" << formulation_name_ << "] Setting objective function:" << std::endl;
         }
         
         for (int r = 0; r < static_cast<int>(instance_.requirements.size()); ++r) {
             const Requirement& req = instance_.requirements[r];
-            
+
             // Skip artificial requirements (weight = 0)
             if (req.weight <= 0.0) {
                 if (config.verbose) {
-                    std::cout << "  SKIPPED req[" << r << "]: (" << req.origin << ", " << req.destination 
+                    std::cout << "  SKIPPED req[" << r << "]: (" << req.origin << ", " << req.destination
                              << ") weight=" << req.weight << std::endl;
                 }
                 skipped_requirements++;
                 continue;
             }
-            
+
             if (config.verbose) {
-                std::cout << "  INCLUDED req[" << r << "]: (" << req.origin << ", " << req.destination 
+                std::cout << "  INCLUDED req[" << r << "]: (" << req.origin << ", " << req.destination
                          << ") weight=" << req.weight << std::endl;
             }
             included_requirements++;
-            
+
             for (int e = 0; e < instance_.num_edges; ++e) {
                 const Edge& edge = instance_.edges[e];
-                
+
                 // Add cost for both directions of flow
                 objective += req.weight * edge.cost * y_vars_[r][2*e];     // Forward direction
                 objective += req.weight * edge.cost * y_vars_[r][2*e + 1]; // Backward direction
             }
         }
-        
+
         if (config.verbose) {
             std::cout << "Objective function summary:" << std::endl;
             std::cout << "  Requirements included: " << included_requirements << std::endl;
@@ -718,7 +718,7 @@ protected:
         // ===================================================================
         
         if (config.enable_warm_start) {
-            if (config.verbose) {
+    if (config.verbose) {
                 std::cout << "[" << formulation_name_ << "] Setting warm-start solution..." << std::endl;
             }
             apply_warm_start();
