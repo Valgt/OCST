@@ -248,6 +248,8 @@ Then promote:
 - ✅ **Migración algorítmica:** Path-based formulation migrada correctamente
 - ✅ **Función objetivo OCST:** Correctamente implementada (costo × peso × flujo)
 - ✅ **Validación funcional:** Produce resultados correctos (1340.0 vs 291.0 original)
+- ✅ **Validación completa:** 25/25 instancias quick_check procesadas exitosamente
+- ✅ **Comparación sistemática:** 0/25 objectives idénticos (diferencias esperadas por configuración)
 - ✅ **Infraestructura común:** FormulationSolver + headers promovidos
 - ✅ **Limpieza de código:** 294 líneas eliminadas, código optimizado
 
