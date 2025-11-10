@@ -12,6 +12,7 @@ import json
 import time
 import argparse
 import subprocess
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Any, Optional
@@ -151,9 +152,19 @@ class OCSTOrchestrator:
 
     def compile_formulation(self, formulation: str) -> None:
         """Compile the specified formulation."""
+        # Map formulation names to make targets
+        make_target_map = {
+            "path_based": "path_based",
+            "path_based_formulation_original": "path_based_original",
+            "flow_based": "flow_based",
+            "flow_based_relaxed": "flow_based_relaxed"
+        }
+
+        make_target = make_target_map.get(formulation, formulation)
+
         try:
             result = subprocess.run(
-                ["make", formulation],
+                ["make", make_target],
                 cwd=self.project_root,
                 capture_output=True,
                 text=True,
@@ -163,6 +174,40 @@ class OCSTOrchestrator:
             print(f"  Output: {result.stdout.strip()}")
         except subprocess.CalledProcessError as e:
             raise RuntimeError(f"Compilation failed: {e.stderr}")
+
+    def create_temp_legacy_file(self, instance_name: str) -> str:
+        """Create a temporary legacy format file from JSON for path_based_formulation_original."""
+        json_file = self.data_dir / f"{instance_name}.json"
+
+        # Read JSON instance
+        with open(json_file, 'r') as f:
+            data = json.load(f)
+
+        # Create temporary file
+        temp_fd, temp_path = tempfile.mkstemp(suffix='.ocstpin')
+        try:
+            with os.fdopen(temp_fd, 'w') as temp_file:
+                # Write legacy format: n m p
+                # header: n m p
+                graph = data['graph']
+                n = graph['nodes']
+                m = len(graph['edges'])
+                p = len(data.get('requirements', []))
+
+                temp_file.write(f"{n} {m} {p}\n")
+
+                # Write edges: m lines of "u v cost"
+                for edge in graph['edges']:
+                    temp_file.write(f"{edge['source']} {edge['destination']} {edge['cost']}\n")
+
+                # Write requirements: p lines of "u v demand"
+                for req in data.get('requirements', []):
+                    temp_file.write(f"{req['origin']} {req['destination']} {req['weight']}\n")
+
+            return temp_path
+        except Exception:
+            os.close(temp_fd)
+            raise
 
     def prepare_config(self, args: argparse.Namespace) -> Dict[str, Any]:
         """Prepare configuration from CLI args and config files."""
@@ -202,21 +247,46 @@ class OCSTOrchestrator:
                           results_dir: Path) -> Dict[str, Any]:
         """Run formulation on a single instance."""
 
-        executable = self.build_dir / formulation
+        # Map formulation names to executable names
+        executable_map = {
+            "path_based": "path_based_formulation",
+            "path_based_formulation_original": "path_based_formulation_original",
+            "flow_based": "flow_based",
+            "flow_based_relaxed": "flow_based_relaxed"
+        }
+
+        executable_name = executable_map.get(formulation, formulation)
+        executable = self.build_dir / executable_name
         if not executable.exists():
             raise FileNotFoundError(f"Executable not found: {executable}")
 
-        # Prepare command arguments
-        cmd = [
-            str(executable),
-            f"--instance={instance_name}",
-            f"--seed={seed}",
-            f"--output-dir={results_dir}"
-        ]
+        # Different command interfaces for different formulations
+        temp_legacy_file = None
+        if formulation == "path_based_formulation_original":
+            # Legacy interface: <instance_file> [output_csv] [time_limit] [heuristics]
+            # Create temporary legacy file from JSON
+            temp_legacy_file = self.create_temp_legacy_file(instance_name)
+            time_limit = config.get('time_limit', 3600.0)
 
-        # Add config overrides
-        for key, value in config.items():
-            cmd.append(f"--{key}={value}")
+            cmd = [
+                str(executable),
+                temp_legacy_file,
+                "",  # empty output_csv (not used in new format)
+                str(time_limit),
+                "0.5"  # heuristics (fixed for legacy)
+            ]
+        else:
+            # Modern interface with --flags
+            cmd = [
+                str(executable),
+                "--instance", instance_name,
+                "--seed", str(seed),
+                "--output-dir", str(results_dir)
+            ]
+
+            # Add config overrides
+            for key, value in config.items():
+                cmd.extend([f"--{key}", str(value)])
 
         # Execute
         try:
@@ -229,26 +299,61 @@ class OCSTOrchestrator:
                 check=True
             )
 
-            # Try to load the result JSON
-            result_file = results_dir / f"{instance_name}.results.json"
-            if result_file.exists():
-                with open(result_file, 'r') as f:
-                    result_data = json.load(f)
-                    result_data['success'] = True
-                    return result_data
-            else:
-                # Fallback if no JSON result
+            # Handle different result formats
+            if formulation == "path_based_formulation_original":
+                # Legacy formulation doesn't produce JSON, parse stdout
+                # Look for "Objective value:" in stdout
+                objective = None
+                for line in result.stdout.split('\n'):
+                    if "Objective value:" in line:
+                        try:
+                            # Extract number from line like "Objective value: 1340.00"
+                            parts = line.split(':')
+                            if len(parts) > 1:
+                                objective = float(parts[1].strip())
+                        except ValueError:
+                            pass
+
+                # Cleanup temporary file
+                if temp_legacy_file and os.path.exists(temp_legacy_file):
+                    os.unlink(temp_legacy_file)
+
                 return {
                     "instance_name": instance_name,
                     "success": True,
+                    "objective": objective,
+                    "optimization_status_description": "COMPLETED",
                     "stdout": result.stdout,
                     "stderr": result.stderr,
                     "timestamp": datetime.now(timezone.utc).isoformat()
                 }
+            else:
+                # Modern formulation produces JSON
+                result_file = results_dir / f"{instance_name}.results.json"
+                if result_file.exists():
+                    with open(result_file, 'r') as f:
+                        result_data = json.load(f)
+                        result_data['success'] = True
+                        return result_data
+                else:
+                    # Fallback if no JSON result
+                    return {
+                        "instance_name": instance_name,
+                        "success": True,
+                        "stdout": result.stdout,
+                        "stderr": result.stderr,
+                        "timestamp": datetime.now(timezone.utc).isoformat()
+                    }
 
         except subprocess.TimeoutExpired:
+            # Cleanup temporary file on timeout
+            if temp_legacy_file and os.path.exists(temp_legacy_file):
+                os.unlink(temp_legacy_file)
             raise RuntimeError(f"Timeout after 3600 seconds")
         except subprocess.CalledProcessError as e:
+            # Cleanup temporary file on error
+            if temp_legacy_file and os.path.exists(temp_legacy_file):
+                os.unlink(temp_legacy_file)
             raise RuntimeError(f"Execution failed: {e.stderr}")
 
     def generate_summary(self, experiment_name: str, args: argparse.Namespace,
