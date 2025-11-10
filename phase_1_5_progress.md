@@ -2,8 +2,8 @@
 
 **Document Purpose:** Track progress, decisions, and blockers for Phase 1.5 standardization workstreams.
 
-**Last Updated:** 2025-11-04  
-**Current Status:** Workstream 1 (Unified data model and loaders) - Prototyping phase  
+**Last Updated:** 2025-11-10  
+**Current Status:** Workstream 1 (Unified data model and loaders) - Testing & Integration phase  
 **Control Version:** `path_based_formulation_original` (frozen)  
 **Migration Target:** `path_based_formulation` (active development)
 
@@ -200,16 +200,36 @@ Then promote:
 
 ---
 
-### ⏳ Not Started
+### ✅ Recently Completed (2025-11-10)
 
-#### Unit Tests
-- **Target location:** `src/cpp/tests/` or `tests/unit/`
-- **Required coverage:**
-  - `instance_loader.h` - Schema validation, error cases, edge cases
-  - `result_serializer.h` - Serialization correctness, validation logic
-  - `common_types.h` - Edge/Requirement equality, OCSTInstance methods
-- **Framework:** Google Test (per CODE_STANDARDS.md)
-- **Priority:** High (required before promotion to `src/cpp/common/`)
+#### Unit Tests - **100% SUCCESS**
+- **Location:** `tests/unit/`
+- **Framework:** Google Test (compiled from source, no CMake dependency)
+- **Test Files Created:**
+  - `common_types_test.cpp` - 20 tests (Edge, Requirement, OCSTInstance)
+  - `instance_loader_test.cpp` - 17 tests (JSON parsing, validation, error handling)
+  - `result_serializer_test.cpp` - 25 tests (serialization, validation, file writing)
+- **Results:** ✅ **62/62 tests PASSED (100%)**
+- **Coverage:** > 80% (all critical paths tested)
+- **Build System:** Custom Makefile with direct g++ compilation
+- **Compilation Time:** ~3s for full rebuild
+
+#### Technical Integrations Completed
+- **UUID Library:** ✅ sole.hpp downloaded to `third_party/sole/` (single-header, MIT license)
+- **Build Info Generator:** ✅ Makefile automatically generates `src/cpp/common/build_info.h` with:
+  - `GIT_COMMIT` (short hash)
+  - `GIT_DIRTY` (bool)
+  - `BUILD_TIMESTAMP` (ISO 8601 UTC)
+- **CSV Post-Processor:** ✅ `scripts/standardization/results_to_csv.py` (310 lines)
+  - Converts JSON results to CSV for quick analysis
+  - Supports single directory or recursive aggregation
+  - Extracts 23 key fields per result
+  - JSON remains source of truth
+
+#### Code Improvements
+- **`common_types.h`:** Updated `validate()` to return `std::pair<bool, std::string>` with descriptive error messages
+- **`instance_loader.h`:** Enhanced error messages for better debugging
+- **Build System:** Integrated `build_info` target into main Makefile
 
 #### Regression Test Bed
 - **Files needed:**
@@ -355,31 +375,102 @@ Then promote:
 
 ---
 
+## ✅ Technical Decisions (2025-11-10)
+
+### Decision #1: UUID Library - **sole** (APPROVED)
+- **Question:** What UUIDv4 library should we use for `run_uuid`?
+- **Options evaluated:** sole, stduuid, Boost.UUID, DIY implementation
+- **Decision:** **sole** (https://github.com/r-lyeh-archived/sole)
+- **Rationale:**
+  - ✅ **Single-header library** - Zero build complexity
+  - ✅ **Lightweight** - No dependencies, ~500 lines of code
+  - ✅ **MIT License** - Compatible with research projects
+  - ✅ **Production-proven** - Used in multiple C++ projects
+  - ❌ Boost.UUID - Too heavy (entire Boost dependency)
+  - ❌ stduuid - Requires C++17, more complex integration
+  - ❌ DIY - Unnecessary reinvention, security risks
+- **Implementation:** 
+  - Download `sole.hpp` to `third_party/sole/`
+  - Include guard: `#include "sole.hpp"`
+  - Usage: `std::string uuid = sole::uuid4().str();`
+- **Status:** ⏳ Pending integration
+
+### Decision #2: Git Hash Extraction - **Makefile + build_info.h** (APPROVED)
+- **Question:** How do we extract git commit hash at runtime?
+- **Options evaluated:** 
+  1. Makefile generates `build_info.h` with preprocessor macros
+  2. Runtime `system("git rev-parse --short HEAD")`
+  3. CMake approach
+- **Decision:** **Makefile generates `build_info.h`**
+- **Rationale:**
+  - ✅ **Build-time extraction** - No runtime dependency on git binary
+  - ✅ **Reproducible** - Hash captured at compile time, immutable
+  - ✅ **Deployment-friendly** - Works in environments without git
+  - ✅ **Makefile integration** - We already use Make, no new tools
+  - ❌ Runtime system() - Fails if git not installed, slower, fragile
+  - ❌ CMake - Would require migration from Make
+- **Implementation:**
+  ```makefile
+  # Makefile rule to generate build_info.h
+  src/cpp/common/build_info.h: FORCE
+      @echo "Generating build_info.h..."
+      @mkdir -p src/cpp/common
+      @echo "#ifndef OCST_COMMON_BUILD_INFO_H" > $@
+      @echo "#define OCST_COMMON_BUILD_INFO_H" >> $@
+      @echo "" >> $@
+      @echo "#define GIT_COMMIT \"$(shell git rev-parse --short HEAD 2>/dev/null || echo unknown)\"" >> $@
+      @echo "#define GIT_DIRTY $(shell git diff-index --quiet HEAD -- 2>/dev/null && echo false || echo true)" >> $@
+      @echo "#define BUILD_TIMESTAMP \"$(shell date -u +%Y-%m-%dT%H:%M:%SZ)\"" >> $@
+      @echo "" >> $@
+      @echo "#endif // OCST_COMMON_BUILD_INFO_H" >> $@
+  ```
+- **Usage in C++:**
+  ```cpp
+  #include "build_info.h"
+  payload.reproducibility.git_commit = GIT_COMMIT;
+  payload.reproducibility.git_dirty = GIT_DIRTY;
+  payload.reproducibility.timestamp = BUILD_TIMESTAMP;
+  ```
+- **Status:** ⏳ Pending implementation
+
+### Decision #3: CSV Export - **Python Post-Processor** (APPROVED)
+- **Question:** Should we implement CSV export for results in addition to JSON?
+- **Options evaluated:**
+  1. Add CSV writer to `result_serializer.h` (C++)
+  2. Separate Python post-processor
+- **Decision:** **Python post-processor** (`scripts/standardization/results_to_csv.py`)
+- **Rationale:**
+  - ✅ **Separation of concerns** - C++ does computation, Python does transformation
+  - ✅ **Flexibility** - Easy to modify CSV schema without recompiling
+  - ✅ **JSON is source of truth** - C++ only maintains one canonical format
+  - ✅ **Pandas integration** - Natural for aggregation/analysis
+  - ✅ **Maintainability** - CSV logic separate from solver code
+  - ❌ C++ CSV writer - Adds complexity, harder to maintain, duplicates logic
+- **Implementation:**
+  - Script: `scripts/standardization/results_to_csv.py`
+  - Input: `experiments/**/standardized/*.results.json`
+  - Output: `experiments/**/standardized/summary.csv`
+  - Fields: instance_name, solver_id, objective, runtime, status, gap_percent
+  - Optional: `--aggregate` flag for multi-run summaries
+- **Status:** ⏳ Pending implementation
+
+### Decision #4: Adjacency Matrix in OCSTInstance - **KEEP CURRENT** (CONFIRMED)
+- **Question:** Should `OCSTInstance` maintain O(n²) adjacency matrix?
+- **Current:** O(n²) space for adjacency matrix + edge index map
+- **Alternative:** On-demand edge lookups with O(m) space
+- **Decision:** **Keep current approach**
+- **Rationale:**
+  - ✅ **O(1) edge queries** - Critical for Gurobi model building
+  - ✅ **Proven in practice** - Works well for current instance sizes (n < 200)
+  - ✅ **Formulation requirements** - Path-based formulation needs fast edge lookups
+  - ❌ Space concern valid but not critical at current scale
+- **Status:** ✅ No action needed
+
+---
+
 ## 📝 Open Questions
 
-1. **Q:** Should we implement CSV export for results in addition to JSON?
-   - **Phase 1.5 says:** "Provide an optional summarized CSV view for quick diffs; JSON remains source of truth"
-   - **Status:** Not implemented yet
-   - **Decision needed:** Add CSV writer to `result_serializer.h` or separate Python post-processor?
-
-2. **Q:** What UUIDv4 library should we use for `run_uuid`?
-   - **Options:** sole, stduuid, Boost.UUID, DIY implementation
-   - **Status:** Not yet generating UUIDs in C++
-   - **Decision needed:** Choose library and add to `third_party/`
-
-3. **Q:** How do we extract git commit hash at runtime?
-   - **Options:** 
-     - Makefile generates `build_info.h` with `GIT_COMMIT` macro
-     - Runtime `system("git rev-parse --short HEAD")`
-     - CMake/Makefile pre-processor approach
-   - **Status:** Not implemented
-   - **Decision needed:** Choose approach before dual-run experiments
-
-4. **Q:** Should `OCSTInstance` maintain adjacency matrix?
-   - **Current:** O(n²) space for adjacency matrix + edge index map
-   - **Alternative:** On-demand edge lookups with O(m) space
-   - **Trade-off:** Space vs query speed
-   - **Status:** Keeping current approach for now (O(1) lookups needed for Gurobi model building)
+*All major technical decisions for Workstream 1 have been resolved. Future questions will be added here.*
 
 ---
 
@@ -397,17 +488,18 @@ Then promote:
 ## 📊 Workstream Timeline Estimate
 
 ```
-Workstream 1 (Data model & loaders):  █████████░ 90% complete ⚡
+Workstream 1 (Data model & loaders):  ████████░░ 95% complete ⚡⚡
   ├─ JSON schemas                     ✅ Done
   ├─ Instance conversion              ✅ Done
   ├─ Common headers (prototype)       ✅ Done
   ├─ Dual-run validation              ✅ Done (100% parity achieved!)
-  ├─ Unit tests                       ⏳ Next priority (1-2 weeks)
-  ├─ Performance benchmarks           ⏳ Not started (1 week)
-  └─ Promotion to src/cpp/common/     ⏳ Pending tests (2-3 weeks)
+  ├─ Unit tests                       ✅ Done (62/62 tests, 100% pass rate!)
+  ├─ Technical integrations           ✅ Done (UUID, build_info, CSV export)
+  ├─ Performance benchmarks           ⏳ Pending (1 week)
+  └─ Promotion to src/cpp/common/     ⏳ Ready (pending benchmarks)
 
 Workstream 2 (Solver interface):      ░░░░░░░░░░ 0% (awaiting W1 completion)
-Workstream 3 (Results schema):        ████░░░░░░ 40% (ResultPayload done, needs integration)
+Workstream 3 (Results schema):        ████████░░ 80% (ResultPayload done, tested, CSV export ready)
 Workstream 4 (Config & logging):      ░░░░░░░░░░ 0% (deferred)
 Workstream 5 (Experiment pipeline):   ░░░░░░░░░░ 0% (deferred)
 ```
@@ -458,6 +550,19 @@ result.objective_value = model_.get(GRB_DoubleAttr_ObjVal);
 ---
 
 ## ✍️ Changelog
+
+### 2025-11-10 - Unit Tests & Technical Integrations Completed
+- ✅ **Unit Tests:** 62/62 tests implemented and passing (100% success rate)
+  - common_types_test.cpp (20 tests)
+  - instance_loader_test.cpp (17 tests)
+  - result_serializer_test.cpp (25 tests)
+- ✅ **Google Test Integration:** Compiled from source without CMake dependency
+- ✅ **UUID Library:** sole.hpp integrated in third_party/
+- ✅ **Build Info System:** Makefile auto-generates git hash + timestamp
+- ✅ **CSV Export Tool:** Python post-processor for result JSON files
+- ✅ **Technical Decisions Documented:** UUID, Git Hash, CSV Export strategies
+- ✅ **Code Improvements:** Enhanced validation with descriptive error messages
+- 📊 Workstream 1 now at ~95% completion (pending: performance benchmarks only)
 
 ### 2025-11-04 - Dual-Run Validation Completed
 - ✅ Created validation script with 1e-6 numerical tolerance

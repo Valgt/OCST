@@ -116,7 +116,7 @@ OCSTInstance load_instance(const std::string& filename) {
         double cost = edge_obj["cost"].get<double>();
         
         if (source < 0 || source >= n || destination < 0 || destination >= n) {
-            throw std::runtime_error("Edge at index " + std::to_string(i) + " has invalid node indices");
+            throw std::runtime_error("Edge at index " + std::to_string(i) + " has node indices out of range");
         }
         if (cost < 0.0) {
             throw std::runtime_error("Edge at index " + std::to_string(i) + " has negative cost");
@@ -145,7 +145,7 @@ OCSTInstance load_instance(const std::string& filename) {
         double weight = req_obj["weight"].get<double>();
         
         if (origin < 0 || origin >= n || destination < 0 || destination >= n) {
-            throw std::runtime_error("Requirement at index " + std::to_string(i) + " has invalid node indices");
+            throw std::runtime_error("Requirement at index " + std::to_string(i) + " has node indices out of range");
         }
         if (weight < 0.0) {
             throw std::runtime_error("Requirement at index " + std::to_string(i) + " has negative weight");
@@ -155,8 +155,9 @@ OCSTInstance load_instance(const std::string& filename) {
     }
     
     // Validate instance consistency
-    if (!instance.validate()) {
-        throw std::runtime_error("Invalid instance structure after parsing JSON");
+    auto [is_valid, error_message] = instance.validate();
+    if (!is_valid) {
+        throw std::runtime_error("Invalid instance structure after parsing JSON: " + error_message);
     }
     
     return instance;

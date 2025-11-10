@@ -25,14 +25,37 @@ FLOW_BASED_SRC = $(SRC_DIR)/algorithms/flow_based_formulation/algorithm.cpp
 FLOW_BASED_RELAXED_SRC = $(SRC_DIR)/algorithms/flow_based_relaxed_formulation/algorithm.cpp
 ROOTED_TREE_BASED_SRC = $(SRC_DIR)/algorithms/rooted_tree_based_formulation/algorithm.cpp
 
+# Build info generado automáticamente
+BUILD_INFO_H = $(SRC_DIR)/common/build_info.h
+
 # Objetivo principal
-all: setup test_gurobi path_based path_based_original flow_based flow_based_relaxed rooted_tree_based
+all: setup build_info test_gurobi path_based path_based_original flow_based flow_based_relaxed rooted_tree_based
 
 # Crear directorios necesarios
 setup:
 	@mkdir -p $(BUILD_DIR)/objects
 	@mkdir -p $(BIN_DIR)
+	@mkdir -p $(SRC_DIR)/common
 	@echo "✓ Directorios creados"
+
+# Generar build_info.h con git commit hash
+build_info: $(BUILD_INFO_H)
+
+$(BUILD_INFO_H): FORCE
+	@mkdir -p $(SRC_DIR)/common
+	@echo "// Auto-generated build information" > $@
+	@echo "// Generated at build time - DO NOT EDIT" >> $@
+	@echo "#ifndef OCST_COMMON_BUILD_INFO_H" >> $@
+	@echo "#define OCST_COMMON_BUILD_INFO_H" >> $@
+	@echo "" >> $@
+	@echo "#define GIT_COMMIT \"$(shell git rev-parse --short HEAD 2>/dev/null || echo unknown)\"" >> $@
+	@echo "#define GIT_DIRTY $(shell git diff-index --quiet HEAD -- 2>/dev/null && echo false || echo true)" >> $@
+	@echo "#define BUILD_TIMESTAMP \"$(shell date -u +%Y-%m-%dT%H:%M:%SZ)\"" >> $@
+	@echo "" >> $@
+	@echo "#endif // OCST_COMMON_BUILD_INFO_H" >> $@
+	@echo "✓ build_info.h generado (commit: $(shell git rev-parse --short HEAD 2>/dev/null || echo unknown))"
+
+FORCE:
 
 # Compilar algoritmos
 path_based: $(BIN_DIR)/path_based_formulation
@@ -50,9 +73,9 @@ flow_based_relaxed: $(BIN_DIR)/flow_based_relaxed_formulation
 rooted_tree_based: $(BIN_DIR)/rooted_tree_based_formulation
 	@echo "✓ Rooted Tree-Based Formulation compilado"
 
-$(BIN_DIR)/path_based_formulation: $(PATH_BASED_SRC) | $(BIN_DIR)
+$(BIN_DIR)/path_based_formulation: $(PATH_BASED_SRC) $(BUILD_INFO_H) | $(BIN_DIR)
 	@echo "Compilando Path-Based Formulation..."
-	$(CXX) $(CXXFLAGS) $(PATH_BASED_INCLUDES) $< -o $@ $(GUROBI_FLAGS)
+	$(CXX) $(CXXFLAGS) $(PATH_BASED_INCLUDES) -Isrc/cpp/common $< -o $@ $(GUROBI_FLAGS)
 	@echo "✓ Compilación exitosa"
 
 $(BIN_DIR)/path_based_formulation_original: $(PATH_BASED_ORIGINAL_SRC) | $(BIN_DIR)
@@ -131,6 +154,6 @@ help:
 	@echo "  make help                  - Mostrar esta ayuda"
 
 # Objetivos que no son archivos
-.PHONY: all setup test_gurobi path_based path_based_original flow_based flow_based_relaxed rooted_tree_based run_test clean check_gurobi help
+.PHONY: all setup build_info test_gurobi path_based path_based_original flow_based flow_based_relaxed rooted_tree_based run_test clean check_gurobi help FORCE
 
 

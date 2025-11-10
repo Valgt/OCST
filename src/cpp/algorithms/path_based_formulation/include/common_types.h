@@ -84,7 +84,7 @@ struct OCSTInstance {
      * @param prob Probability/density parameter (legacy, default 0.0)
      */
     explicit OCSTInstance(int n, double prob = 0.0) 
-        : num_nodes(n), probability(prob), num_edges(0) {
+        : num_nodes(n), num_edges(0), probability(prob) {
         adjacency_matrix = std::vector<std::vector<int>>(n, std::vector<int>(n, -1));
     }
     
@@ -140,29 +140,45 @@ struct OCSTInstance {
     
     /**
      * @brief Validate instance consistency
-     * @return true if valid, false otherwise
+     * @return Pair (is_valid, error_message)
      */
-    bool validate() const {
-        if (num_nodes <= 0) return false;
-        if (num_edges != static_cast<int>(edges.size())) return false;
+    std::pair<bool, std::string> validate() const {
+        if (num_nodes <= 0) {
+            return {false, "num_nodes must be positive"};
+        }
+        if (num_edges != static_cast<int>(edges.size())) {
+            return {false, "num_edges mismatch: expected " + std::to_string(edges.size()) + 
+                    ", got " + std::to_string(num_edges)};
+        }
         
         // Check edge indices are within bounds
-        for (const auto& edge : edges) {
+        for (size_t i = 0; i < edges.size(); ++i) {
+            const auto& edge = edges[i];
             if (edge.source < 0 || edge.source >= num_nodes ||
                 edge.destination < 0 || edge.destination >= num_nodes) {
-                return false;
+                return {false, "Edge " + std::to_string(i) + " has invalid node indices"};
             }
         }
         
         // Check requirement indices are within bounds
-        for (const auto& req : requirements) {
+        for (size_t i = 0; i < requirements.size(); ++i) {
+            const auto& req = requirements[i];
             if (req.origin < 0 || req.origin >= num_nodes ||
                 req.destination < 0 || req.destination >= num_nodes) {
-                return false;
+                return {false, "Requirement " + std::to_string(i) + " has invalid node indices"};
             }
         }
         
-        return true;
+        // Check adjacency matrix consistency
+        for (size_t i = 0; i < edges.size(); ++i) {
+            const auto& edge = edges[i];
+            int expected_idx = static_cast<int>(i);
+            if (adjacency_matrix[edge.source][edge.destination] != expected_idx) {
+                return {false, "Adjacency matrix inconsistent for edge " + std::to_string(i)};
+            }
+        }
+        
+        return {true, ""};
     }
 };
 

@@ -10,6 +10,7 @@
 #include <set>
 #include <iomanip>
 #include <limits>
+#include <filesystem>
 
 // Unified instance loader (supports both legacy and JSON formats)
 #include "include/instance_loader.h"
@@ -1403,8 +1404,10 @@ SolutionResult solve_path_based_instance(const std::string& input_file,
             instance_basename = instance_basename.substr(0, last_dot);
         }
         
-        std::string json_solution_file = "data/output/test_instances/" + instance_basename + ".results.json";
-        write_json_solution(json_solution_file, instance, result, input_file);
+        // Generate JSON in the same directory as the .sol file
+        std::filesystem::path sol_path(output_csv);
+        std::filesystem::path json_solution_file = sol_path.parent_path() / (instance_basename + ".results.json");
+        write_json_solution(json_solution_file.string(), instance, result, input_file);
         
         return result;
         

@@ -2,7 +2,7 @@
   "config": {
     "digest": "default",
     "probability": "0.300000",
-    "time_limit": "0.017000"
+    "time_limit": "0.020000"
   },
   "instance": {
     "name": "ocstpin13",
@@ -18,23 +18,23 @@
     "git_commit": "unknown",
     "git_dirty": false,
     "seed": 0,
-    "timestamp": "2025-11-03 22:57:26"
+    "timestamp": "2025-11-10 00:26:54"
   },
   "results": {
-    "best_solution_time": 0.017,
+    "best_solution_time": 0.02,
     "dual_bound": 5806363.0,
     "gap": 0.0,
     "gap_percent": 0.0,
     "objective": 5806363.0,
     "primal_bound": 5806363.0
   },
-  "run_uuid": "20251103_225726",
+  "run_uuid": "20251110_002654",
   "runtime": {
-    "cpu_seconds": 0.017,
+    "cpu_seconds": 0.02,
     "solver_iterations": 0,
     "solver_nodes": 1,
     "termination_reason": "Optimal solution found",
-    "wall_clock_seconds": 0.017
+    "wall_clock_seconds": 0.02
   },
   "schema_version": "1.0",
   "solution": {

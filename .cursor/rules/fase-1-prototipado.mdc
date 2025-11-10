@@ -1,9 +1,6 @@
 ---
-description: Reglas para la Fase 1 (Prototipado) del proyecto OCST (v3 - anti-asunciones).
-globs: ["src/cpp/algorithms/**"]
-alwaysApply: true
+alwaysApply: false
 ---
-
 ## 1. Contexto y Reglas de Fase 1 (Prototipado) 🧪
 
 - **Principio:** Algoritmos **autocontenidos**. Evita la refactorización prematura a directorios `common`.

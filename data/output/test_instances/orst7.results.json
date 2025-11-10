@@ -2,7 +2,7 @@
   "config": {
     "digest": "default",
     "probability": "0.300000",
-    "time_limit": "1.467000"
+    "time_limit": "1.769000"
   },
   "instance": {
     "name": "orst7",
@@ -18,23 +18,23 @@
     "git_commit": "unknown",
     "git_dirty": false,
     "seed": 0,
-    "timestamp": "2025-11-03 22:58:00"
+    "timestamp": "2025-11-10 00:27:20"
   },
   "results": {
-    "best_solution_time": 1.467,
+    "best_solution_time": 1.769,
     "dual_bound": 1556492.0,
     "gap": 0.0,
     "gap_percent": 0.0,
     "objective": 1556492.0,
     "primal_bound": 1556492.0
   },
-  "run_uuid": "20251103_225800",
+  "run_uuid": "20251110_002720",
   "runtime": {
-    "cpu_seconds": 1.467,
+    "cpu_seconds": 1.769,
     "solver_iterations": 0,
     "solver_nodes": 302,
     "termination_reason": "Optimal solution found",
-    "wall_clock_seconds": 1.467
+    "wall_clock_seconds": 1.769
   },
   "schema_version": "1.0",
   "solution": {
