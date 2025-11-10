@@ -4,7 +4,7 @@
 # Variables
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -O2
-PATH_BASED_INCLUDES = -Isrc/cpp/algorithms/path_based_formulation/include -Ithird_party
+PATH_BASED_INCLUDES = -Isrc/cpp/common -Ithird_party
 GUROBI_FLAGS = -I$(GUROBI_HOME)/include -L$(GUROBI_HOME)/lib -lgurobi_c++ -lgurobi120
 PYTHON = python3
 
@@ -20,7 +20,7 @@ TEST_TARGETS = $(TEST_SOURCES:$(TEST_DIR)/%.cpp=$(BIN_DIR)/%)
 
 # Algoritmos
 PATH_BASED_SRC = $(SRC_DIR)/algorithms/path_based_formulation/algorithm.cpp
-PATH_BASED_SOLVER_SRC = $(SRC_DIR)/algorithms/path_based_formulation/formulation_solver.cpp
+PATH_BASED_SOLVER_SRC = $(SRC_DIR)/common/formulation_solver.cpp $(SRC_DIR)/common/config.cpp $(SRC_DIR)/common/structured_logger.cpp
 PATH_BASED_ORIGINAL_SRC = $(SRC_DIR)/algorithms/path_based_formulation_original/algorithm.cpp
 FLOW_BASED_SRC = $(SRC_DIR)/algorithms/flow_based_formulation/algorithm.cpp
 FLOW_BASED_RELAXED_SRC = $(SRC_DIR)/algorithms/flow_based_relaxed_formulation/algorithm.cpp

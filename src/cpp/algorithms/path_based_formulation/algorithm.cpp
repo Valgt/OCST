@@ -17,13 +17,13 @@
 #include <stack>
 
 // Unified instance loader (supports both legacy and JSON formats)
-#include "include/instance_loader.h"
+#include "instance_loader.h"
 
 // Result serializer for JSON output
-#include "include/result_serializer.h"
+#include "result_serializer.h"
 
 // Common solver interface (Workstream 2 - Simplified)
-#include "include/formulation_solver.h"
+#include "formulation_solver.h"
 
 // UUID generation
 #include "sole/sole.hpp"
@@ -37,11 +37,11 @@
 
 // Data structures are now in include/common_types.h
 // Using aliases for backward compatibility with existing code
-using Edge = ocst::path_based::Edge;
-using Requirement = ocst::path_based::Requirement;
-using OCSTInstance = ocst::path_based::OCSTInstance;
-using ResultPayload = ocst::path_based::ResultPayload;
-using ResultSerializer = ocst::path_based::ResultSerializer;
+using Edge = ocst::common::Edge;
+using Requirement = ocst::common::Requirement;
+using OCSTInstance = ocst::common::OCSTInstance;
+using ResultPayload = ocst::common::ResultPayload;
+using ResultSerializer = ocst::common::ResultSerializer;
 
 //=============================================================================
 // MAX-FLOW MIN-CUT FOR FRACTIONAL SEC SEPARATION
@@ -562,7 +562,7 @@ private:
 /**
  * @brief Path-based formulation solver for OCST problem
  */
-class PathBasedSolver : public ocst::path_based::FormulationSolver
+class PathBasedSolver : public ocst::common::FormulationSolver
 {
 private:
     // Decision variables (formulation-specific)
@@ -589,9 +589,9 @@ protected:
      * - Presolve disabled for better cut separation
      * - PreCrush enabled for lazy constraint compatibility
      */
-    void configure() override {
+    void configure(const ocst::common::SolverConfig& config) override {
         // Call base class configuration first
-        FormulationSolver::configure();
+        FormulationSolver::configure(config);
         
         // Path-based specific configuration
         model_->set(GRB_IntParam_LazyConstraints, 1);  // Enable lazy constraints (SEC)
@@ -608,7 +608,7 @@ protected:
      * Creates variables, adds constraints, sets objective, and configures callback.
      * This is the main "build" step in the simplified interface.
      */
-    void build_model() override 
+    void build_model(const ocst::common::SolverConfig& config) override 
     {
         // ===================================================================
         // STEP 1: Create decision variables
@@ -664,7 +664,7 @@ protected:
         int included_requirements = 0;
         int skipped_requirements = 0;
         
-        if (config_.verbose) {
+        if (config.verbose) {
             std::cout << "[" << formulation_name_ << "] Setting objective function:" << std::endl;
         }
         
@@ -673,7 +673,7 @@ protected:
             
             // Skip artificial requirements (weight = 0)
             if (req.weight <= 0.0) {
-                if (config_.verbose) {
+                if (config.verbose) {
                     std::cout << "  SKIPPED req[" << r << "]: (" << req.origin << ", " << req.destination 
                              << ") weight=" << req.weight << std::endl;
                 }
@@ -681,7 +681,7 @@ protected:
                 continue;
             }
             
-            if (config_.verbose) {
+            if (config.verbose) {
                 std::cout << "  INCLUDED req[" << r << "]: (" << req.origin << ", " << req.destination 
                          << ") weight=" << req.weight << std::endl;
             }
@@ -696,7 +696,7 @@ protected:
             }
         }
         
-        if (config_.verbose) {
+        if (config.verbose) {
             std::cout << "Objective function summary:" << std::endl;
             std::cout << "  Requirements included: " << included_requirements << std::endl;
             std::cout << "  Requirements skipped: " << skipped_requirements << std::endl;
@@ -717,8 +717,8 @@ protected:
         // STEP 5: Warm-start (optional)
         // ===================================================================
         
-        if (config_.enable_warm_start) {
-            if (config_.verbose) {
+        if (config.enable_warm_start) {
+            if (config.verbose) {
                 std::cout << "[" << formulation_name_ << "] Setting warm-start solution..." << std::endl;
             }
             apply_warm_start();
@@ -827,7 +827,7 @@ private:
     /**
      * @brief Helper: Apply warm-start solution using MST
      * 
-     * Called from build_model() if config_.enable_warm_start is true.
+     * Called from build_model() if config.enable_warm_start is true.
      */
     void apply_warm_start()
     {
@@ -1076,8 +1076,8 @@ private:
     /**
      * @brief Lifecycle Hook 7: Extract solution and populate ResultPayload (override)
      */
-    ocst::path_based::ResultPayload collect_results() override {
-        ocst::path_based::ResultPayload payload;
+    ocst::common::ResultPayload collect_results() override {
+        ocst::common::ResultPayload payload;
         
         // Optimization status
         int gurobi_status = model_->get(GRB_IntAttr_Status);
@@ -1128,21 +1128,19 @@ private:
 
 /**
  * @brief Main function that solves an OCST instance using path-based formulation (STANDARDIZED)
- * @param input_file Path to input instance file
- * @param output_csv Path to output CSV file for results
- * @param time_limit Time limit in seconds (default: 3600)
- * @param heuristics Gurobi heuristics level (default: 0.5)
+ * @param input_file Path to input instance file (JSON format)
+ * @param config_file Path to JSON config file (optional)
+ * @param enable_logging Whether to enable structured logging (default: false)
  * @return ResultPayload with complete solution (STANDARDIZED - no legacy SolutionResult)
  */
 ResultPayload solve_path_based_instance(const std::string& input_file,
-                                       const std::string& output_csv = "",
-                                       double time_limit = 3600.0,
-                                       double heuristics = 0.5) 
+                                       const std::string& config_file = "",
+                                       bool enable_logging = false) 
 {
     try {
         // Parse instance using unified loader (supports both legacy .ocstpin and JSON formats)
         std::cout << "Parsing instance: " << input_file << std::endl;
-        OCSTInstance instance = ocst::path_based::load_instance(input_file);
+        OCSTInstance instance = ocst::common::load_instance(input_file);
         
         std::cout << "Instance stats: " << instance.num_nodes << " nodes, " 
                   << instance.num_edges << " edges, " << instance.requirements.size() 
@@ -1150,13 +1148,31 @@ ResultPayload solve_path_based_instance(const std::string& input_file,
         
         // Solve using path-based formulation with new interface
         PathBasedSolver solver(instance);
-        
+
         // Configure solver
-        ocst::path_based::SolverConfig config;
-        config.time_limit_seconds = time_limit;
-        config.heuristics_level = heuristics;
-        config.verbose = true;
+        ocst::common::SolverConfig config;
+
+        // Load config from file if provided
+        if (!config_file.empty()) {
+            bool config_loaded = config.common_config.load_from_file(config_file);
+            if (!config_loaded) {
+                std::cerr << "Warning: Failed to load config file: " << config_file << std::endl;
+            }
+        }
+
+        // Override config with loaded values
+        config.time_limit_seconds = config.common_config.get_time_limit();
+        config.mip_gap = config.common_config.get_mip_gap();
+        config.threads = config.common_config.get_threads();
+        config.verbose = config.common_config.get_output_flag();
+        config.heuristics_level = 0.5;  // Keep default for now
         config.enable_warm_start = false;  // Temporarily disabled
+
+        // Create logger if enabled
+        if (enable_logging) {
+            std::string log_base = "experiments/logs/solver_" + std::to_string(time(nullptr));
+            config.logger = std::make_unique<ocst::common::StructuredLogger>(log_base);
+        }
         
         // Solve and get ResultPayload (STANDARDIZED - no legacy conversion)
         ResultPayload payload = solver.solve(config);
@@ -1182,22 +1198,7 @@ ResultPayload solve_path_based_instance(const std::string& input_file,
         std::cout << "Cutting planes added: " << cuts_added << std::endl;
         std::cout << "Selected edges: " << payload.solution.tree_edges.size() << std::endl;
         
-        // Save to CSV if specified (using ResultPayload)
-        if (!output_csv.empty()) {
-            std::ofstream csv_file(output_csv);
-            csv_file << "instance,nodes,edges,requirements,probability,objective,runtime,gap,status,nodes_explored\n";
-            csv_file << input_file << "," << instance.num_nodes << "," << instance.num_edges << ","
-                    << instance.requirements.size() << "," << instance.probability << ","
-                    << std::fixed << std::setprecision(0) << payload.objective << "," 
-                    << payload.runtime_stats.wall_clock_seconds << ","
-                    << payload.gap_percent << "," 
-                    << optimization_status_to_string(payload.optimization_status_code) << "," 
-                    << payload.runtime_stats.solver_nodes << "\n";
-            csv_file.close();
-            std::cout << "Results saved to: " << output_csv << std::endl;
-        }
-        
-        // Always generate JSON solution file
+        // Generate output filename based on input file
         std::string instance_basename = input_file;
         size_t last_slash = instance_basename.find_last_of("/");
         if (last_slash != std::string::npos) {
@@ -1208,10 +1209,10 @@ ResultPayload solve_path_based_instance(const std::string& input_file,
         if (last_dot != std::string::npos) {
             instance_basename = instance_basename.substr(0, last_dot);
         }
-        
+
         // Write JSON solution using ResultPayload (modern format)
-        std::filesystem::path sol_path(output_csv);
-        std::filesystem::path json_solution_file = sol_path.parent_path() / (instance_basename + ".results.json");
+        std::filesystem::path json_solution_file = std::filesystem::path("experiments/results") / (instance_basename + ".results.json");
+        std::filesystem::create_directories(json_solution_file.parent_path());
         
         // Populate instance metadata in payload
         payload.instance_name = instance_basename;
@@ -1233,7 +1234,7 @@ ResultPayload solve_path_based_instance(const std::string& input_file,
     } catch (const std::exception& e) {
         std::cerr << "Error parsing instance: " << e.what() << std::endl;
         ResultPayload error_payload;
-        error_payload.optimization_status_code = ocst::path_based::OptimizationStatus::ERROR;
+        error_payload.optimization_status_code = ocst::common::OptimizationStatus::ERROR;
         error_payload.has_solution = false;
         return error_payload;
     }
@@ -1243,21 +1244,33 @@ ResultPayload solve_path_based_instance(const std::string& input_file,
 // MAIN FUNCTION FOR TESTING
 //=============================================================================
 
-int main(int argc, char* argv[]) 
+int main(int argc, char* argv[])
 {
     if (argc < 2) {
-        std::cout << "Usage: " << argv[0] << " <instance_file> [output_csv] [time_limit] [heuristics]" << std::endl;
-        std::cout << "Example: " << argv[0] << " data/input/test_instances/ocstpin0 results.csv 300 0.5" << std::endl;
+        std::cout << "Usage: " << argv[0] << " <instance_file> [--config config.json] [--enable-logging]" << std::endl;
+        std::cout << "Example: " << argv[0] << " data/input/ocstpin0.json --config config.json --enable-logging" << std::endl;
         return 1;
     }
-    
+
     std::string input_file = argv[1];
-    std::string output_csv = (argc > 2) ? argv[2] : "";
-    double time_limit = (argc > 3) ? std::atof(argv[3]) : 3600.0;
-    double heuristics = (argc > 4) ? std::atof(argv[4]) : 0.5;
-    
+    std::string config_file = "";
+    bool enable_logging = false;
+
+    // Parse command line arguments
+    for (int i = 2; i < argc; ++i) {
+        std::string arg = argv[i];
+        if (arg == "--config" && i + 1 < argc) {
+            config_file = argv[++i];
+        } else if (arg == "--enable-logging") {
+            enable_logging = true;
+        } else {
+            std::cerr << "Unknown argument: " << arg << std::endl;
+            return 1;
+        }
+    }
+
     // STANDARDIZED: use ResultPayload instead of legacy SolutionResult
-    ResultPayload result = solve_path_based_instance(input_file, output_csv, time_limit, heuristics);
-    
-    return (result.optimization_status_code == ocst::path_based::OptimizationStatus::OPTIMAL) ? 0 : 1;
+    ResultPayload result = solve_path_based_instance(input_file, config_file, enable_logging);
+
+    return (result.optimization_status_code == ocst::common::OptimizationStatus::OPTIMAL) ? 0 : 1;
 }

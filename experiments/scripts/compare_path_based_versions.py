@@ -13,6 +13,7 @@ import os
 import sys
 import subprocess
 import csv
+import json
 import glob
 from pathlib import Path
 from datetime import datetime
@@ -50,7 +51,16 @@ def find_all_instances():
 def run_solver(executable, instance_file, output_file):
     """Run solver and capture output"""
     try:
-        cmd = [executable, instance_file, output_file, str(TIME_LIMIT), str(HEURISTICS)]
+        # Detect if this is the new JSON version (Workstream 4)
+        is_json_version = "path_based_formulation" in executable and "original" not in executable
+
+        if is_json_version:
+            # New interface: instance_file [--config config.json] [--enable-logging]
+            cmd = [executable, instance_file]
+        else:
+            # Legacy interface: instance_file output_file time_limit heuristics
+            cmd = [executable, instance_file, output_file, str(TIME_LIMIT), str(HEURISTICS)]
+
         result = subprocess.run(
             cmd,
             capture_output=True,
@@ -74,6 +84,24 @@ def parse_solution_file(solution_file):
                 edges = lines[1].strip().split() if len(lines) > 1 else []
                 return objective, len(edges) // 2  # Each edge is two numbers
             return None, None
+    except Exception as e:
+        return None, str(e)
+
+def parse_results_json(results_file):
+    """Parse the .results.json file to extract objective value and num_edges"""
+    try:
+        with open(results_file, 'r') as f:
+            data = json.load(f)
+
+        # Extract objective value
+        objective = data.get('results', {}).get('objective')
+        if objective is not None:
+            # For JSON results, we can count the tree edges
+            tree_edges = data.get('results', {}).get('solution', {}).get('tree_edges', [])
+            num_edges = len(tree_edges) if tree_edges else None
+            return objective, num_edges
+        else:
+            return None, "Could not find objective value in results JSON"
     except Exception as e:
         return None, str(e)
 
@@ -158,13 +186,23 @@ def main():
         
         instance_name = Path(instance).stem
         output_csv = f"experiments/results/tmp_json_{instance_name}.csv"
-        solution_file = f"data/output/test_instances/complete_{instance_name}.sol"
-        
+
+        # For JSON version, look for .results.json file
+        is_json_version = "path_based_formulation" in EXECUTABLE_JSON and "original" not in EXECUTABLE_JSON
+        if is_json_version:
+            results_file = f"experiments/results/{instance_name}.results.json"
+        else:
+            results_file = f"data/output/test_instances/complete_{instance_name}.sol"
+
         print(f"  Processing: {instance_name}...", end=" ", flush=True)
         success, stdout, stderr = run_solver(EXECUTABLE_JSON, instance, output_csv)
-        
+
         if success:
-            objective, num_edges = parse_solution_file(solution_file)
+            if is_json_version:
+                objective, num_edges = parse_results_json(results_file)
+            else:
+                objective, num_edges = parse_solution_file(results_file)
+
             if objective is not None:
                 print(f"✓ Objective: {objective:.2f}")
                 results_json[instance_name] = {
@@ -173,7 +211,7 @@ def main():
                     'stdout': stdout
                 }
             else:
-                print(f"✗ Could not parse solution file")
+                print(f"✗ Could not parse results file")
                 results_json[instance_name] = {'objective': None, 'error': num_edges}
         else:
             print(f"✗ Failed: {stderr[:50]}")

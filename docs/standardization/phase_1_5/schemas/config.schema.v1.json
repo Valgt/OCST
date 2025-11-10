@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ocst/config.schema.v1.json",
+  "title": "OCST Solver Configuration Schema v1",
+  "description": "Schema for solver configuration parameters",
+  "type": "object",
+  "properties": {
+    "time_limit": {
+      "type": "number",
+      "description": "Maximum time limit in seconds",
+      "minimum": 0,
+      "default": 3600
+    },
+    "tolerance": {
+      "type": "number",
+      "description": "Numerical tolerance for optimality",
+      "minimum": 0,
+      "default": 1e-6
+    },
+    "branching_strategy": {
+      "type": "string",
+      "enum": ["strong", "pseudocost", "most_fractional"],
+      "default": "strong"
+    },
+    "callback_frequency": {
+      "type": "integer",
+      "description": "Frequency of lazy constraint callbacks",
+      "minimum": 1,
+      "default": 1
+    },
+    "mip_gap": {
+      "type": "number",
+      "description": "MIP gap tolerance",
+      "minimum": 0,
+      "default": 0.0
+    },
+    "threads": {
+      "type": "integer",
+      "description": "Number of threads for parallel solving",
+      "minimum": 1,
+      "default": 1
+    },
+    "presolve": {
+      "type": "boolean",
+      "description": "Enable presolve",
+      "default": true
+    },
+    "output_flag": {
+      "type": "boolean",
+      "description": "Enable solver output",
+      "default": false
+    }
+  },
+  "additionalProperties": false
+}
+

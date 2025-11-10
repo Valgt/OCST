@@ -3,11 +3,10 @@
 
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -g
-INCLUDES = -I../../src/cpp/algorithms/path_based_formulation/include \
+INCLUDES = -I../../src/cpp/common \
            -I../../third_party \
            -I../../third_party/googletest/googletest/include \
-           -I../../third_party/googletest/googlemock/include \
-           -I../../src/cpp/common
+           -I../../third_party/googletest/googlemock/include
 LDFLAGS = -L../../third_party/googletest/build/lib -lgtest -lgtest_main -lpthread
 
 # Directorios
@@ -49,9 +48,12 @@ $(GTEST_MAIN_OBJ): $(GTEST_MAIN_SRC) | $(OBJ_DIR)
 # Compile test binaries
 test_binaries: $(TEST_BINARIES)
 
-$(BIN_DIR)/%: %.cpp $(GTEST_OBJ) $(GTEST_MAIN_OBJ) | $(BIN_DIR)
+# Common source files needed by tests
+COMMON_SOURCES = ../../src/cpp/common/config.cpp ../../src/cpp/common/structured_logger.cpp
+
+$(BIN_DIR)/%: %.cpp $(GTEST_OBJ) $(GTEST_MAIN_OBJ) $(COMMON_SOURCES) | $(BIN_DIR)
 	@echo "Compiling $@..."
-	$(CXX) $(CXXFLAGS) $(INCLUDES) $< $(GTEST_OBJ) $(GTEST_MAIN_OBJ) -o $@ -lpthread
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $< $(COMMON_SOURCES) $(GTEST_OBJ) $(GTEST_MAIN_OBJ) -o $@ -lpthread
 	@echo "✓ $@ compiled"
 
 # Ensure BIN_DIR exists

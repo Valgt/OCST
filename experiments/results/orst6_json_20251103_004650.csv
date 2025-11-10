@@ -1,2 +1,0 @@
-instance,nodes,edges,requirements,probability,objective,runtime,gap,status,nodes_explored
-/home/sergio/OCST/data/input/orst6.json,10,45,11,0.3,1134484,15,0,2,6832
