@@ -3,9 +3,9 @@
 **Document Purpose:** Track progress, decisions, and blockers for Phase 1.5 standardization workstreams.
 
 **Last Updated:** 2025-11-10  
-**Current Status:** 🚧 Workstream 2 (Common solver interface) - **IN PROGRESS (70%)**  
+**Current Status:** ✅ Workstream 2 (Common solver interface) - **COMPLETED (100%)** - Simplificado  
 **Control Version:** `path_based_formulation_original` (frozen)  
-**Migration Target:** `path_based_formulation` (active development)
+**Migration Target:** `path_based_formulation` (active development - SIMPLIFIED)
 
 ---
 
@@ -627,6 +627,58 @@ result.objective_value = model_.get(GRB_DoubleAttr_ObjVal);
   - Maintainability: Significantly improved
 - 🎯 **Strategy:** Incremental cleanup with full validation after each step
 - 🏆 **Conclusion:** Cleanup phase successful - code is cleaner, smaller, and fully validated
+
+### 2025-11-10 - Workstream 2 - Architectural Simplification (Opción 2) ✅ COMPLETED
+- 🏗️ **MAJOR REFACTOR:** Simplified FormulationSolver from 7 to 3 lifecycle hooks
+  - **Before:** 7 hooks (configure, build_variables, build_constraints, build_objective, warm_start, solve_model, collect_results)
+  - **After:** 3 hooks (configure, build_model, collect_results)
+  - **Reduction:** -57% hooks complexity
+  
+- 📐 **Architecture Decision:** Implemented **Opción 2** (Simplification of Abstractions)
+  - **Analysis Document:** `docs/standardization/phase_1_5/architecture_analysis.md`
+  - **Problem Identified:** V1 had 2,389 lines (+64% vs original 1,457)
+  - **Solution:** Aggressive simplification while maintaining reusability
+  
+- 🔧 **Technical Changes:**
+  1. **Hook Fusion:** build_variables + build_constraints + build_objective → `build_model()`
+  2. **Hook Elimination:** solve_model() removed (always model_->optimize(), no override needed)
+  3. **Hook Integration:** warm_start() integrated into build_model() (conditional)
+  4. **SolverConfig Simplified:** 12 fields → 6 fields (-50%)
+  5. **Proper C++ Structure:** Implementations moved from .h to .cpp
+  
+- 📊 **Code Metrics (FormulationSolver):**
+  - Header: 460 → 173 lines (-62%)
+  - Implementation: 0 → 218 lines (new .cpp file)
+  - Total: 460 → 391 lines (-15%)
+  - **Effective code:** 209 → 191 lines (-9%)
+  
+- 📊 **Total Project Metrics:**
+  - Before: 2,389 lines (algorithm + solver + headers)
+  - After: 2,324 lines (-65 lines, -3%)
+  - Core solver only: 1,718 → 1,653 lines (-4%)
+  
+- ✅ **Validation (100% Success):**
+  - Instances: 25/25 executed successfully
+  - Objectives: 25/25 perfect match
+  - Status codes: 25/25 perfect match
+  - Solver nodes: 25/25 perfect match (including orst6: 6,832 nodes)
+  - Gap percentages: 25/25 perfect match
+  - Tree structures: 25/25 perfect match
+  
+- 🎯 **Benefits Achieved:**
+  - ✅ **Entendibilidad:** Mucho más simple (3 vs 7 hooks)
+  - ✅ **Mantenibilidad:** Header limpio, implementaciones en .cpp
+  - ✅ **Reusabilidad:** Suficiente para todas las formulaciones
+  - ✅ **Balance:** +13% overhead vs original, pero REUSABLE
+  
+- 📝 **Files Modified:**
+  - `formulation_solver.h` (simplified from V1, now official)
+  - `formulation_solver.cpp` (new file with implementations)
+  - `algorithm.cpp` (hooks fused into build_model)
+  - `Makefile` (updated to compile .cpp)
+  
+- 🎉 **Outcome:** Architectural simplification successful - ready for reuse across other formulations
+- 📍 **Status:** Workstream 2 officially COMPLETED (100%)
 
 ### 2025-11-04 - Dual-Run Validation Completed
 - ✅ Created validation script with 1e-6 numerical tolerance
