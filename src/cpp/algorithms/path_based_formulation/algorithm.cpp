@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <unordered_map>
+#include <unordered_set>
 #include <chrono>
 #include <algorithm>
 #include <cmath>
@@ -11,6 +12,9 @@
 #include <iomanip>
 #include <limits>
 #include <filesystem>
+#include <queue>
+#include <memory>
+#include <stack>
 
 // Unified instance loader (supports both legacy and JSON formats)
 #include "include/instance_loader.h"
@@ -26,14 +30,6 @@
 
 // Gurobi integration
 #include <gurobi_c++.h>
-
-// Additional includes for SEC callback
-#include <queue>
-#include <memory>
-#include <stack>
-#include <algorithm>
-#include <unordered_map>
-#include <unordered_set>
 
 //=============================================================================
 // DATA STRUCTURES
@@ -1121,24 +1117,6 @@ private:
         return payload;
     }
 };
-
-//=============================================================================
-// INSTANCE PARSING UTILITIES  
-//=============================================================================
-
-/**
- * @brief Parses OCST instance from input file
- * @param filename Path to the instance file
- * @return Parsed OCSTInstance object
- */
-// Legacy parse_instance_file is now replaced by unified loader
-// Keeping this as a wrapper for backward compatibility
-// NOTE: This function is deprecated - use ocst::path_based::load_instance() instead
-OCSTInstance parse_instance_file(const std::string& filename) 
-{
-    // Use unified loader which automatically detects format (legacy or JSON)
-    return ocst::path_based::load_instance(filename);
-}
 
 //=============================================================================
 // MAIN SOLVING FUNCTION
