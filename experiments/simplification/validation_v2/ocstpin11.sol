@@ -1,0 +1,2 @@
+instance,nodes,edges,requirements,probability,objective,runtime,gap,status,nodes_explored
+data/input/ocstpin11.json,10,24,15,0.6,3888533,0,0,OPTIMAL,0

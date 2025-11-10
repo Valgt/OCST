@@ -20,6 +20,7 @@ TEST_TARGETS = $(TEST_SOURCES:$(TEST_DIR)/%.cpp=$(BIN_DIR)/%)
 
 # Algoritmos
 PATH_BASED_SRC = $(SRC_DIR)/algorithms/path_based_formulation/algorithm.cpp
+PATH_BASED_SOLVER_SRC = $(SRC_DIR)/algorithms/path_based_formulation/formulation_solver.cpp
 PATH_BASED_ORIGINAL_SRC = $(SRC_DIR)/algorithms/path_based_formulation_original/algorithm.cpp
 FLOW_BASED_SRC = $(SRC_DIR)/algorithms/flow_based_formulation/algorithm.cpp
 FLOW_BASED_RELAXED_SRC = $(SRC_DIR)/algorithms/flow_based_relaxed_formulation/algorithm.cpp
@@ -73,9 +74,9 @@ flow_based_relaxed: $(BIN_DIR)/flow_based_relaxed_formulation
 rooted_tree_based: $(BIN_DIR)/rooted_tree_based_formulation
 	@echo "✓ Rooted Tree-Based Formulation compilado"
 
-$(BIN_DIR)/path_based_formulation: $(PATH_BASED_SRC) $(BUILD_INFO_H) | $(BIN_DIR)
+$(BIN_DIR)/path_based_formulation: $(PATH_BASED_SRC) $(PATH_BASED_SOLVER_SRC) $(BUILD_INFO_H) | $(BIN_DIR)
 	@echo "Compilando Path-Based Formulation..."
-	$(CXX) $(CXXFLAGS) $(PATH_BASED_INCLUDES) -Isrc/cpp/common $< -o $@ $(GUROBI_FLAGS)
+	$(CXX) $(CXXFLAGS) $(PATH_BASED_INCLUDES) -Isrc/cpp/common $(PATH_BASED_SRC) $(PATH_BASED_SOLVER_SRC) -o $@ $(GUROBI_FLAGS)
 	@echo "✓ Compilación exitosa"
 
 $(BIN_DIR)/path_based_formulation_original: $(PATH_BASED_ORIGINAL_SRC) | $(BIN_DIR)

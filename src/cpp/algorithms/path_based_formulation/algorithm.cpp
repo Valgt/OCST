@@ -22,7 +22,7 @@
 // Result serializer for JSON output
 #include "include/result_serializer.h"
 
-// Common solver interface (Workstream 2)
+// Common solver interface (Workstream 2 - Simplified)
 #include "include/formulation_solver.h"
 
 // UUID generation
@@ -603,14 +603,17 @@ protected:
     }
     
     /**
-     * @brief Lifecycle Hook 2: Create decision variables (override)
+     * @brief Build complete optimization model (SIMPLIFIED - fusion of 3 old hooks)
      * 
-     * Creates:
-     * - x_vars: Binary edge selection variables
-     * - y_vars: Binary flow variables for each requirement (directed arcs)
+     * Creates variables, adds constraints, sets objective, and configures callback.
+     * This is the main "build" step in the simplified interface.
      */
-    void build_variables() override 
+    void build_model() override 
     {
+        // ===================================================================
+        // STEP 1: Create decision variables
+        // ===================================================================
+        
         // Create x variables (edge selection - binary)
         x_vars_.resize(instance_.num_edges);
         for (int e = 0; e < instance_.num_edges; ++e) {
@@ -619,7 +622,7 @@ protected:
             x_vars_[e] = model_->addVar(0.0, 1.0, 0.0, GRB_BINARY, var_name);
         }
         
-        // Create y variables (flow variables - continuous)
+        // Create y variables (flow variables - binary for unit flow)
         y_vars_.resize(instance_.requirements.size());
         for (int r = 0; r < static_cast<int>(instance_.requirements.size()); ++r) {
             y_vars_[r].resize(instance_.num_edges * 2);  // Each undirected edge becomes 2 directed arcs
@@ -627,25 +630,22 @@ protected:
             for (int e = 0; e < instance_.num_edges; ++e) {
                 const Edge& edge = instance_.edges[e];
                 
-                // Forward direction (i -> j) - BINARY for unit flow
+                // Forward direction (i -> j)
                 std::string var_name_fwd = "y_" + std::to_string(r) + "_" + 
                                           std::to_string(edge.source) + "_" + std::to_string(edge.destination);
                 y_vars_[r][2*e] = model_->addVar(0.0, 1.0, 0.0, GRB_BINARY, var_name_fwd);
                 
-                // Backward direction (j -> i) - BINARY for unit flow
+                // Backward direction (j -> i)
                 std::string var_name_bwd = "y_" + std::to_string(r) + "_" + 
                                           std::to_string(edge.destination) + "_" + std::to_string(edge.source);
                 y_vars_[r][2*e + 1] = model_->addVar(0.0, 1.0, 0.0, GRB_BINARY, var_name_bwd);
             }
         }
-    }
-    
-    /**
-     * @brief Lifecycle Hook 3: Add all problem constraints (override)
-     * 
-     * Combines structural, flow, and coupling constraints for the path-based formulation.
-     */
-    void build_constraints() override {
+        
+        // ===================================================================
+        // STEP 2: Add constraints
+        // ===================================================================
+        
         // Check graph connectivity
         if (!is_graph_connected()) {
             std::cout << "[" << formulation_name_ << "] Warning: Graph appears to be disconnected" << std::endl;
@@ -654,8 +654,76 @@ protected:
         add_structural_constraints();
         add_flow_constraints();
         add_coupling_constraints();
-        set_bounds();  // Moved here from solve()
-    }
+        set_bounds();
+        
+        // ===================================================================
+        // STEP 3: Set objective function
+        // ===================================================================
+        
+        GRBLinExpr objective = 0;
+        int included_requirements = 0;
+        int skipped_requirements = 0;
+        
+        if (config_.verbose) {
+            std::cout << "[" << formulation_name_ << "] Setting objective function:" << std::endl;
+        }
+        
+        for (int r = 0; r < static_cast<int>(instance_.requirements.size()); ++r) {
+            const Requirement& req = instance_.requirements[r];
+            
+            // Skip artificial requirements (weight = 0)
+            if (req.weight <= 0.0) {
+                if (config_.verbose) {
+                    std::cout << "  SKIPPED req[" << r << "]: (" << req.origin << ", " << req.destination 
+                             << ") weight=" << req.weight << std::endl;
+                }
+                skipped_requirements++;
+                continue;
+            }
+            
+            if (config_.verbose) {
+                std::cout << "  INCLUDED req[" << r << "]: (" << req.origin << ", " << req.destination 
+                         << ") weight=" << req.weight << std::endl;
+            }
+            included_requirements++;
+            
+            for (int e = 0; e < instance_.num_edges; ++e) {
+                const Edge& edge = instance_.edges[e];
+                
+                // Add cost for both directions of flow
+                objective += req.weight * edge.cost * y_vars_[r][2*e];     // Forward direction
+                objective += req.weight * edge.cost * y_vars_[r][2*e + 1]; // Backward direction
+            }
+        }
+        
+        if (config_.verbose) {
+            std::cout << "Objective function summary:" << std::endl;
+            std::cout << "  Requirements included: " << included_requirements << std::endl;
+            std::cout << "  Requirements skipped: " << skipped_requirements << std::endl;
+            std::cout << "  Total requirements: " << instance_.requirements.size() << std::endl;
+        }
+        
+        model_->setObjective(objective, GRB_MINIMIZE);
+        
+        // ===================================================================
+        // STEP 4: Configure SEC callback for subtour elimination
+        // ===================================================================
+        
+        // Set up lazy constraint callback (must be done before optimize())
+        sec_callback_ = std::make_unique<SECCallback>(instance_, x_vars_, lazy_constraints_added_);
+        model_->setCallback(sec_callback_.get());
+        
+        // ===================================================================
+        // STEP 5: Warm-start (optional)
+        // ===================================================================
+        
+        if (config_.enable_warm_start) {
+            if (config_.verbose) {
+                std::cout << "[" << formulation_name_ << "] Setting warm-start solution..." << std::endl;
+            }
+            apply_warm_start();
+        }
+    }  // End of build_model()
 
 private:
     /**
@@ -755,77 +823,13 @@ private:
             }
         }
     }
-    /**
-     * @brief Lifecycle Hook 4: Define objective function (override)
-     * 
-     * Objective: Minimize sum of (weight * cost * flow) over all requirements and edges
-     */
-    void build_objective() override 
-    {
-        GRBLinExpr objective = 0;
-        int included_requirements = 0;
-        int skipped_requirements = 0;
-        
-        if (config_.verbose) {
-            std::cout << "[" << formulation_name_ << "] Setting objective function:" << std::endl;
-        }
-        
-        for (int r = 0; r < static_cast<int>(instance_.requirements.size()); ++r) {
-            const Requirement& req = instance_.requirements[r];
-            
-            // Skip artificial requirements (weight = 0)
-            if (req.weight <= 0.0) {
-                if (config_.verbose) {
-                    std::cout << "  SKIPPED req[" << r << "]: (" << req.origin << ", " << req.destination 
-                             << ") weight=" << req.weight << std::endl;
-                }
-                skipped_requirements++;
-                continue;
-            }
-            
-            if (config_.verbose) {
-                std::cout << "  INCLUDED req[" << r << "]: (" << req.origin << ", " << req.destination 
-                         << ") weight=" << req.weight << std::endl;
-            }
-            included_requirements++;
-            
-            for (int e = 0; e < instance_.num_edges; ++e) {
-                const Edge& edge = instance_.edges[e];
-                
-                // Add cost for both directions of flow
-                objective += req.weight * edge.cost * y_vars_[r][2*e];     // Forward direction
-                objective += req.weight * edge.cost * y_vars_[r][2*e + 1]; // Backward direction
-            }
-        }
-        
-        if (config_.verbose) {
-            std::cout << "Objective function summary:" << std::endl;
-            std::cout << "  Requirements included: " << included_requirements << std::endl;
-            std::cout << "  Requirements skipped: " << skipped_requirements << std::endl;
-            std::cout << "  Total requirements: " << instance_.requirements.size() << std::endl;
-        }
-        
-        model_->setObjective(objective, GRB_MINIMIZE);
-    }
     
     /**
-     * @brief Lifecycle Hook 6: Solve model with SEC callback (override)
+     * @brief Helper: Apply warm-start solution using MST
      * 
-     * Configures the SEC callback before invoking the optimizer.
+     * Called from build_model() if config_.enable_warm_start is true.
      */
-    void solve_model() override {
-        // Set up SEC callback for subtour elimination
-        sec_callback_ = std::make_unique<SECCallback>(instance_, x_vars_, lazy_constraints_added_);
-        model_->setCallback(sec_callback_.get());
-        
-        // Call base class solve (invokes model_->optimize())
-        FormulationSolver::solve_model();
-    }
-    
-    /**
-     * @brief Lifecycle Hook 5: Sets initial solution using MST for warm-start (override)
-     */
-    void warm_start() override
+    void apply_warm_start()
     {
         try {
             // Find MST using Kruskal's algorithm
@@ -1148,7 +1152,7 @@ ResultPayload solve_path_based_instance(const std::string& input_file,
         PathBasedSolver solver(instance);
         
         // Configure solver
-        PathBasedSolver::SolverConfig config;
+        ocst::path_based::SolverConfig config;
         config.time_limit_seconds = time_limit;
         config.heuristics_level = heuristics;
         config.verbose = true;
