@@ -104,11 +104,12 @@ void FormulationSolver::configure(const SolverConfig& config) {
     
     // Apply standard configuration from config_
     env_->set(GRB_IntParam_OutputFlag, config.verbose ? 1 : 0);
+    env_->set(GRB_IntParam_Seed, config.seed);  // Set random seed for reproducibility
     model_->set(GRB_DoubleParam_TimeLimit, config.time_limit_seconds);
     model_->set(GRB_DoubleParam_MIPGap, config.mip_gap);
     model_->set(GRB_DoubleParam_Heuristics, config.heuristics_level);
     model_->set(GRB_IntParam_Threads, config.threads);
-    
+
     // Conservative defaults for numerical stability
     model_->set(GRB_IntParam_NumericFocus, 2);
     model_->set(GRB_IntParam_MIPFocus, 1);

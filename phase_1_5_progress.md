@@ -200,6 +200,28 @@ Then promote:
 
 ---
 
+### ✅ Workstream 5 - Experiment Pipeline (COMPLETED)
+
+#### Design Decisions Finalized ✅
+- **Tag Selection:** Single tag only (--tag tag_name)
+- **Error Handling:** Stop on critical errors, warnings for non-critical issues
+- **Config Overrides:** CLI args for simple cases (--config key=value) + JSON file support (--config-file file.json)
+- **Output Structure:** experiments/[timestamp]_[tag]/[formulation]/results/
+- **No Parquet:** CSV/JSON only for current dataset sizes
+
+#### Implementation Plan
+1. ✅ **Move legacy scripts** - Scripts `run_*.sh` moved to `scripts/legacy/`
+2. ✅ **Create orchestrator.py** - Main experiment runner with CLI interface
+3. ✅ **Add tag filtering logic** - Select instances by single tag from JSON metadata
+4. ✅ **Implement config override system** - CLI args + JSON file support for parameters
+5. ✅ **Build output structure** - Hierarchical experiment organization (tag_timestamp/formulation/results/)
+6. ✅ **Add compilation during experiment** - make {formulation} before execution
+7. ✅ **Add error handling** - Proper failure modes and logging with reproducibility
+8. ✅ **Create summary generation** - Complete JSON summary with all ResultPayload fields
+9. ✅ **Add seed management** - User-specified seed (default: 42) for reproducibility
+
+---
+
 ### ✅ Recently Completed (2025-11-10)
 
 #### Unit Tests - **100% SUCCESS**
@@ -479,11 +501,75 @@ Then promote:
   - ❌ Space concern valid but not critical at current scale
 - **Status:** ✅ No action needed
 
+### Decision #5: Workstream 5 - Experiment Pipeline Design (APPROVED)
+- **Question:** How to design the unified experiment orchestrator?
+- **Decisions Made:**
+  - ✅ **Tag Selection:** Single tag only (no multiple tags/AND/OR)
+  - ✅ **Error Handling:** Stop on errors, continue with warnings
+  - ✅ **Config Overrides:** CLI args for simple cases + JSON file support for complex configs
+  - ✅ **Output Structure:** `experiments/[tag]_[timestamp]/[formulation]/results/`
+  - ✅ **No Parquet:** CSV/JSON only for current dataset sizes
+  - ✅ **Seed Management:** User-specified seed (default: 42)
+  - ✅ **Summary Content:** Include execution details and per-formulation config
+  - ✅ **Legacy Scripts:** Move to `scripts/legacy/` folder (unchanged)
+  - ✅ **Compilation:** Compile each formulation during experiment (`make {formulation}`)
+  - ✅ **Complete Results:** Include all ResultPayload fields, not just objective
+- **Format Compatibility:**
+  - ✅ **path_based_formulation:** Reads JSON, writes JSON
+  - ✅ **path_based_formulation_original:** Reads legacy, writes legacy
+  - ✅ **Transition Phase:** Implemented as needed (experiment/conversion logic)
+- **Implementation Details:**
+  - CLI: `--tag quick_check --formulation path_based --seed 42 --config time_limit=300`
+  - JSON config: `--config-file advanced_config.json`
+  - Output: `experiments/quick_check_20251110_153337/path_based/results/`
+  - Compilation: `make {formulation}` before each experiment
+- **Status:** ✅ Ready for implementation
+
 ---
 
-## 📝 Open Questions
+## 📝 Open Questions (Workstream 5)
 
-*All major technical decisions for Workstream 1 have been resolved. Future questions will be added here.*
+### Workstream 5 - Remaining Implementation Details
+1. **Executable Validation:** How to check if formulation exists before running?
+   - Option A: Check file existence (`build/executables/{formulation}`)
+   - Option B: Try execution with timeout and catch errors
+   - Option C: Add validation target to Makefile
+
+2. **Summary JSON Structure:** What exact fields include in experiment summary?
+   ```json
+   {
+     "experiment_info": {
+       "tag": "quick_check",
+       "timestamp": "2025-11-10T15:33:37Z",
+       "seed": 42,
+       "formulations": ["path_based", "flow_based"]
+     },
+     "execution_details": {
+       "total_instances": 25,
+       "instances_per_tag": {"quick_check": 25}
+     },
+     "formulation_configs": {
+       "path_based": {"time_limit": 3600, "mip_gap": 0.0},
+       "flow_based": {"time_limit": 1800, "threads": 4}
+     },
+     "results_summary": {
+       "success_count": 24,
+       "failure_count": 1,
+       "avg_runtime": 45.2,
+       "total_runtime": 1130.5
+     }
+   }
+   ```
+
+3. **Legacy Scripts Migration:** Exact location and structure for legacy folder?
+   - Current: `run_*.sh` in project root
+   - Target: `scripts/legacy/run_*.sh` or `scripts/legacy/` folder
+   - Keep original functionality or convert to orchestrator calls?
+
+4. **Format Transition Strategy:** How to implement the separate conversion logic?
+   - Option A: Standalone converter script (`scripts/convert_legacy_to_json.py`)
+   - Option B: Orchestrator subcommand (`orchestrator.py convert --from legacy --to json`)
+   - Option C: Separate experiment type for conversions
 
 ---
 
@@ -514,7 +600,7 @@ Workstream 1 (Data model & loaders):  ██████████ 100% comple
 Workstream 2 (Solver interface):      ░░░░░░░░░░ 0% (ready to start)
 Workstream 3 (Results schema):        ██████████ 100% (ResultPayload done, tested, CSV export ready)
 Workstream 4 (Config & logging):      ░░░░░░░░░░ 0% (deferred)
-Workstream 5 (Experiment pipeline):   ░░░░░░░░░░ 0% (deferred)
+Workstream 5 (Experiment pipeline):   ██████████ 100% (completed)
 ```
 
 ---
@@ -563,6 +649,20 @@ result.objective_value = model_.get(GRB_DoubleAttr_ObjVal);
 ---
 
 ## ✍️ Changelog
+
+### 2025-11-10 - Workstream 5 COMPLETED ✅ (100%)
+- ✅ **Experiment Orchestrator:** `scripts/standardization/orchestrator.py` fully implemented
+  - CLI interface with --tag, --formulation, --seed, --config, --config-file options
+  - Single tag selection with JSON instance filtering
+  - Automatic compilation with `make {formulation}` during experiments
+  - Hierarchical output structure: `experiments/[tag]_[timestamp]/[formulation]/results/`
+  - Complete error handling with reproducibility tracking
+- ✅ **Legacy Scripts Migration:** All `run_*.sh` scripts moved to `scripts/legacy/` with documentation
+- ✅ **Seed Management:** User-specified seeds (default: 42) integrated into SolverConfig and Gurobi
+- ✅ **Complete Results Summary:** JSON experiment summary with all ResultPayload fields
+- ✅ **Format Compatibility:** Clear separation between JSON and legacy formats
+- ✅ **Compilation Integration:** Orchestrator compiles formulations on-demand
+- 🎯 **Workstream 5 Status:** 100% COMPLETE - Experiment pipeline fully operational
 
 ### 2025-11-10 - Workstream 1 COMPLETED ✅ (100%)
 - ✅ **Unit Tests:** 62/62 tests implemented and passing (100% success rate)

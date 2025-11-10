@@ -1131,11 +1131,15 @@ private:
  * @param input_file Path to input instance file (JSON format)
  * @param config_file Path to JSON config file (optional)
  * @param enable_logging Whether to enable structured logging (default: false)
+ * @param output_dir Directory where to save results (default: experiments/results)
+ * @param seed Random seed for reproducibility (default: 42)
  * @return ResultPayload with complete solution (STANDARDIZED - no legacy SolutionResult)
  */
 ResultPayload solve_path_based_instance(const std::string& input_file,
                                        const std::string& config_file = "",
-                                       bool enable_logging = false) 
+                                       bool enable_logging = false,
+                                       const std::string& output_dir = "experiments/results",
+                                       int seed = 42) 
 {
     try {
         // Parse instance using unified loader (supports both legacy .ocstpin and JSON formats)
@@ -1167,6 +1171,9 @@ ResultPayload solve_path_based_instance(const std::string& input_file,
         config.verbose = config.common_config.get_output_flag();
         config.heuristics_level = 0.5;  // Keep default for now
         config.enable_warm_start = false;  // Temporarily disabled
+
+        // Set seed for reproducibility
+        config.seed = seed;
 
         // Create logger if enabled
         if (enable_logging) {
@@ -1211,7 +1218,7 @@ ResultPayload solve_path_based_instance(const std::string& input_file,
         }
 
         // Write JSON solution using ResultPayload (modern format)
-        std::filesystem::path json_solution_file = std::filesystem::path("experiments/results") / (instance_basename + ".results.json");
+        std::filesystem::path json_solution_file = std::filesystem::path(output_dir) / (instance_basename + ".results.json");
         std::filesystem::create_directories(json_solution_file.parent_path());
         
         // Populate instance metadata in payload
@@ -1247,30 +1254,54 @@ ResultPayload solve_path_based_instance(const std::string& input_file,
 int main(int argc, char* argv[])
 {
     if (argc < 2) {
-        std::cout << "Usage: " << argv[0] << " <instance_file> [--config config.json] [--enable-logging]" << std::endl;
-        std::cout << "Example: " << argv[0] << " data/input/ocstpin0.json --config config.json --enable-logging" << std::endl;
+        std::cout << "Usage: " << argv[0] << " --instance <instance_name> [--seed <seed>] [--output-dir <dir>] [--config <config.json>] [--enable-logging] [--<param>=<value> ...]" << std::endl;
+        std::cout << "Examples:" << std::endl;
+        std::cout << "  " << argv[0] << " --instance ocstpin0" << std::endl;
+        std::cout << "  " << argv[0] << " --instance ocstpin0 --seed 42 --config config.json --enable-logging" << std::endl;
+        std::cout << "  " << argv[0] << " --instance ocstpin0 --time_limit=1800 --mip_gap=0.001" << std::endl;
         return 1;
     }
 
-    std::string input_file = argv[1];
+    std::string instance_name = "";
+    int seed = 42;  // Default seed
+    std::string output_dir = "experiments/results";
     std::string config_file = "";
     bool enable_logging = false;
 
     // Parse command line arguments
-    for (int i = 2; i < argc; ++i) {
+    for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
-        if (arg == "--config" && i + 1 < argc) {
+
+        if (arg == "--instance" && i + 1 < argc) {
+            instance_name = argv[++i];
+        } else if (arg == "--seed" && i + 1 < argc) {
+            seed = std::stoi(argv[++i]);
+        } else if (arg == "--output-dir" && i + 1 < argc) {
+            output_dir = argv[++i];
+        } else if (arg == "--config" && i + 1 < argc) {
             config_file = argv[++i];
         } else if (arg == "--enable-logging") {
             enable_logging = true;
+        } else if (arg.find("--") == 0 && arg.find("=") != std::string::npos) {
+            // Config parameter as --key=value
+            // These will be handled by the config system
+            continue;  // Just consume the argument
         } else {
             std::cerr << "Unknown argument: " << arg << std::endl;
             return 1;
         }
     }
 
+    if (instance_name.empty()) {
+        std::cerr << "Error: --instance parameter is required" << std::endl;
+        return 1;
+    }
+
+    // Build full path to instance file
+    std::string input_file = "data/input/" + instance_name + ".json";
+
     // STANDARDIZED: use ResultPayload instead of legacy SolutionResult
-    ResultPayload result = solve_path_based_instance(input_file, config_file, enable_logging);
+    ResultPayload result = solve_path_based_instance(input_file, config_file, enable_logging, output_dir, seed);
 
     return (result.optimization_status_code == ocst::common::OptimizationStatus::OPTIMAL) ? 0 : 1;
 }

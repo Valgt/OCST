@@ -53,6 +53,7 @@ struct SolverConfig {
     // Optional parameters
     double heuristics_level = 0.5;  // Gurobi heuristics (0.0-1.0)
     bool enable_warm_start = false;
+    int seed = 42;  // Random seed for reproducibility
 
     // Integration with common config
     Config common_config;
