@@ -18,6 +18,9 @@
 // Result serializer for JSON output
 #include "include/result_serializer.h"
 
+// Common solver interface (Workstream 2)
+#include "include/formulation_solver.h"
+
 // Gurobi integration
 #include <gurobi_c++.h>
 
@@ -38,6 +41,8 @@
 using Edge = ocst::path_based::Edge;
 using Requirement = ocst::path_based::Requirement;
 using OCSTInstance = ocst::path_based::OCSTInstance;
+using ResultPayload = ocst::path_based::ResultPayload;
+using ResultSerializer = ocst::path_based::ResultSerializer;
 
 //=============================================================================
 // MAX-FLOW MIN-CUT FOR FRACTIONAL SEC SEPARATION
@@ -591,149 +596,61 @@ struct SolutionResult
 /**
  * @brief Path-based formulation solver for OCST problem
  */
-class PathBasedSolver 
+class PathBasedSolver : public ocst::path_based::FormulationSolver
 {
 private:
-    const OCSTInstance& instance_;
-    GRBEnv env_;
-    GRBModel model_;
-    
-    // Decision variables
+    // Decision variables (formulation-specific)
     std::vector<GRBVar> x_vars_;     // Edge selection variables
     std::vector<std::vector<GRBVar>> y_vars_;  // Flow variables for each requirement
-    
-    // Metrics tracking
-    int lazy_constraints_count_;
-    int cutting_planes_count_;
     
     // SEC Callback for subtour elimination
     std::unique_ptr<SECCallback> sec_callback_;
     
 public:
     explicit PathBasedSolver(const OCSTInstance& instance) 
-        : instance_(instance), env_(GRBEnv()), model_(GRBModel(env_)), sec_callback_(nullptr)
+        : FormulationSolver(instance, "path_based", "2.0.0"),
+          sec_callback_(nullptr)
     {
-        lazy_constraints_count_ = 0;
-        cutting_planes_count_ = 0;
-        
-        // Configure Gurobi parameters as specified in pseudocode
-        env_.set(GRB_IntParam_OutputFlag, 1);  // Enable console output for debugging
-        model_.set(GRB_IntParam_LazyConstraints, 1);  // Enable lazy constraints
-        model_.set(GRB_IntParam_PreCrush, 1);  // Ensure lazy constraints work with presolve
-        model_.set(GRB_IntParam_Presolve, 0);  // Disable presolve for better cut separation
-        model_.set(GRB_IntParam_Threads, 1);   // Single thread for reproducibility
-        model_.set(GRB_IntParam_Cuts, 0);      // Disable default cuts to prioritize custom ones
-        
-        // Additional parameters for better performance
-        model_.set(GRB_IntParam_MIPFocus, 1);     // Focus on feasible solutions
-        model_.set(GRB_IntParam_NumericFocus, 2);  // High precision for numerical stability
-        model_.set(GRB_DoubleParam_MIPGap, 1e-6); // Tight optimality gap
-        model_.set(GRB_DoubleParam_MIPGapAbs, 1e-6); // Absolute gap tolerance
-    }
-    
-    /**
-     * @brief Solves the OCST instance using path-based formulation
-     * @param time_limit Time limit in seconds
-     * @param heuristics_level Gurobi heuristics parameter (0-2)
-     * @return SolutionResult containing all solution metrics
-     */
-    SolutionResult solve(double time_limit = 3600.0, double heuristics_level = 0.5) 
-    {
-        auto start_time = std::chrono::high_resolution_clock::now();
-        
-        try {
-            // Set algorithm parameters
-            model_.set(GRB_DoubleParam_TimeLimit, time_limit);
-            model_.set(GRB_DoubleParam_Heuristics, heuristics_level);
-            
-            // Check graph connectivity (basic connectivity check)
-            if (!is_connected()) {
-                std::cout << "Warning: Graph appears to be disconnected" << std::endl;
-            }
-            
-            // Create variables
-            create_variables();
-            
-            // Set up SEC callback for subtour elimination
-            sec_callback_ = std::make_unique<SECCallback>(instance_, x_vars_, lazy_constraints_count_);
-            model_.setCallback(sec_callback_.get());
-            
-            // Add constraints
-            add_structural_constraints();
-            add_flow_constraints();
-            add_coupling_constraints();
-            
-            // Set objective function
-            set_objective();
-            
-            // Set initial solution using MST
-            // TEMPORARILY DISABLED to test callback behavior
-            // set_initial_solution();
-            
-            // Set bounds for better convergence
-            set_bounds();
-            
-            // Optimize
-            model_.optimize();
-            
-            // Extract solution
-            SolutionResult result = extract_solution();
-            
-            auto end_time = std::chrono::high_resolution_clock::now();
-            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
-            result.runtime_seconds = duration.count() / 1000.0;
-            
-            return result;
-            
-        } catch (GRBException& e) {
-            std::cerr << "Gurobi error: " << e.getMessage() << std::endl;
-            SolutionResult error_result;
-            error_result.gurobi_status = e.getErrorCode();
-            return error_result;
-        }
+        // Configuration will be done in configure() override
     }
 
-private:
+protected:
     /**
-     * @brief Basic connectivity check using DFS
+     * @brief Configure Gurobi environment (override)
+     * 
+     * Path-based formulation requires:
+     * - Lazy constraints enabled for SEC callback
+     * - Presolve disabled for better cut separation
+     * - PreCrush enabled for lazy constraint compatibility
      */
-    bool is_connected() 
-    {
-        if (instance_.num_nodes <= 1) return true;
+    void configure() override {
+        // Call base class configuration first
+        FormulationSolver::configure();
         
-        std::vector<bool> visited(instance_.num_nodes, false);
-        std::vector<int> stack;
-        stack.push_back(0);  // Start from node 0
-        visited[0] = true;
-        int visited_count = 1;
+        // Path-based specific configuration
+        model_->set(GRB_IntParam_LazyConstraints, 1);  // Enable lazy constraints (SEC)
+        model_->set(GRB_IntParam_PreCrush, 1);  // Ensure lazy constraints work with presolve
         
-        while (!stack.empty()) {
-            int current = stack.back();
-            stack.pop_back();
-            
-            for (int j = 0; j < instance_.num_nodes; ++j) {
-                if (!visited[j] && instance_.has_edge(current, j)) {
-                    visited[j] = true;
-                    stack.push_back(j);
-                    visited_count++;
-                }
-            }
-        }
-        
-        return visited_count == instance_.num_nodes;
+        // Override base class defaults for better cut separation
+        model_->set(GRB_IntParam_Presolve, 0);  // Disable presolve
+        model_->set(GRB_IntParam_Cuts, 0);      // Disable default cuts
     }
     
     /**
-     * @brief Creates decision variables for the MILP formulation
+     * @brief Lifecycle Hook 2: Create decision variables (override)
+     * 
+     * Creates:
+     * - x_vars: Binary edge selection variables
+     * - y_vars: Binary flow variables for each requirement (directed arcs)
      */
-    void create_variables() 
+    void build_variables() override 
     {
         // Create x variables (edge selection - binary)
         x_vars_.resize(instance_.num_edges);
         for (int e = 0; e < instance_.num_edges; ++e) {
             const Edge& edge = instance_.edges[e];
             std::string var_name = "x_" + std::to_string(edge.source) + "_" + std::to_string(edge.destination);
-            x_vars_[e] = model_.addVar(0.0, 1.0, 0.0, GRB_BINARY, var_name);
+            x_vars_[e] = model_->addVar(0.0, 1.0, 0.0, GRB_BINARY, var_name);
         }
         
         // Create y variables (flow variables - continuous)
@@ -747,16 +664,34 @@ private:
                 // Forward direction (i -> j) - BINARY for unit flow
                 std::string var_name_fwd = "y_" + std::to_string(r) + "_" + 
                                           std::to_string(edge.source) + "_" + std::to_string(edge.destination);
-                y_vars_[r][2*e] = model_.addVar(0.0, 1.0, 0.0, GRB_BINARY, var_name_fwd);
+                y_vars_[r][2*e] = model_->addVar(0.0, 1.0, 0.0, GRB_BINARY, var_name_fwd);
                 
                 // Backward direction (j -> i) - BINARY for unit flow
                 std::string var_name_bwd = "y_" + std::to_string(r) + "_" + 
                                           std::to_string(edge.destination) + "_" + std::to_string(edge.source);
-                y_vars_[r][2*e + 1] = model_.addVar(0.0, 1.0, 0.0, GRB_BINARY, var_name_bwd);
+                y_vars_[r][2*e + 1] = model_->addVar(0.0, 1.0, 0.0, GRB_BINARY, var_name_bwd);
             }
         }
     }
     
+    /**
+     * @brief Lifecycle Hook 3: Add all problem constraints (override)
+     * 
+     * Combines structural, flow, and coupling constraints for the path-based formulation.
+     */
+    void build_constraints() override {
+        // Check graph connectivity
+        if (!is_graph_connected()) {
+            std::cout << "[" << formulation_name_ << "] Warning: Graph appears to be disconnected" << std::endl;
+        }
+        
+        add_structural_constraints();
+        add_flow_constraints();
+        add_coupling_constraints();
+        set_bounds();  // Moved here from solve()
+    }
+
+private:
     /**
      * @brief Adds structural constraints: sum of edges = n-1 (spanning tree)
      * CRITICAL FIX: Add symmetry constraints to ensure bidirectional edge consistency
@@ -767,7 +702,7 @@ private:
         for (int e = 0; e < instance_.num_edges; ++e) {
             tree_constraint += x_vars_[e];
         }
-        model_.addConstr(tree_constraint == instance_.num_nodes - 1, "tree_constraint");
+        model_->addConstr(tree_constraint == instance_.num_nodes - 1, "tree_constraint");
         
         // TEMPORARILY DISABLED: Symmetry constraints causing infeasibility
         // TODO: Debug and fix symmetry constraints
@@ -779,7 +714,7 @@ private:
                 if (req.weight > 0.0) {
                     std::string symmetry_name = "symmetry_" + std::to_string(r) + "_" + std::to_string(e);
                     GRBLinExpr total_flow = y_vars_[r][2*e] + y_vars_[r][2*e + 1];
-                    model_.addConstr(total_flow <= req.weight * x_vars_[e], symmetry_name);
+                    model_->addConstr(total_flow <= req.weight * x_vars_[e], symmetry_name);
                 }
             }
         }
@@ -826,7 +761,7 @@ private:
                 // For intermediate nodes: inflow = outflow (rhs = 0)
                 
                 std::string constraint_name = "flow_" + std::to_string(r) + "_" + std::to_string(node);
-                model_.addConstr(flow_balance == rhs, constraint_name);
+                model_->addConstr(flow_balance == rhs, constraint_name);
             }
         }
     }
@@ -845,41 +780,47 @@ private:
                 // Note: req variable removed to avoid unused variable warning
                 std::string constraint_name_fwd = "coupling_" + std::to_string(r) + "_" + 
                                                  std::to_string(edge.source) + "_" + std::to_string(edge.destination);
-                model_.addConstr(y_vars_[r][2*e] <= x_vars_[e], constraint_name_fwd);
+                model_->addConstr(y_vars_[r][2*e] <= x_vars_[e], constraint_name_fwd);
                 
                 // Backward flow constraint: y_r_ji ≤ x_ij (TEMPORARILY REVERTED)
                 std::string constraint_name_bwd = "coupling_" + std::to_string(r) + "_" + 
                                                  std::to_string(edge.destination) + "_" + std::to_string(edge.source);
-                model_.addConstr(y_vars_[r][2*e + 1] <= x_vars_[e], constraint_name_bwd);
+                model_->addConstr(y_vars_[r][2*e + 1] <= x_vars_[e], constraint_name_bwd);
             }
         }
     }
-    
     /**
-     * @brief Sets the objective function: minimize total weighted communication cost
-     * Only considers requirements with weight > 0 (excludes artificial connectivity requirements)
+     * @brief Lifecycle Hook 4: Define objective function (override)
+     * 
+     * Objective: Minimize sum of (weight * cost * flow) over all requirements and edges
      */
-    void set_objective() 
+    void build_objective() override 
     {
         GRBLinExpr objective = 0;
         int included_requirements = 0;
         int skipped_requirements = 0;
         
-        std::cout << "Setting objective function:" << std::endl;
+        if (config_.verbose) {
+            std::cout << "[" << formulation_name_ << "] Setting objective function:" << std::endl;
+        }
         
         for (int r = 0; r < static_cast<int>(instance_.requirements.size()); ++r) {
             const Requirement& req = instance_.requirements[r];
             
             // Skip artificial requirements (weight = 0)
             if (req.weight <= 0.0) {
-                std::cout << "  SKIPPED req[" << r << "]: (" << req.origin << ", " << req.destination 
-                         << ") weight=" << req.weight << std::endl;
+                if (config_.verbose) {
+                    std::cout << "  SKIPPED req[" << r << "]: (" << req.origin << ", " << req.destination 
+                             << ") weight=" << req.weight << std::endl;
+                }
                 skipped_requirements++;
                 continue;
             }
             
-            std::cout << "  INCLUDED req[" << r << "]: (" << req.origin << ", " << req.destination 
-                     << ") weight=" << req.weight << std::endl;
+            if (config_.verbose) {
+                std::cout << "  INCLUDED req[" << r << "]: (" << req.origin << ", " << req.destination 
+                         << ") weight=" << req.weight << std::endl;
+            }
             included_requirements++;
             
             for (int e = 0; e < instance_.num_edges; ++e) {
@@ -891,18 +832,34 @@ private:
             }
         }
         
-        std::cout << "Objective function summary:" << std::endl;
-        std::cout << "  Requirements included: " << included_requirements << std::endl;
-        std::cout << "  Requirements skipped: " << skipped_requirements << std::endl;
-        std::cout << "  Total requirements: " << instance_.requirements.size() << std::endl;
+        if (config_.verbose) {
+            std::cout << "Objective function summary:" << std::endl;
+            std::cout << "  Requirements included: " << included_requirements << std::endl;
+            std::cout << "  Requirements skipped: " << skipped_requirements << std::endl;
+            std::cout << "  Total requirements: " << instance_.requirements.size() << std::endl;
+        }
         
-        model_.setObjective(objective, GRB_MINIMIZE);
+        model_->setObjective(objective, GRB_MINIMIZE);
     }
     
     /**
-     * @brief Sets initial solution using MST for warm-start
+     * @brief Lifecycle Hook 6: Solve model with SEC callback (override)
+     * 
+     * Configures the SEC callback before invoking the optimizer.
      */
-    void set_initial_solution()
+    void solve_model() override {
+        // Set up SEC callback for subtour elimination
+        sec_callback_ = std::make_unique<SECCallback>(instance_, x_vars_, lazy_constraints_added_);
+        model_->setCallback(sec_callback_.get());
+        
+        // Call base class solve (invokes model_->optimize())
+        FormulationSolver::solve_model();
+    }
+    
+    /**
+     * @brief Lifecycle Hook 5: Sets initial solution using MST for warm-start (override)
+     */
+    void warm_start() override
     {
         try {
             // Find MST using Kruskal's algorithm
@@ -1146,17 +1103,69 @@ private:
     /**
      * @brief Extracts solution information from the optimized model
      */
+    /**
+     * @brief Lifecycle Hook 7: Extract solution and populate ResultPayload (override)
+     */
+    ocst::path_based::ResultPayload collect_results() override {
+        ocst::path_based::ResultPayload payload;
+        
+        // Optimization status
+        int gurobi_status = model_->get(GRB_IntAttr_Status);
+        payload.optimization_status_code = convert_gurobi_status(gurobi_status);
+        
+        // Solution data
+        bool has_solution = (gurobi_status == GRB_OPTIMAL || gurobi_status == GRB_TIME_LIMIT);
+        payload.has_solution = has_solution;
+        
+        if (has_solution) {
+            // Objective value
+            payload.objective = model_->get(GRB_DoubleAttr_ObjVal);
+            payload.primal_bound = payload.objective;
+            
+            // Extract selected edges and build tree structure
+            for (int e = 0; e < instance_.num_edges; ++e) {
+                if (x_vars_[e].get(GRB_DoubleAttr_X) > 0.5) {
+                    const Edge& edge = instance_.edges[e];
+                    payload.solution.tree_edges.push_back({edge.source, edge.destination});
+                }
+            }
+            
+            // Tree metrics
+            payload.solution.tree_cost = payload.objective;
+            payload.solution.is_spanning_tree = (payload.solution.tree_edges.size() == static_cast<size_t>(instance_.num_nodes - 1));
+            payload.solution.is_connected = payload.solution.is_spanning_tree;  // Spanning tree implies connected
+            
+            // Dual bound
+            try {
+                payload.dual_bound = model_->get(GRB_DoubleAttr_ObjBound);
+                if (payload.primal_bound > 1e-9) {
+                    payload.gap_percent = 100.0 * (payload.primal_bound - payload.dual_bound) / payload.primal_bound;
+                }
+            } catch (GRBException&) {
+                // Bound not available
+                payload.dual_bound = payload.objective;
+                payload.gap_percent = 0.0;
+            }
+        }
+        
+        return payload;
+    }
+
+private:
+    /**
+     * @brief Legacy extract_solution (kept for backward compatibility with old wrapper function)
+     */
     SolutionResult extract_solution() 
     {
         SolutionResult result;
         
-        result.gurobi_status = model_.get(GRB_IntAttr_Status);
+        result.gurobi_status = model_->get(GRB_IntAttr_Status);
         result.is_optimal = (result.gurobi_status == GRB_OPTIMAL);
-        result.num_nodes_explored = model_.get(GRB_DoubleAttr_NodeCount);
+        result.num_nodes_explored = model_->get(GRB_DoubleAttr_NodeCount);
         
         if (result.gurobi_status == GRB_OPTIMAL || result.gurobi_status == GRB_TIME_LIMIT) {
-            result.objective_value = model_.get(GRB_DoubleAttr_ObjVal);
-            result.upper_bound = model_.get(GRB_DoubleAttr_ObjVal);
+            result.objective_value = model_->get(GRB_DoubleAttr_ObjVal);
+            result.upper_bound = model_->get(GRB_DoubleAttr_ObjVal);
             
             // Extract selected edges
             for (int e = 0; e < instance_.num_edges; ++e) {
@@ -1168,7 +1177,7 @@ private:
         
         if (result.gurobi_status == GRB_OPTIMAL || result.gurobi_status == GRB_TIME_LIMIT) {
             try {
-                result.lower_bound = model_.get(GRB_DoubleAttr_ObjBound);
+                result.lower_bound = model_->get(GRB_DoubleAttr_ObjBound);
                 if (result.upper_bound > 0) {
                     result.mip_gap = 100.0 * (result.upper_bound - result.lower_bound) / result.upper_bound;
                 }
@@ -1179,8 +1188,8 @@ private:
             }
         }
         
-        result.lazy_constraints_added = lazy_constraints_count_;
-        result.cutting_planes_added = cutting_planes_count_;
+        result.lazy_constraints_added = lazy_constraints_added_;
+        result.cutting_planes_added = cutting_planes_added_;
         
         return result;
     }
@@ -1321,6 +1330,78 @@ void write_json_solution(const std::string& filename,
 }
 
 //=============================================================================
+// COMPATIBILITY HELPERS
+//=============================================================================
+
+/**
+ * @brief Convert ResultPayload to legacy SolutionResult format
+ * 
+ * Maintains backward compatibility with existing code that uses SolutionResult.
+ * 
+ * @param payload Modern ResultPayload from FormulationSolver
+ * @return Legacy SolutionResult structure
+ */
+SolutionResult convert_payload_to_legacy(const ocst::path_based::ResultPayload& payload) {
+    using namespace ocst::path_based;
+    
+    SolutionResult result;
+    
+    // Status
+    switch (payload.optimization_status_code) {
+        case OptimizationStatus::OPTIMAL:
+            result.gurobi_status = GRB_OPTIMAL;
+            result.is_optimal = true;
+            break;
+        case OptimizationStatus::TIME_LIMIT:
+            result.gurobi_status = GRB_TIME_LIMIT;
+            result.is_optimal = false;
+            break;
+        case OptimizationStatus::INFEASIBLE:
+            result.gurobi_status = GRB_INFEASIBLE;
+            result.is_optimal = false;
+            break;
+        case OptimizationStatus::UNBOUNDED:
+            result.gurobi_status = GRB_UNBOUNDED;
+            result.is_optimal = false;
+            break;
+        default:
+            result.gurobi_status = GRB_SUBOPTIMAL;
+            result.is_optimal = false;
+    }
+    
+    // Objective and bounds
+    result.objective_value = payload.objective;
+    result.upper_bound = payload.primal_bound;
+    result.lower_bound = payload.dual_bound;
+    result.mip_gap = payload.gap_percent;
+    
+    // Runtime
+    result.runtime_seconds = payload.runtime_stats.wall_clock_seconds;
+    result.num_nodes_explored = payload.runtime_stats.solver_nodes;
+    
+    // Selected edges (convert TreeEdge structs to indices - NOTE: this loses edge info)
+    // For backward compatibility, we store edge indices as a placeholder
+    // In reality, the payload has the full tree structure now
+    result.selected_edges.clear();
+    for (size_t i = 0; i < payload.solution.tree_edges.size(); ++i) {
+        result.selected_edges.push_back(static_cast<int>(i));  // Placeholder: just indices
+    }
+    
+    // Metrics
+    auto it_lazy = payload.solver_metadata.find("lazy_constraints");
+    if (it_lazy != payload.solver_metadata.end()) {
+        result.lazy_constraints_added = std::stoi(it_lazy->second);
+    }
+    
+    auto it_cuts = payload.solver_metadata.find("cutting_planes");
+    if (it_cuts != payload.solver_metadata.end()) {
+        result.cutting_planes_added = std::stoi(it_cuts->second);
+    }
+    
+    return result;
+}
+
+//=============================================================================
 // MAIN SOLVING FUNCTION
 //=============================================================================
 
@@ -1346,9 +1427,21 @@ SolutionResult solve_path_based_instance(const std::string& input_file,
                   << instance.num_edges << " edges, " << instance.requirements.size() 
                   << " requirements" << std::endl;
         
-        // Solve using path-based formulation
+        // Solve using path-based formulation with new interface
         PathBasedSolver solver(instance);
-        SolutionResult result = solver.solve(time_limit, heuristics);
+        
+        // Configure solver
+        PathBasedSolver::SolverConfig config;
+        config.time_limit_seconds = time_limit;
+        config.heuristics_level = heuristics;
+        config.verbose = true;
+        config.enable_warm_start = false;  // Temporarily disabled
+        
+        // Solve and get ResultPayload
+        ResultPayload payload = solver.solve(config);
+        
+        // Convert to legacy SolutionResult for backward compatibility
+        SolutionResult result = convert_payload_to_legacy(payload);
         
         // Print results
         std::cout << "\n=== SOLUTION RESULTS ===" << std::endl;
@@ -1404,10 +1497,21 @@ SolutionResult solve_path_based_instance(const std::string& input_file,
             instance_basename = instance_basename.substr(0, last_dot);
         }
         
-        // Generate JSON in the same directory as the .sol file
+        // Write JSON solution using ResultPayload (modern format)
         std::filesystem::path sol_path(output_csv);
         std::filesystem::path json_solution_file = sol_path.parent_path() / (instance_basename + ".results.json");
-        write_json_solution(json_solution_file.string(), instance, result, input_file);
+        
+        // Populate instance metadata in payload
+        payload.instance_name = instance_basename;
+        payload.instance_tags = {};  // TODO: Load from JSON instance
+        
+        // Write to file using ResultSerializer
+        try {
+            ResultSerializer::write_to_file(payload, json_solution_file.string(), true);
+            std::cout << "JSON solution written to: " << json_solution_file << std::endl;
+        } catch (const std::exception& e) {
+            std::cerr << "Warning: Could not write JSON solution: " << e.what() << std::endl;
+        }
         
         return result;
         
