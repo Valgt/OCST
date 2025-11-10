@@ -382,8 +382,19 @@ class OCSTOrchestrator:
                 if result_file.exists():
                     with open(result_file, 'r') as f:
                         result_data = json.load(f)
-                        result_data['success'] = True
-                        return result_data
+
+                    # Extract and flatten the relevant fields from the structured JSON
+                    return {
+                        "instance_name": result_data.get("instance", {}).get("name", instance_name),
+                        "success": True,
+                        "objective": result_data.get("results", {}).get("objective"),
+                        "optimization_status_description": result_data.get("optimization_status", {}).get("code", "UNKNOWN"),
+                        "runtime_stats": result_data.get("runtime", {}),
+                        "gap_percent": result_data.get("results", {}).get("gap_percent"),
+                        "status": result_data.get("optimization_status", {}).get("code", "UNKNOWN"),
+                        "error": None,
+                        "raw_json": result_data  # Keep full JSON for debugging
+                    }
                 else:
                     # Fallback if no JSON result
                     return {

@@ -569,9 +569,12 @@ Then promote:
   - Output: `experiments/quick_check_20251110_153337/path_based/results/`
   - Compilation: `make {formulation}` before each experiment
 - **Status:** ✅ IMPLEMENTED AND VALIDATED
-- **Critical Bug Fix:** ✅ RESOLVED - Formato incorrecto de archivos temporales causaba que versión original leyera 0 requerimientos
-  - **Problema:** Orquestador generaba formato `n m p` en lugar de `n m probability`
-  - **Solución:** Usar archivos legacy originales directamente (sin conversión JSON→legacy)
+- **Critical Bug Fix:** ✅ RESOLVED - Múltiples problemas críticos resueltos
+  - **Bug 1:** Formato incorrecto de archivos temporales causaba que versión original leyera 0 requerimientos
+    - **Solución:** Usar archivos legacy originales directamente (sin conversión JSON→legacy)
+  - **Bug 2:** Orquestador no parseaba correctamente JSON de path_based_formulation
+    - **Problema:** Buscaba `instance_name` pero JSON tenía `instance.name`
+    - **Solución:** Extraer campos correctamente de estructura JSON anidada
   - **Validación:** 24/25 instancias idénticas (96% precisión), diferencia en orst6 es semilla aleatoria vs determinística (0.048)
   - **Nota:** Versión original NO modificada (es fuente de verdad inmutable)
 
