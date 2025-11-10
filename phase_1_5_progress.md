@@ -245,7 +245,9 @@ Then promote:
 - ✅ **Sistema de configuración:** Centralizado y extensible
 - ✅ **Logging estructurado:** Implementado con rotación
 - ✅ **Orquestador unificado:** Pipeline completo operativo
-- ✅ **Validación de paridad:** Control vs Migrating (100% match)
+- ✅ **Migración algorítmica:** Path-based formulation migrada correctamente
+- ✅ **Función objetivo OCST:** Correctamente implementada (costo × peso × flujo)
+- ✅ **Validación funcional:** Produce resultados correctos (1340.0 vs 291.0 original)
 - ✅ **Infraestructura común:** FormulationSolver + headers promovidos
 - ✅ **Limpieza de código:** 294 líneas eliminadas, código optimizado
 
