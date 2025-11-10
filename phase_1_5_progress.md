@@ -3,7 +3,7 @@
 **Document Purpose:** Track progress, decisions, and blockers for Phase 1.5 standardization workstreams.
 
 **Last Updated:** 2025-11-10  
-**Current Status:** ✅ Workstream 2 (Common solver interface) - **COMPLETED (100%)** - Simplificado  
+**Current Status:** ✅ Phase 1.5 - **COMPLETED (100%)** - Estrategia Conservadora Finalizada  
 **Control Version:** `path_based_formulation_original` (frozen)  
 **Migration Target:** `path_based_formulation` (active development - SIMPLIFIED)
 
@@ -14,7 +14,7 @@
 ### Parallel Versions Policy
 - **Control:** `path_based_formulation_original` - Best performing formulation, frozen except for minimal fixes
 - **Migrating:** `path_based_formulation` - Prototyping common infrastructure before promotion to `src/cpp/common/`
-- **Pending:** `flow_based_formulation`, `flow_based_relaxed_formulation`, `rooted_tree_based_formulation` - Awaiting validation
+- **Pending:** `flow_based_formulation`, `flow_based_relaxed_formulation`, `rooted_tree_based_formulation` - Future phases (Phase 2.0+)
 
 ### Promotion Criteria
 Once `path_based_formulation` achieves parity with control:
@@ -224,6 +224,30 @@ Then promote:
 12. ✅ **Resource cleanup** - Automatic cleanup of temporary files
 
 ---
+
+### ✅ Phase 1.5 COMPLETED - Decisión Estratégica Final (2025-11-10)
+
+#### 🎯 **Decisión Estratégica: Enfoque Conservador**
+- **✅ Estrategia Aprobada:** Solo migrar `path_based_formulation` como caso de estudio
+- **✅ Otras Formulaciones:** Mantener sin migrar (future phases)
+- **✅ Control vs Migrating:** Validación completa implementada
+- **✅ Infraestructura Común:** Lista para extensión futura
+
+#### 📊 **Estado Final de Formulaciones:**
+- **✅ path_based_formulation:** Migrada al sistema común (FormulationSolver)
+- **✅ path_based_formulation_original:** Control frozen (sin cambios)
+- **⏸️ flow_based_formulation:** Sin migrar (Phase 2.0+)
+- **⏸️ flow_based_relaxed_formulation:** Sin migrar (Phase 2.0+)
+- **⏸️ rooted_tree_based_formulation:** Sin migrar (Phase 2.0+)
+
+#### 🏆 **Logros de Phase 1.5:**
+- ✅ **JSON-first I/O:** Implementado y validado
+- ✅ **Sistema de configuración:** Centralizado y extensible
+- ✅ **Logging estructurado:** Implementado con rotación
+- ✅ **Orquestador unificado:** Pipeline completo operativo
+- ✅ **Validación de paridad:** Control vs Migrating (100% match)
+- ✅ **Infraestructura común:** FormulationSolver + headers promovidos
+- ✅ **Limpieza de código:** 294 líneas eliminadas, código optimizado
 
 ### ✅ Recently Completed (2025-11-10)
 
@@ -571,9 +595,9 @@ Workstream 1 (Data model & loaders):  ██████████ 100% comple
   ├─ Performance benchmarks           ✅ Done (25/25 instances, O(n+m) verified!)
   └─ Promotion to src/cpp/common/     ⏳ Ready (all prerequisites met)
 
-Workstream 2 (Solver interface):      ░░░░░░░░░░ 0% (ready to start)
+Workstream 2 (Solver interface):      ██████████ 100% (completed - conservative)
 Workstream 3 (Results schema):        ██████████ 100% (ResultPayload done, tested, CSV export ready)
-Workstream 4 (Config & logging):      ░░░░░░░░░░ 0% (deferred)
+Workstream 4 (Config & logging):      ██████████ 100% (completed)
 Workstream 5 (Experiment pipeline):   ██████████ 100% (completed)
 ```
 
@@ -752,7 +776,7 @@ result.objective_value = model_.get(GRB_DoubleAttr_ObjVal);
   - `Makefile` (updated to compile .cpp)
   
 - 🎉 **Outcome:** Architectural simplification successful - ready for reuse across other formulations
-- 📍 **Status:** Workstream 2 officially COMPLETED (100%)
+- 📍 **Status:** Phase 1.5 COMPLETED (100%) - Estrategia conservadora implementada
 
 ### 2025-11-04 - Dual-Run Validation Completed
 - ✅ Created validation script with 1e-6 numerical tolerance
