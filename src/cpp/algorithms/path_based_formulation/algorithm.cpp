@@ -21,6 +21,9 @@
 // Common solver interface (Workstream 2)
 #include "include/formulation_solver.h"
 
+// UUID generation
+#include "sole/sole.hpp"
+
 // Gurobi integration
 #include <gurobi_c++.h>
 
@@ -1504,6 +1507,9 @@ SolutionResult solve_path_based_instance(const std::string& input_file,
         // Populate instance metadata in payload
         payload.instance_name = instance_basename;
         payload.instance_tags = {};  // TODO: Load from JSON instance
+        
+        // Generate run_uuid (required field)
+        payload.run_uuid = sole::uuid4().str();
         
         // Write to file using ResultSerializer
         try {
