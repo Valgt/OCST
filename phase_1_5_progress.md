@@ -3,7 +3,7 @@
 **Document Purpose:** Track progress, decisions, and blockers for Phase 1.5 standardization workstreams.
 
 **Last Updated:** 2025-11-10  
-**Current Status:** ✅ Workstream 1 (Unified data model and loaders) - **COMPLETED (100%)**  
+**Current Status:** 🚧 Workstream 2 (Common solver interface) - **IN PROGRESS (70%)**  
 **Control Version:** `path_based_formulation_original` (frozen)  
 **Migration Target:** `path_based_formulation` (active development)
 
@@ -581,6 +581,27 @@ result.objective_value = model_.get(GRB_DoubleAttr_ObjVal);
   - Script: `benchmark_performance.py` (312 lines)
   - Results: `experiments/benchmarks/performance_20251110_004247/`
 - 🎉 **Workstream 1 Status:** 100% COMPLETE - All tasks done, ready for promotion to `src/cpp/common/`
+
+### 2025-11-10 - Workstream 2 - Code Cleanup (Paso 1) ✅
+- 🧹 **Legacy Code Elimination:** Removed 272 lines (-17.5% reduction)
+  - ❌ Deleted `struct SolutionResult` (30 lines) - Replaced by `ResultPayload`
+  - ❌ Deleted `convert_payload_to_legacy()` (67 lines) - No longer needed
+  - ❌ Deleted `write_json_solution()` (115 lines) - Integrated into `solve_path_based_instance()`
+  - ❌ Deleted `extract_solution()` (41 lines) - Replaced by `collect_results()` override
+- ✅ **Interface Standardization:** `solve_path_based_instance()` now returns `ResultPayload` directly
+- ✅ **Compilation:** Successful (no errors, no warnings)
+- ✅ **Validation:** 25/25 instances pass deep validation (100% match)
+  - Objectives: 100% match
+  - Status codes: 100% match
+  - Solver nodes: 100% match (e.g., orst6: 6832 nodes)
+  - Gap percentages: 100% match
+  - Tree structures: 100% match
+- 📊 **Metrics:**
+  - Lines reduced: 272 (17.5%)
+  - Functions eliminated: 4
+  - Code duplication: Eliminated
+  - Maintainability: Improved (single source of truth for results)
+- 🎯 **Strategy:** Incremental cleanup validated at each step (compile → test → validate)
 
 ### 2025-11-04 - Dual-Run Validation Completed
 - ✅ Created validation script with 1e-6 numerical tolerance
