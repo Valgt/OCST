@@ -231,7 +231,8 @@ class OCSTOrchestrator:
                 requirements = data.get('requirements', [])
                 n = graph['nodes']
                 m = len(graph['edges'])
-                probability = data.get('probability', 0.0)  # Default probability
+                # Probability can be at root level or in metadata
+                probability = data.get('probability', data.get('metadata', {}).get('probability', 0.0))
 
                 # Line 1: n m probability
                 temp_file.write(f"{n} {m} {probability}\n")
@@ -307,8 +308,11 @@ class OCSTOrchestrator:
         temp_legacy_file = None
         if formulation == "path_based_formulation_original":
             # Legacy interface: <instance_file> [output_csv] [time_limit] [heuristics]
-            # Create temporary legacy file from JSON in correct format
-            temp_legacy_file = self.create_temp_legacy_file_correct_format(instance_name)
+            # Use the original legacy file directly from test_instances/
+            legacy_file_path = self.data_dir / "test_instances" / instance_name
+            if not legacy_file_path.exists():
+                raise FileNotFoundError(f"Legacy file not found: {legacy_file_path}")
+            temp_legacy_file = str(legacy_file_path)
             time_limit = config.get('time_limit', 3600.0)
 
             cmd = [
@@ -357,9 +361,11 @@ class OCSTOrchestrator:
                         except ValueError:
                             pass
 
-                # Cleanup temporary file
+                # Cleanup temporary file (but not original legacy files from test_instances/)
                 if temp_legacy_file and os.path.exists(temp_legacy_file):
-                    os.unlink(temp_legacy_file)
+                    # Don't delete files from test_instances/ directory - they are the original source files
+                    if not temp_legacy_file.startswith(str(self.data_dir / "test_instances")):
+                        os.unlink(temp_legacy_file)
 
                 return {
                     "instance_name": instance_name,

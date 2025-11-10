@@ -571,8 +571,9 @@ Then promote:
 - **Status:** ✅ IMPLEMENTED AND VALIDATED
 - **Critical Bug Fix:** ✅ RESOLVED - Formato incorrecto de archivos temporales causaba que versión original leyera 0 requerimientos
   - **Problema:** Orquestador generaba formato `n m p` en lugar de `n m probability`
-  - **Solución:** Nueva función `create_temp_legacy_file_correct_format()` con formato correcto
-  - **Validación:** 24/25 instancias idénticas (96% precisión), diferencia en orst6 es error de redondeo (<0.05)
+  - **Solución:** Usar archivos legacy originales directamente (sin conversión JSON→legacy)
+  - **Validación:** 24/25 instancias idénticas (96% precisión), diferencia en orst6 es semilla aleatoria vs determinística (0.048)
+  - **Nota:** Versión original NO modificada (es fuente de verdad inmutable)
 
 ---
 
