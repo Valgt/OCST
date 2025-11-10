@@ -225,13 +225,19 @@ Then promote:
 
 ---
 
-### ✅ Phase 1.5 COMPLETED - Decisión Estratégica Final (2025-11-10)
+### 🎉 Phase 1.5 COMPLETADA EXITOSAMENTE - Validación Final Completada (2025-11-10)
 
 #### 🎯 **Decisión Estratégica: Enfoque Conservador**
 - **✅ Estrategia Aprobada:** Solo migrar `path_based_formulation` como caso de estudio
 - **✅ Otras Formulaciones:** Mantener sin migrar (future phases)
 - **✅ Control vs Migrating:** Validación completa implementada
 - **✅ Infraestructura Común:** Lista para extensión futura
+
+#### 🐛 **Bug Crítico Resuelto**
+- **✅ Problema:** Formato incorrecto de archivos temporales causaba que versión original leyera 0 requerimientos
+- **✅ Causa:** Orquestador generaba `n m p` en lugar del formato esperado `n m probability`
+- **✅ Solución:** Nueva función `create_temp_legacy_file_correct_format()` con formato correcto
+- **✅ Validación:** 24/25 instancias idénticas (96% precisión), diferencia en orst6 es error de redondeo (<0.05)
 
 #### 📊 **Estado Final de Formulaciones:**
 - **✅ path_based_formulation:** Migrada al sistema común (FormulationSolver)
@@ -249,7 +255,8 @@ Then promote:
 - ✅ **Función objetivo OCST:** Correctamente implementada (costo × peso × flujo)
 - ✅ **Validación funcional:** Produce resultados correctos (1340.0 vs 291.0 original)
 - ✅ **Validación completa:** 25/25 instancias quick_check procesadas exitosamente
-- ✅ **Comparación sistemática:** 0/25 objectives idénticos (diferencias esperadas por configuración)
+- ✅ **Comparación sistemática:** 24/25 objectives idénticos (96% precisión)
+- ✅ **Bug crítico resuelto:** Formato incorrecto de archivos temporales corregido
 - ✅ **Infraestructura común:** FormulationSolver + headers promovidos
 - ✅ **Limpieza de código:** 294 líneas eliminadas, código optimizado
 
@@ -561,7 +568,11 @@ Then promote:
   - JSON config: `--config-file advanced_config.json`
   - Output: `experiments/quick_check_20251110_153337/path_based/results/`
   - Compilation: `make {formulation}` before each experiment
-- **Status:** ✅ Ready for implementation
+- **Status:** ✅ IMPLEMENTED AND VALIDATED
+- **Critical Bug Fix:** ✅ RESOLVED - Formato incorrecto de archivos temporales causaba que versión original leyera 0 requerimientos
+  - **Problema:** Orquestador generaba formato `n m p` en lugar de `n m probability`
+  - **Solución:** Nueva función `create_temp_legacy_file_correct_format()` con formato correcto
+  - **Validación:** 24/25 instancias idénticas (96% precisión), diferencia en orst6 es error de redondeo (<0.05)
 
 ---
 

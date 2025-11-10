@@ -1,0 +1,281 @@
+{
+  "experiment_info": {
+    "experiment_id": "quick_check_20251110_215240",
+    "tag": "quick_check",
+    "timestamp": "2025-11-10T21:52:57.428297+00:00",
+    "seed": 42,
+    "formulation": "path_based",
+    "command_line": "scripts/standardization/orchestrator.py --tag quick_check --formulation path_based --seed 42"
+  },
+  "execution_details": {
+    "total_instances": 25,
+    "instances_by_tag": {
+      "quick_check": 25
+    },
+    "instance_names": [
+      "ocstpin0",
+      "ocstpin1",
+      "ocstpin10",
+      "ocstpin11",
+      "ocstpin12",
+      "ocstpin13",
+      "ocstpin14",
+      "ocstpin2",
+      "ocstpin3",
+      "ocstpin4",
+      "ocstpin5",
+      "ocstpin6",
+      "ocstpin7",
+      "ocstpin8",
+      "ocstpin9",
+      "orst0",
+      "orst1",
+      "orst2",
+      "orst3",
+      "orst4",
+      "orst5",
+      "orst6",
+      "orst7",
+      "orst8",
+      "orst9"
+    ]
+  },
+  "formulation_config": {
+    "path_based": {}
+  },
+  "results_summary": {
+    "total_instances": 25,
+    "successful": 0,
+    "failed": 25,
+    "success_rate": 0.0,
+    "total_runtime_seconds": 0,
+    "avg_runtime_per_instance": 0.0
+  },
+  "individual_results": [
+    {
+      "instance_name": "ocstpin0",
+      "success": false,
+      "objective": null,
+      "runtime_seconds": null,
+      "status": "unknown",
+      "gap_percent": null,
+      "error": "Execution failed: Unknown argument: data/input/ocstpin0.json\n"
+    },
+    {
+      "instance_name": "ocstpin1",
+      "success": false,
+      "objective": null,
+      "runtime_seconds": null,
+      "status": "unknown",
+      "gap_percent": null,
+      "error": "Execution failed: Unknown argument: data/input/ocstpin1.json\n"
+    },
+    {
+      "instance_name": "ocstpin10",
+      "success": false,
+      "objective": null,
+      "runtime_seconds": null,
+      "status": "unknown",
+      "gap_percent": null,
+      "error": "Execution failed: Unknown argument: data/input/ocstpin10.json\n"
+    },
+    {
+      "instance_name": "ocstpin11",
+      "success": false,
+      "objective": null,
+      "runtime_seconds": null,
+      "status": "unknown",
+      "gap_percent": null,
+      "error": "Execution failed: Unknown argument: data/input/ocstpin11.json\n"
+    },
+    {
+      "instance_name": "ocstpin12",
+      "success": false,
+      "objective": null,
+      "runtime_seconds": null,
+      "status": "unknown",
+      "gap_percent": null,
+      "error": "Execution failed: Unknown argument: data/input/ocstpin12.json\n"
+    },
+    {
+      "instance_name": "ocstpin13",
+      "success": false,
+      "objective": null,
+      "runtime_seconds": null,
+      "status": "unknown",
+      "gap_percent": null,
+      "error": "Execution failed: Unknown argument: data/input/ocstpin13.json\n"
+    },
+    {
+      "instance_name": "ocstpin14",
+      "success": false,
+      "objective": null,
+      "runtime_seconds": null,
+      "status": "unknown",
+      "gap_percent": null,
+      "error": "Execution failed: Unknown argument: data/input/ocstpin14.json\n"
+    },
+    {
+      "instance_name": "ocstpin2",
+      "success": false,
+      "objective": null,
+      "runtime_seconds": null,
+      "status": "unknown",
+      "gap_percent": null,
+      "error": "Execution failed: Unknown argument: data/input/ocstpin2.json\n"
+    },
+    {
+      "instance_name": "ocstpin3",
+      "success": false,
+      "objective": null,
+      "runtime_seconds": null,
+      "status": "unknown",
+      "gap_percent": null,
+      "error": "Execution failed: Unknown argument: data/input/ocstpin3.json\n"
+    },
+    {
+      "instance_name": "ocstpin4",
+      "success": false,
+      "objective": null,
+      "runtime_seconds": null,
+      "status": "unknown",
+      "gap_percent": null,
+      "error": "Execution failed: Unknown argument: data/input/ocstpin4.json\n"
+    },
+    {
+      "instance_name": "ocstpin5",
+      "success": false,
+      "objective": null,
+      "runtime_seconds": null,
+      "status": "unknown",
+      "gap_percent": null,
+      "error": "Execution failed: Unknown argument: data/input/ocstpin5.json\n"
+    },
+    {
+      "instance_name": "ocstpin6",
+      "success": false,
+      "objective": null,
+      "runtime_seconds": null,
+      "status": "unknown",
+      "gap_percent": null,
+      "error": "Execution failed: Unknown argument: data/input/ocstpin6.json\n"
+    },
+    {
+      "instance_name": "ocstpin7",
+      "success": false,
+      "objective": null,
+      "runtime_seconds": null,
+      "status": "unknown",
+      "gap_percent": null,
+      "error": "Execution failed: Unknown argument: data/input/ocstpin7.json\n"
+    },
+    {
+      "instance_name": "ocstpin8",
+      "success": false,
+      "objective": null,
+      "runtime_seconds": null,
+      "status": "unknown",
+      "gap_percent": null,
+      "error": "Execution failed: Unknown argument: data/input/ocstpin8.json\n"
+    },
+    {
+      "instance_name": "ocstpin9",
+      "success": false,
+      "objective": null,
+      "runtime_seconds": null,
+      "status": "unknown",
+      "gap_percent": null,
+      "error": "Execution failed: Unknown argument: data/input/ocstpin9.json\n"
+    },
+    {
+      "instance_name": "orst0",
+      "success": false,
+      "objective": null,
+      "runtime_seconds": null,
+      "status": "unknown",
+      "gap_percent": null,
+      "error": "Execution failed: Unknown argument: data/input/orst0.json\n"
+    },
+    {
+      "instance_name": "orst1",
+      "success": false,
+      "objective": null,
+      "runtime_seconds": null,
+      "status": "unknown",
+      "gap_percent": null,
+      "error": "Execution failed: Unknown argument: data/input/orst1.json\n"
+    },
+    {
+      "instance_name": "orst2",
+      "success": false,
+      "objective": null,
+      "runtime_seconds": null,
+      "status": "unknown",
+      "gap_percent": null,
+      "error": "Execution failed: Unknown argument: data/input/orst2.json\n"
+    },
+    {
+      "instance_name": "orst3",
+      "success": false,
+      "objective": null,
+      "runtime_seconds": null,
+      "status": "unknown",
+      "gap_percent": null,
+      "error": "Execution failed: Unknown argument: data/input/orst3.json\n"
+    },
+    {
+      "instance_name": "orst4",
+      "success": false,
+      "objective": null,
+      "runtime_seconds": null,
+      "status": "unknown",
+      "gap_percent": null,
+      "error": "Execution failed: Unknown argument: data/input/orst4.json\n"
+    },
+    {
+      "instance_name": "orst5",
+      "success": false,
+      "objective": null,
+      "runtime_seconds": null,
+      "status": "unknown",
+      "gap_percent": null,
+      "error": "Execution failed: Unknown argument: data/input/orst5.json\n"
+    },
+    {
+      "instance_name": "orst6",
+      "success": false,
+      "objective": null,
+      "runtime_seconds": null,
+      "status": "unknown",
+      "gap_percent": null,
+      "error": "Execution failed: Unknown argument: data/input/orst6.json\n"
+    },
+    {
+      "instance_name": "orst7",
+      "success": false,
+      "objective": null,
+      "runtime_seconds": null,
+      "status": "unknown",
+      "gap_percent": null,
+      "error": "Execution failed: Unknown argument: data/input/orst7.json\n"
+    },
+    {
+      "instance_name": "orst8",
+      "success": false,
+      "objective": null,
+      "runtime_seconds": null,
+      "status": "unknown",
+      "gap_percent": null,
+      "error": "Execution failed: Unknown argument: data/input/orst8.json\n"
+    },
+    {
+      "instance_name": "orst9",
+      "success": false,
+      "objective": null,
+      "runtime_seconds": null,
+      "status": "unknown",
+      "gap_percent": null,
+      "error": "Execution failed: Unknown argument: data/input/orst9.json\n"
+    }
+  ]
+}

@@ -209,6 +209,49 @@ class OCSTOrchestrator:
             os.close(temp_fd)
             raise
 
+    def create_temp_legacy_file_correct_format(self, instance_name: str) -> str:
+        """Create a temporary legacy format file in the CORRECT format expected by path_based_formulation_original."""
+        json_file = self.data_dir / f"{instance_name}.json"
+
+        # Read JSON instance
+        with open(json_file, 'r') as f:
+            data = json.load(f)
+
+        # Create temporary file
+        temp_fd, temp_path = tempfile.mkstemp(suffix='.ocstpin')
+        try:
+            with os.fdopen(temp_fd, 'w') as temp_file:
+                # CORRECT FORMAT for path_based_formulation_original:
+                # Line 1: n m probability
+                # Lines 2-m+1: edges (u v cost)
+                # Line m+2: num_requirements
+                # Lines m+3+: requirements (origin dest weight)
+
+                graph = data['graph']
+                requirements = data.get('requirements', [])
+                n = graph['nodes']
+                m = len(graph['edges'])
+                probability = data.get('probability', 0.0)  # Default probability
+
+                # Line 1: n m probability
+                temp_file.write(f"{n} {m} {probability}\n")
+
+                # Lines 2-m+1: edges
+                for edge in graph['edges']:
+                    temp_file.write(f"{edge['source']} {edge['destination']} {edge['cost']}\n")
+
+                # Line m+2: number of requirements
+                temp_file.write(f"{len(requirements)}\n")
+
+                # Lines m+3+: requirements
+                for req in requirements:
+                    temp_file.write(f"{req['origin']} {req['destination']} {req['weight']}\n")
+
+            return temp_path
+        except Exception:
+            os.close(temp_fd)
+            raise
+
     def prepare_config(self, args: argparse.Namespace) -> Dict[str, Any]:
         """Prepare configuration from CLI args and config files."""
         config = {}
@@ -264,8 +307,8 @@ class OCSTOrchestrator:
         temp_legacy_file = None
         if formulation == "path_based_formulation_original":
             # Legacy interface: <instance_file> [output_csv] [time_limit] [heuristics]
-            # Create temporary legacy file from JSON
-            temp_legacy_file = self.create_temp_legacy_file(instance_name)
+            # Create temporary legacy file from JSON in correct format
+            temp_legacy_file = self.create_temp_legacy_file_correct_format(instance_name)
             time_limit = config.get('time_limit', 3600.0)
 
             cmd = [
@@ -279,7 +322,7 @@ class OCSTOrchestrator:
             # Modern interface with --flags
             cmd = [
                 str(executable),
-                "--instance", instance_name,
+                "--instance", instance_name,  # Instance name, not file path
                 "--seed", str(seed),
                 "--output-dir", str(results_dir)
             ]
