@@ -1,0 +1,94 @@
+{
+  "config": {
+    "digest": ""
+  },
+  "instance": {
+    "name": "ocstpin1",
+    "tags": []
+  },
+  "optimization_status": {
+    "code": "OPTIMAL",
+    "description": "",
+    "has_bound": false,
+    "has_solution": true
+  },
+  "reproducibility": {
+    "git_commit": "unknown",
+    "git_dirty": false,
+    "seed": 0,
+    "timestamp": "unknown"
+  },
+  "results": {
+    "best_solution_time": 0.0,
+    "dual_bound": 4135577.0,
+    "gap": 0.0,
+    "gap_percent": 0.0,
+    "objective": 4135577.0,
+    "primal_bound": 4135577.0
+  },
+  "run_uuid": "2b575d15-7bce-404a-bf14-d4331a1d7b86",
+  "runtime": {
+    "cpu_seconds": 0.0,
+    "solver_iterations": 63,
+    "solver_nodes": 1,
+    "termination_reason": "",
+    "wall_clock_seconds": 0.004
+  },
+  "schema_version": "1.0",
+  "solution": {
+    "is_connected": true,
+    "is_spanning_tree": true,
+    "tree_cost": 4135577.0,
+    "tree_edges": [
+      {
+        "destination": 7,
+        "source": 0
+      },
+      {
+        "destination": 4,
+        "source": 1
+      },
+      {
+        "destination": 8,
+        "source": 1
+      },
+      {
+        "destination": 9,
+        "source": 1
+      },
+      {
+        "destination": 7,
+        "source": 2
+      },
+      {
+        "destination": 9,
+        "source": 3
+      },
+      {
+        "destination": 5,
+        "source": 4
+      },
+      {
+        "destination": 8,
+        "source": 6
+      },
+      {
+        "destination": 9,
+        "source": 7
+      }
+    ]
+  },
+  "solver": {
+    "formulation": "",
+    "id": "path_based",
+    "version": "2.0.0"
+  },
+  "solver_metadata": {
+    "callback_invocations": "0",
+    "cutting_planes": "0",
+    "lazy_constraints": "1",
+    "mip_gap": "0.000001",
+    "threads": "1",
+    "time_limit": "10.000000"
+  }
+}

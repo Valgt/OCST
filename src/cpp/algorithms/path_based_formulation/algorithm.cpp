@@ -559,41 +559,8 @@ private:
     }
 };
 
-/**
- * @brief Solution metrics and results
- */
-struct SolutionResult 
-{
-    double objective_value;
-    double runtime_seconds;
-    int gurobi_status;
-    long long num_nodes_explored;
-    double mip_gap;
-    int lazy_constraints_added;
-    int cutting_planes_added;
-    double lower_bound;
-    double upper_bound;
-    bool is_optimal;
-    
-    std::vector<int> selected_edges;  // Indices of selected edges in solution
-    
-    SolutionResult() 
-    {
-        objective_value = -1.0;
-        runtime_seconds = 0.0;
-        gurobi_status = -1;
-        num_nodes_explored = 0;
-        mip_gap = 100.0;
-        lazy_constraints_added = 0;
-        cutting_planes_added = 0;
-        lower_bound = 0.0;
-        upper_bound = 0.0;
-        is_optimal = false;
-    }
-};
-
 //=============================================================================
-// PATH-BASED FORMULATION SOLVER
+// PATH-BASED FORMULATION SOLVER (STANDARDIZED - using FormulationSolver base)
 //=============================================================================
 
 /**
@@ -1153,49 +1120,6 @@ private:
         
         return payload;
     }
-
-private:
-    /**
-     * @brief Legacy extract_solution (kept for backward compatibility with old wrapper function)
-     */
-    SolutionResult extract_solution() 
-    {
-        SolutionResult result;
-        
-        result.gurobi_status = model_->get(GRB_IntAttr_Status);
-        result.is_optimal = (result.gurobi_status == GRB_OPTIMAL);
-        result.num_nodes_explored = model_->get(GRB_DoubleAttr_NodeCount);
-        
-        if (result.gurobi_status == GRB_OPTIMAL || result.gurobi_status == GRB_TIME_LIMIT) {
-            result.objective_value = model_->get(GRB_DoubleAttr_ObjVal);
-            result.upper_bound = model_->get(GRB_DoubleAttr_ObjVal);
-            
-            // Extract selected edges
-            for (int e = 0; e < instance_.num_edges; ++e) {
-                if (x_vars_[e].get(GRB_DoubleAttr_X) > 0.5) {
-                    result.selected_edges.push_back(e);
-                }
-            }
-        }
-        
-        if (result.gurobi_status == GRB_OPTIMAL || result.gurobi_status == GRB_TIME_LIMIT) {
-            try {
-                result.lower_bound = model_->get(GRB_DoubleAttr_ObjBound);
-                if (result.upper_bound > 0) {
-                    result.mip_gap = 100.0 * (result.upper_bound - result.lower_bound) / result.upper_bound;
-                }
-            } catch (GRBException& e) {
-                // Bound not available
-                result.lower_bound = result.objective_value;
-                result.mip_gap = 0.0;
-            }
-        }
-        
-        result.lazy_constraints_added = lazy_constraints_added_;
-        result.cutting_planes_added = cutting_planes_added_;
-        
-        return result;
-    }
 };
 
 //=============================================================================
@@ -1216,207 +1140,19 @@ OCSTInstance parse_instance_file(const std::string& filename)
     return ocst::path_based::load_instance(filename);
 }
 
-/**
- * @brief Writes solution to JSON format using result_serializer
- * @param filename Output filename 
- * @param instance Problem instance
- * @param result Solution result
- * @param input_file Original input file path
- */
-void write_json_solution(const std::string& filename, 
-                        const OCSTInstance& instance, 
-                        const SolutionResult& result,
-                        const std::string& input_file) 
-{
-    using namespace ocst::path_based;
-    
-    ResultPayload payload;
-    
-    // Generate unique run ID
-    auto now = std::chrono::system_clock::now();
-    auto time_t = std::chrono::system_clock::to_time_t(now);
-    std::stringstream ss;
-    ss << std::put_time(std::localtime(&time_t), "%Y%m%d_%H%M%S");
-    payload.run_uuid = ss.str();
-    
-    // Extract instance name from input file
-    std::string instance_name = input_file;
-    size_t last_slash = instance_name.find_last_of("/");
-    if (last_slash != std::string::npos) {
-        instance_name = instance_name.substr(last_slash + 1);
-    }
-    size_t last_dot = instance_name.find_last_of(".");
-    if (last_dot != std::string::npos) {
-        instance_name = instance_name.substr(0, last_dot);
-    }
-    payload.instance_name = instance_name;
-    
-    // Solver information
-    payload.solver_id = "path_based_formulation";
-    payload.solver_version = "1.0";
-    payload.formulation = "path_based";
-    
-    // Configuration (simplified for now)
-    payload.config_digest = "default";
-    payload.config_params["time_limit"] = std::to_string(result.runtime_seconds);
-    payload.config_params["probability"] = std::to_string(instance.probability);
-    
-    // Optimization status
-    if (result.is_optimal) {
-        payload.optimization_status_code = OptimizationStatus::OPTIMAL;
-        payload.optimization_status_description = "Optimal solution found";
-    } else if (result.gurobi_status == GRB_TIME_LIMIT) {
-        payload.optimization_status_code = OptimizationStatus::TIME_LIMIT;
-        payload.optimization_status_description = "Time limit reached";
-    } else if (result.gurobi_status == GRB_INFEASIBLE) {
-        payload.optimization_status_code = OptimizationStatus::INFEASIBLE;
-        payload.optimization_status_description = "Problem is infeasible";
-    } else if (result.gurobi_status == GRB_UNBOUNDED) {
-        payload.optimization_status_code = OptimizationStatus::UNBOUNDED;
-        payload.optimization_status_description = "Problem is unbounded";
-    } else {
-        payload.optimization_status_code = OptimizationStatus::SUBOPTIMAL;
-        payload.optimization_status_description = "Non-optimal solution found";
-    }
-    
-    payload.has_solution = !result.selected_edges.empty();
-    payload.has_bound = result.lower_bound > 0 || result.upper_bound > 0;
-    
-    // Result metrics (round to match legacy format)
-    payload.objective = std::round(result.objective_value);
-    payload.primal_bound = std::round(result.upper_bound);
-    payload.dual_bound = std::round(result.lower_bound);
-    payload.gap = std::round(result.objective_value - result.lower_bound);
-    payload.gap_percent = result.mip_gap;
-    payload.best_solution_time = result.runtime_seconds;
-    
-    // Runtime statistics
-    payload.runtime_stats.wall_clock_seconds = result.runtime_seconds;
-    payload.runtime_stats.cpu_seconds = result.runtime_seconds;
-    payload.runtime_stats.solver_nodes = result.num_nodes_explored;
-    payload.runtime_stats.solver_iterations = 0;
-    payload.runtime_stats.termination_reason = payload.optimization_status_description;
-    
-    // Solution tree
-    if (payload.has_solution) {
-        for (int edge_idx : result.selected_edges) {
-            if (edge_idx >= 0 && edge_idx < static_cast<int>(instance.edges.size())) {
-                const Edge& edge = instance.edges[edge_idx];
-                payload.solution.tree_edges.push_back({edge.source, edge.destination});
-            }
-        }
-        payload.solution.tree_cost = std::round(result.objective_value);
-        payload.solution.is_spanning_tree = (result.selected_edges.size() == static_cast<size_t>(instance.num_nodes - 1));
-        payload.solution.is_connected = true;  // Assuming valid solution is connected
-    }
-    
-    // Reproducibility (simplified)
-    ss.str("");
-    ss << std::put_time(std::localtime(&time_t), "%Y-%m-%d %H:%M:%S");
-    payload.reproducibility.timestamp = ss.str();
-    payload.reproducibility.git_commit = "unknown";
-    payload.reproducibility.git_dirty = false;
-    payload.reproducibility.seed = 0;
-    
-    // Solver metadata
-    payload.solver_metadata["lazy_constraints"] = std::to_string(result.lazy_constraints_added);
-    payload.solver_metadata["cutting_planes"] = std::to_string(result.cutting_planes_added);
-    payload.solver_metadata["gurobi_status"] = std::to_string(result.gurobi_status);
-    
-    // Write to file
-    try {
-        ResultSerializer::write_to_file(payload, filename, true);
-        std::cout << "JSON solution written to: " << filename << std::endl;
-    } catch (const std::exception& e) {
-        std::cerr << "Warning: Could not write JSON solution file: " << e.what() << std::endl;
-    }
-}
-
-//=============================================================================
-// COMPATIBILITY HELPERS
-//=============================================================================
-
-/**
- * @brief Convert ResultPayload to legacy SolutionResult format
- * 
- * Maintains backward compatibility with existing code that uses SolutionResult.
- * 
- * @param payload Modern ResultPayload from FormulationSolver
- * @return Legacy SolutionResult structure
- */
-SolutionResult convert_payload_to_legacy(const ocst::path_based::ResultPayload& payload) {
-    using namespace ocst::path_based;
-    
-    SolutionResult result;
-    
-    // Status
-    switch (payload.optimization_status_code) {
-        case OptimizationStatus::OPTIMAL:
-            result.gurobi_status = GRB_OPTIMAL;
-            result.is_optimal = true;
-            break;
-        case OptimizationStatus::TIME_LIMIT:
-            result.gurobi_status = GRB_TIME_LIMIT;
-            result.is_optimal = false;
-            break;
-        case OptimizationStatus::INFEASIBLE:
-            result.gurobi_status = GRB_INFEASIBLE;
-            result.is_optimal = false;
-            break;
-        case OptimizationStatus::UNBOUNDED:
-            result.gurobi_status = GRB_UNBOUNDED;
-            result.is_optimal = false;
-            break;
-        default:
-            result.gurobi_status = GRB_SUBOPTIMAL;
-            result.is_optimal = false;
-    }
-    
-    // Objective and bounds
-    result.objective_value = payload.objective;
-    result.upper_bound = payload.primal_bound;
-    result.lower_bound = payload.dual_bound;
-    result.mip_gap = payload.gap_percent;
-    
-    // Runtime
-    result.runtime_seconds = payload.runtime_stats.wall_clock_seconds;
-    result.num_nodes_explored = payload.runtime_stats.solver_nodes;
-    
-    // Selected edges (convert TreeEdge structs to indices - NOTE: this loses edge info)
-    // For backward compatibility, we store edge indices as a placeholder
-    // In reality, the payload has the full tree structure now
-    result.selected_edges.clear();
-    for (size_t i = 0; i < payload.solution.tree_edges.size(); ++i) {
-        result.selected_edges.push_back(static_cast<int>(i));  // Placeholder: just indices
-    }
-    
-    // Metrics
-    auto it_lazy = payload.solver_metadata.find("lazy_constraints");
-    if (it_lazy != payload.solver_metadata.end()) {
-        result.lazy_constraints_added = std::stoi(it_lazy->second);
-    }
-    
-    auto it_cuts = payload.solver_metadata.find("cutting_planes");
-    if (it_cuts != payload.solver_metadata.end()) {
-        result.cutting_planes_added = std::stoi(it_cuts->second);
-    }
-    
-    return result;
-}
-
 //=============================================================================
 // MAIN SOLVING FUNCTION
 //=============================================================================
 
 /**
- * @brief Main function that solves an OCST instance using path-based formulation
+ * @brief Main function that solves an OCST instance using path-based formulation (STANDARDIZED)
  * @param input_file Path to input instance file
  * @param output_csv Path to output CSV file for results
  * @param time_limit Time limit in seconds (default: 3600)
  * @param heuristics Gurobi heuristics level (default: 0.5)
- * @return SolutionResult containing all metrics
+ * @return ResultPayload with complete solution (STANDARDIZED - no legacy SolutionResult)
  */
-SolutionResult solve_path_based_instance(const std::string& input_file,
+ResultPayload solve_path_based_instance(const std::string& input_file,
                                        const std::string& output_csv = "",
                                        double time_limit = 3600.0,
                                        double heuristics = 0.5) 
@@ -1440,50 +1176,41 @@ SolutionResult solve_path_based_instance(const std::string& input_file,
         config.verbose = true;
         config.enable_warm_start = false;  // Temporarily disabled
         
-        // Solve and get ResultPayload
+        // Solve and get ResultPayload (STANDARDIZED - no legacy conversion)
         ResultPayload payload = solver.solve(config);
         
-        // Convert to legacy SolutionResult for backward compatibility
-        SolutionResult result = convert_payload_to_legacy(payload);
-        
-        // Print results
+        // Print results (using ResultPayload directly)
         std::cout << "\n=== SOLUTION RESULTS ===" << std::endl;
         
-        // Detailed status reporting
-        std::string status_str;
-        if (result.is_optimal) {
-            status_str = "OPTIMAL";
-        } else if (result.gurobi_status == GRB_TIME_LIMIT) {
-            if (result.objective_value > 0) {
-                status_str = "TIME_LIMIT (feasible solution found)";
-            } else {
-                status_str = "TIME_LIMIT (no feasible solution)";
-            }
-        } else if (result.gurobi_status == GRB_INFEASIBLE) {
-            status_str = "INFEASIBLE";
-        } else if (result.gurobi_status == GRB_UNBOUNDED) {
-            status_str = "UNBOUNDED";
-        } else {
-            status_str = "NON-OPTIMAL (status=" + std::to_string(result.gurobi_status) + ")";
-        }
-        
+        // Status reporting
+        std::string status_str = optimization_status_to_string(payload.optimization_status_code);
         std::cout << "Status: " << status_str << std::endl;
-        std::cout << "Objective value: " << std::fixed << std::setprecision(0) << result.objective_value << std::endl;
-        std::cout << "Runtime: " << result.runtime_seconds << " seconds" << std::endl;
-        std::cout << "Nodes explored: " << result.num_nodes_explored << std::endl;
-        std::cout << "MIP gap: " << result.mip_gap << "%" << std::endl;
-        std::cout << "Lazy constraints added: " << result.lazy_constraints_added << std::endl;
-        std::cout << "Cutting planes added: " << result.cutting_planes_added << std::endl;
-        std::cout << "Selected edges: " << result.selected_edges.size() << std::endl;
+        std::cout << "Objective value: " << std::fixed << std::setprecision(0) << payload.objective << std::endl;
+        std::cout << "Runtime: " << payload.runtime_stats.wall_clock_seconds << " seconds" << std::endl;
+        std::cout << "Nodes explored: " << payload.runtime_stats.solver_nodes << std::endl;
+        std::cout << "MIP gap: " << payload.gap_percent << "%" << std::endl;
         
-        // Save to CSV if specified
+        // Extract metrics from solver_metadata
+        auto it_lazy = payload.solver_metadata.find("lazy_constraints");
+        int lazy_added = (it_lazy != payload.solver_metadata.end()) ? std::stoi(it_lazy->second) : 0;
+        auto it_cuts = payload.solver_metadata.find("cutting_planes");
+        int cuts_added = (it_cuts != payload.solver_metadata.end()) ? std::stoi(it_cuts->second) : 0;
+        
+        std::cout << "Lazy constraints added: " << lazy_added << std::endl;
+        std::cout << "Cutting planes added: " << cuts_added << std::endl;
+        std::cout << "Selected edges: " << payload.solution.tree_edges.size() << std::endl;
+        
+        // Save to CSV if specified (using ResultPayload)
         if (!output_csv.empty()) {
             std::ofstream csv_file(output_csv);
             csv_file << "instance,nodes,edges,requirements,probability,objective,runtime,gap,status,nodes_explored\n";
             csv_file << input_file << "," << instance.num_nodes << "," << instance.num_edges << ","
                     << instance.requirements.size() << "," << instance.probability << ","
-                    << std::fixed << std::setprecision(0) << result.objective_value << "," << result.runtime_seconds << ","
-                    << result.mip_gap << "," << result.gurobi_status << "," << result.num_nodes_explored << "\n";
+                    << std::fixed << std::setprecision(0) << payload.objective << "," 
+                    << payload.runtime_stats.wall_clock_seconds << ","
+                    << payload.gap_percent << "," 
+                    << optimization_status_to_string(payload.optimization_status_code) << "," 
+                    << payload.runtime_stats.solver_nodes << "\n";
             csv_file.close();
             std::cout << "Results saved to: " << output_csv << std::endl;
         }
@@ -1519,13 +1246,14 @@ SolutionResult solve_path_based_instance(const std::string& input_file,
             std::cerr << "Warning: Could not write JSON solution: " << e.what() << std::endl;
         }
         
-        return result;
+        return payload;  // STANDARDIZED: return ResultPayload directly
         
     } catch (const std::exception& e) {
         std::cerr << "Error parsing instance: " << e.what() << std::endl;
-        SolutionResult error_result;
-        error_result.gurobi_status = -1;
-        return error_result;
+        ResultPayload error_payload;
+        error_payload.optimization_status_code = ocst::path_based::OptimizationStatus::ERROR;
+        error_payload.has_solution = false;
+        return error_payload;
     }
 }
 
@@ -1546,7 +1274,8 @@ int main(int argc, char* argv[])
     double time_limit = (argc > 3) ? std::atof(argv[3]) : 3600.0;
     double heuristics = (argc > 4) ? std::atof(argv[4]) : 0.5;
     
-    SolutionResult result = solve_path_based_instance(input_file, output_csv, time_limit, heuristics);
+    // STANDARDIZED: use ResultPayload instead of legacy SolutionResult
+    ResultPayload result = solve_path_based_instance(input_file, output_csv, time_limit, heuristics);
     
-    return result.is_optimal ? 0 : 1;
+    return (result.optimization_status_code == ocst::path_based::OptimizationStatus::OPTIMAL) ? 0 : 1;
 }
