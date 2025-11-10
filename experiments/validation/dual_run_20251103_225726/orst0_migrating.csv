@@ -1,2 +1,0 @@
-instance,nodes,edges,requirements,probability,objective,runtime,gap,status,nodes_explored
-data/input/orst0.json,10,45,12,0.3,801846,0,0,2,2

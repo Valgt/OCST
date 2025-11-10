@@ -1,2 +1,0 @@
-instance,nodes,edges,requirements,probability,objective,runtime,gap,status,nodes_explored
-/home/sergio/OCST/data/input/orst9.json,10,45,9,0.3,555643,0,0,OPTIMAL,165
