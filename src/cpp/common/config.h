@@ -15,7 +15,15 @@ namespace ocst::common {
  * @brief Default configuration values for OCST solvers
  */
 struct ConfigDefaults {
-    static constexpr double TIME_LIMIT = 3600.0;        // 1 hour
+    // Default solver parameters
+    static constexpr double DEFAULT_TIME_LIMIT = 3600.0;        // 1 hour
+    static constexpr double DEFAULT_HEURISTICS_LEVEL = 0.5;    // Gurobi heuristics (0.0-1.0)
+    static constexpr int DEFAULT_THREADS = 1;                  // Single thread for reproducibility
+    static constexpr double DEFAULT_MIP_GAP = 1e-6;            // MIP gap tolerance
+    static constexpr double EDGE_ACTIVE_THRESHOLD = 0.5;       // Threshold for edge activation
+
+    // Legacy constants (deprecated - use DEFAULT_* versions above)
+    static constexpr double TIME_LIMIT = 3600.0;        // 1 hour (deprecated)
     static constexpr double TOLERANCE = 1e-6;           // Numerical tolerance
     static constexpr double MIP_GAP = 0.0;              // MIP gap (0 = optimal)
     static constexpr int THREADS = 1;                   // Number of threads

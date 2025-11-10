@@ -101,8 +101,8 @@ void FormulationSolver::configure(const SolverConfig& config) {
     // Create Gurobi environment and model
     env_ = std::make_unique<GRBEnv>();
     model_ = std::make_unique<GRBModel>(*env_);
-    
-    // Apply standard configuration from config_
+
+    // Apply standard configuration from config
     env_->set(GRB_IntParam_OutputFlag, config.verbose ? 1 : 0);
     env_->set(GRB_IntParam_Seed, config.seed);  // Set random seed for reproducibility
     model_->set(GRB_DoubleParam_TimeLimit, config.time_limit_seconds);

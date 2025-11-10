@@ -1,0 +1,152 @@
+[
+  {
+    "instance_name": "ocstpin0",
+    "success": false,
+    "error": "Execution failed: Error: Cannot open file: data/input/ocstpin0\n",
+    "timestamp": "2025-11-10T21:02:15.205794+00:00"
+  },
+  {
+    "instance_name": "ocstpin1",
+    "success": false,
+    "error": "Execution failed: Error: Cannot open file: data/input/ocstpin1\n",
+    "timestamp": "2025-11-10T21:02:15.208005+00:00"
+  },
+  {
+    "instance_name": "ocstpin10",
+    "success": false,
+    "error": "Execution failed: Error: Cannot open file: data/input/ocstpin10\n",
+    "timestamp": "2025-11-10T21:02:15.209910+00:00"
+  },
+  {
+    "instance_name": "ocstpin11",
+    "success": false,
+    "error": "Execution failed: Error: Cannot open file: data/input/ocstpin11\n",
+    "timestamp": "2025-11-10T21:02:15.212529+00:00"
+  },
+  {
+    "instance_name": "ocstpin12",
+    "success": false,
+    "error": "Execution failed: Error: Cannot open file: data/input/ocstpin12\n",
+    "timestamp": "2025-11-10T21:02:15.214613+00:00"
+  },
+  {
+    "instance_name": "ocstpin13",
+    "success": false,
+    "error": "Execution failed: Error: Cannot open file: data/input/ocstpin13\n",
+    "timestamp": "2025-11-10T21:02:15.216698+00:00"
+  },
+  {
+    "instance_name": "ocstpin14",
+    "success": false,
+    "error": "Execution failed: Error: Cannot open file: data/input/ocstpin14\n",
+    "timestamp": "2025-11-10T21:02:15.219073+00:00"
+  },
+  {
+    "instance_name": "ocstpin2",
+    "success": false,
+    "error": "Execution failed: Error: Cannot open file: data/input/ocstpin2\n",
+    "timestamp": "2025-11-10T21:02:15.221017+00:00"
+  },
+  {
+    "instance_name": "ocstpin3",
+    "success": false,
+    "error": "Execution failed: Error: Cannot open file: data/input/ocstpin3\n",
+    "timestamp": "2025-11-10T21:02:15.223149+00:00"
+  },
+  {
+    "instance_name": "ocstpin4",
+    "success": false,
+    "error": "Execution failed: Error: Cannot open file: data/input/ocstpin4\n",
+    "timestamp": "2025-11-10T21:02:15.225791+00:00"
+  },
+  {
+    "instance_name": "ocstpin5",
+    "success": false,
+    "error": "Execution failed: Error: Cannot open file: data/input/ocstpin5\n",
+    "timestamp": "2025-11-10T21:02:15.227967+00:00"
+  },
+  {
+    "instance_name": "ocstpin6",
+    "success": false,
+    "error": "Execution failed: Error: Cannot open file: data/input/ocstpin6\n",
+    "timestamp": "2025-11-10T21:02:15.230144+00:00"
+  },
+  {
+    "instance_name": "ocstpin7",
+    "success": false,
+    "error": "Execution failed: Error: Cannot open file: data/input/ocstpin7\n",
+    "timestamp": "2025-11-10T21:02:15.232268+00:00"
+  },
+  {
+    "instance_name": "ocstpin8",
+    "success": false,
+    "error": "Execution failed: Error: Cannot open file: data/input/ocstpin8\n",
+    "timestamp": "2025-11-10T21:02:15.234294+00:00"
+  },
+  {
+    "instance_name": "ocstpin9",
+    "success": false,
+    "error": "Execution failed: Error: Cannot open file: data/input/ocstpin9\n",
+    "timestamp": "2025-11-10T21:02:15.236310+00:00"
+  },
+  {
+    "instance_name": "orst0",
+    "success": false,
+    "error": "Execution failed: Error: Cannot open file: data/input/orst0\n",
+    "timestamp": "2025-11-10T21:02:15.238262+00:00"
+  },
+  {
+    "instance_name": "orst1",
+    "success": false,
+    "error": "Execution failed: Error: Cannot open file: data/input/orst1\n",
+    "timestamp": "2025-11-10T21:02:15.240674+00:00"
+  },
+  {
+    "instance_name": "orst2",
+    "success": false,
+    "error": "Execution failed: Error: Cannot open file: data/input/orst2\n",
+    "timestamp": "2025-11-10T21:02:15.243066+00:00"
+  },
+  {
+    "instance_name": "orst3",
+    "success": false,
+    "error": "Execution failed: Error: Cannot open file: data/input/orst3\n",
+    "timestamp": "2025-11-10T21:02:15.245343+00:00"
+  },
+  {
+    "instance_name": "orst4",
+    "success": false,
+    "error": "Execution failed: Error: Cannot open file: data/input/orst4\n",
+    "timestamp": "2025-11-10T21:02:15.247633+00:00"
+  },
+  {
+    "instance_name": "orst5",
+    "success": false,
+    "error": "Execution failed: Error: Cannot open file: data/input/orst5\n",
+    "timestamp": "2025-11-10T21:02:15.249435+00:00"
+  },
+  {
+    "instance_name": "orst6",
+    "success": false,
+    "error": "Execution failed: Error: Cannot open file: data/input/orst6\n",
+    "timestamp": "2025-11-10T21:02:15.251207+00:00"
+  },
+  {
+    "instance_name": "orst7",
+    "success": false,
+    "error": "Execution failed: Error: Cannot open file: data/input/orst7\n",
+    "timestamp": "2025-11-10T21:02:15.253864+00:00"
+  },
+  {
+    "instance_name": "orst8",
+    "success": false,
+    "error": "Execution failed: Error: Cannot open file: data/input/orst8\n",
+    "timestamp": "2025-11-10T21:02:15.256215+00:00"
+  },
+  {
+    "instance_name": "orst9",
+    "success": false,
+    "error": "Execution failed: Error: Cannot open file: data/input/orst9\n",
+    "timestamp": "2025-11-10T21:02:15.258212+00:00"
+  }
+]
