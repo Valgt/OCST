@@ -27,26 +27,46 @@ class OCSTOrchestrator:
         self.data_dir = self.project_root / "data" / "input"
         self.experiments_dir = self.project_root / "experiments"
         self.build_dir = self.project_root / "build" / "executables"
+        self.best_known_dir = self.project_root / "data" / "best known"
 
         # Ensure directories exist
         self.experiments_dir.mkdir(exist_ok=True)
 
+        # Load best known optimal values
+        self.best_known_values = self._load_best_known_values()
+
+    def _load_best_known_values(self) -> Dict[str, float]:
+        """Load optimal objective values from best known solutions."""
+        best_known = {}
+        if self.best_known_dir.exists():
+            for sol_file in self.best_known_dir.glob("*.sol"):
+                instance_name = sol_file.stem
+                try:
+                    with open(sol_file, 'r') as f:
+                        best_known[instance_name] = float(f.read().strip())
+                except (ValueError, OSError):
+                    pass  # Skip malformed files
+        return best_known
+
     def run_experiment(self, args: argparse.Namespace) -> None:
-        """Run a complete experiment with the specified parameters."""
+        """Run a complete experiment with multiple formulations."""
+
+        # Validate formulations
+        formulations = list(set(args.formulation))  # Remove duplicates while preserving order
+        if not formulations:
+            raise ValueError("At least one formulation must be specified")
 
         # Create experiment directory structure
         timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
         experiment_name = f"{args.tag}_{timestamp}"
         experiment_dir = self.experiments_dir / experiment_name
-        formulation_dir = experiment_dir / args.formulation
-        results_dir = formulation_dir / "results"
 
-        results_dir.mkdir(parents=True, exist_ok=True)
+        experiment_dir.mkdir(parents=True, exist_ok=True)
 
         print(f"🚀 Starting experiment: {experiment_name}")
         print(f"📁 Output directory: {experiment_dir}")
         print(f"🏷️  Tag: {args.tag}")
-        print(f"🔬 Formulation: {args.formulation}")
+        print(f"🔬 Formulations: {', '.join(formulations)}")
         print(f"🎲 Seed: {args.seed}")
         print()
 
@@ -62,73 +82,116 @@ class OCSTOrchestrator:
             print(f"  ... and {len(instances) - 5} more")
         print()
 
-        # Compile formulation
-        print(f"🔨 Compiling formulation: {args.formulation}")
-        self.compile_formulation(args.formulation)
+        # Compile all formulations first
+        for formulation in formulations:
+            print(f"🔨 Compiling formulation: {formulation}")
+            self.compile_formulation(formulation)
+        print()
 
         # Prepare configuration
         config = self.prepare_config(args)
 
-        # Execute experiments
-        results = []
-        successful = 0
-        failed = 0
+        # Execute experiments for each formulation
+        all_results = {}
+        formulation_summaries = {}
 
-        print(f"⚡ Executing {len(instances)} experiments...")
-        print("=" * 60)
+        total_instances = len(instances)
+        total_formulations = len(formulations)
 
-        for i, instance in enumerate(instances, 1):
-            instance_name = instance['name']
-            print(f"[{i:2d}/{len(instances)}] Processing: {instance_name}")
+        print(f"⚡ Executing {total_instances} × {total_formulations} = {total_instances * total_formulations} experiments...")
+        print("=" * 80)
 
-            try:
-                result = self.run_single_instance(
-                    args.formulation,
-                    instance_name,
-                    args.seed,
-                    config,
-                    results_dir
-                )
-                results.append(result)
-                successful += 1
-                status = "✓"
-            except Exception as e:
-                error_result = {
-                    "instance_name": instance_name,
-                    "success": False,
-                    "error": str(e),
-                    "timestamp": datetime.now(timezone.utc).isoformat()
-                }
-                results.append(error_result)
-                failed += 1
-                status = "✗"
-                print(f"  Error: {e}")
+        for form_idx, formulation in enumerate(formulations, 1):
+            print(f"🔬 Formulation {form_idx}/{total_formulations}: {formulation}")
+            print("-" * 80)
 
-            print(f"  {status} {instance_name}")
+            # Create formulation-specific directories
+            formulation_dir = experiment_dir / formulation
+            results_dir = formulation_dir / "results"
+            results_dir.mkdir(parents=True, exist_ok=True)
+
+            # Execute all instances for this formulation
+            results = []
+            successful = 0
+            failed = 0
+
+            for i, instance in enumerate(instances, 1):
+                instance_name = instance['name']
+                print(f"[{form_idx}.{i:2d}/{total_formulations}.{total_instances}] Processing: {instance_name}")
+
+                try:
+                    result = self.run_single_instance(
+                        formulation,
+                        instance_name,
+                        args.seed,
+                        config,
+                        results_dir
+                    )
+                    results.append(result)
+                    successful += 1
+                    status = "✓"
+                except Exception as e:
+                    error_result = {
+                        "instance_name": instance_name,
+                        "success": False,
+                        "objective": None,
+                        "optimization_status_description": "ERROR",
+                        "stdout": "",
+                        "stderr": str(e),
+                        "timestamp": datetime.now(timezone.utc).isoformat(),
+                        "error": str(e)
+                    }
+                    results.append(error_result)
+                    failed += 1
+                    status = "✗"
+                    print(f"  Error: {e}")
+
+                objective_str = f"{result.get('objective', 'ERROR'):.0f}" if status == "✓" else "FAILED"
+                print(f"  {status} {instance_name}: {objective_str}")
+
+            # Store results for this formulation
+            all_results[formulation] = results
+
+            # Generate formulation-specific summary
+            formulation_summary = self.generate_formulation_summary(
+                f"{experiment_name}_{formulation}",
+                args,
+                formulation,
+                instances,
+                results,
+                successful,
+                failed,
+                config
+            )
+            formulation_summaries[formulation] = formulation_summary
+
+            # Save formulation-specific files
+            summary_file = formulation_dir / "experiment_summary.json"
+            with open(summary_file, 'w') as f:
+                json.dump(formulation_summary, f, indent=2)
+
+            results_file = results_dir / "detailed_results.json"
+            with open(results_file, 'w') as f:
+                json.dump(results, f, indent=2)
+
+            print(f"✅ Formulation {formulation}: {successful}/{total_instances} successful")
             print()
 
-        # Generate summary
-        summary = self.generate_summary(
-            experiment_name, args, instances, results,
-            successful, failed, config
+        # Generate comparative summary
+        comparative_summary = self.generate_comparative_summary(
+            experiment_name, args, instances, all_results, formulation_summaries
         )
 
-        # Save summary
-        summary_file = experiment_dir / "experiment_summary.json"
-        with open(summary_file, 'w') as f:
-            json.dump(summary, f, indent=2)
+        # Save comparative summary
+        comparative_summary_file = experiment_dir / "comparative_summary.json"
+        with open(comparative_summary_file, 'w') as f:
+            json.dump(comparative_summary, f, indent=2)
 
-        # Save detailed results
-        results_file = results_dir / "detailed_results.json"
-        with open(results_file, 'w') as f:
-            json.dump(results, f, indent=2)
+        # Print final results
+        self.print_experiment_summary(comparative_summary, formulations)
 
-        print("=" * 60)
-        print("🎉 EXPERIMENT COMPLETED")
-        print(f"✅ Successful: {successful}")
-        print(f"❌ Failed: {failed}")
-        print(f"📄 Summary: {summary_file}")
-        print(f"📄 Results: {results_file}")
+        print(f"📄 Comparative Summary: {comparative_summary_file}")
+        print(f"📁 Individual results in: {experiment_dir}/{{formulation}}/")
 
     def find_instances_by_tag(self, tag: str) -> List[Dict[str, Any]]:
         """Find all instances with the specified tag."""
@@ -384,10 +447,30 @@ class OCSTOrchestrator:
                         result_data = json.load(f)
 
                     # Extract and flatten the relevant fields from the structured JSON
+                    objective = result_data.get("results", {}).get("objective")
+                    best_known_obj = self.best_known_values.get(instance_name)
+
+                    # Validate against best known optimal value
+                    is_optimal = None
+                    optimality_status = "UNKNOWN"
+                    if best_known_obj is not None and objective is not None:
+                        if abs(objective - best_known_obj) < 1e-6:  # Exact match
+                            is_optimal = True
+                            optimality_status = "OPTIMAL_VERIFIED"
+                        elif abs(objective - best_known_obj) < 0.1:  # Numerical precision
+                            is_optimal = True
+                            optimality_status = "OPTIMAL_NUMERICAL"
+                        else:
+                            is_optimal = False
+                            optimality_status = "SUBOPTIMAL"
+
                     return {
                         "instance_name": result_data.get("instance", {}).get("name", instance_name),
                         "success": True,
-                        "objective": result_data.get("results", {}).get("objective"),
+                        "objective": objective,
+                        "best_known_objective": best_known_obj,
+                        "is_optimal": is_optimal,
+                        "optimality_status": optimality_status,
                         "optimization_status_description": result_data.get("optimization_status", {}).get("code", "UNKNOWN"),
                         "runtime_stats": result_data.get("runtime", {}),
                         "gap_percent": result_data.get("results", {}).get("gap_percent"),
@@ -427,6 +510,24 @@ class OCSTOrchestrator:
             for r in results if r.get('success', False)
         )
 
+        # Calculate optimality statistics
+        optimal_count = 0
+        verified_optimal_count = 0
+        suboptimal_count = 0
+        unknown_optimality_count = 0
+
+        for r in results:
+            if r.get('success', False):
+                is_optimal = r.get('is_optimal')
+                if is_optimal is True:
+                    optimal_count += 1
+                    if r.get('optimality_status') == 'OPTIMAL_VERIFIED':
+                        verified_optimal_count += 1
+                elif is_optimal is False:
+                    suboptimal_count += 1
+                else:
+                    unknown_optimality_count += 1
+
         return {
             "experiment_info": {
                 "experiment_id": experiment_name,
@@ -450,13 +551,23 @@ class OCSTOrchestrator:
                 "failed": failed,
                 "success_rate": successful / len(instances) if instances else 0,
                 "total_runtime_seconds": total_runtime,
-                "avg_runtime_per_instance": total_runtime / len(instances) if instances else 0
+                "avg_runtime_per_instance": total_runtime / len(instances) if instances else 0,
+                "optimality_stats": {
+                    "optimal_solutions": optimal_count,
+                    "verified_optimal": verified_optimal_count,
+                    "suboptimal_solutions": suboptimal_count,
+                    "unknown_optimality": unknown_optimality_count,
+                    "optimality_rate": optimal_count / successful if successful > 0 else 0
+                }
             },
             "individual_results": [
                 {
                     "instance_name": r.get("instance_name", "unknown"),
                     "success": r.get("success", False),
                     "objective": r.get("objective"),
+                    "best_known_objective": r.get("best_known_objective"),
+                    "is_optimal": r.get("is_optimal"),
+                    "optimality_status": r.get("optimality_status", "UNKNOWN"),
                     "runtime_seconds": r.get("runtime_stats", {}).get("wall_clock_seconds"),
                     "status": r.get("optimization_status_description", "unknown"),
                     "gap_percent": r.get("gap_percent"),
@@ -466,6 +577,199 @@ class OCSTOrchestrator:
             ]
         }
 
+    def generate_formulation_summary(self, experiment_name: str, args: argparse.Namespace,
+                                    formulation: str, instances: List[Dict], results: List[Dict],
+                                    successful: int, failed: int,
+                                    config: Dict[str, Any]) -> Dict[str, Any]:
+        """Generate summary for a specific formulation."""
+
+        total_runtime = sum(
+            r.get('runtime_stats', {}).get('wall_clock_seconds', 0)
+            for r in results if r.get('success', False)
+        )
+
+        # Calculate optimality statistics
+        optimal_count = 0
+        verified_optimal_count = 0
+        suboptimal_count = 0
+        unknown_optimality_count = 0
+
+        for r in results:
+            if r.get('success', False):
+                is_optimal = r.get('is_optimal')
+                if is_optimal is True:
+                    optimal_count += 1
+                    if r.get('optimality_status') == 'OPTIMAL_VERIFIED':
+                        verified_optimal_count += 1
+                elif is_optimal is False:
+                    suboptimal_count += 1
+                else:
+                    unknown_optimality_count += 1
+
+        return {
+            "experiment_info": {
+                "experiment_id": experiment_name,
+                "tag": args.tag,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "seed": args.seed,
+                "formulation": formulation,
+                "command_line": " ".join(sys.argv)
+            },
+            "execution_details": {
+                "total_instances": len(instances),
+                "instances_by_tag": {args.tag: len(instances)},
+                "instance_names": [i['name'] for i in instances]
+            },
+            "formulation_config": {
+                formulation: config
+            },
+            "results_summary": {
+                "total_instances": len(instances),
+                "successful": successful,
+                "failed": failed,
+                "success_rate": successful / len(instances) if instances else 0,
+                "total_runtime_seconds": total_runtime,
+                "avg_runtime_per_instance": total_runtime / len(instances) if instances else 0,
+                "optimality_stats": {
+                    "optimal_solutions": optimal_count,
+                    "verified_optimal": verified_optimal_count,
+                    "suboptimal_solutions": suboptimal_count,
+                    "unknown_optimality": unknown_optimality_count,
+                    "optimality_rate": optimal_count / successful if successful > 0 else 0
+                }
+            },
+            "individual_results": [
+                {
+                    "instance_name": r.get("instance_name", "unknown"),
+                    "success": r.get("success", False),
+                    "objective": r.get("objective"),
+                    "best_known_objective": r.get("best_known_objective"),
+                    "is_optimal": r.get("is_optimal"),
+                    "optimality_status": r.get("optimality_status", "UNKNOWN"),
+                    "runtime_seconds": r.get("runtime_stats", {}).get("wall_clock_seconds"),
+                    "status": r.get("optimization_status_description", "unknown"),
+                    "gap_percent": r.get("gap_percent"),
+                    "error": r.get("error")
+                }
+                for r in results
+            ]
+        }
+
+    def generate_comparative_summary(self, experiment_name: str, args: argparse.Namespace,
+                                    instances: List[Dict], all_results: Dict[str, List[Dict]],
+                                    formulation_summaries: Dict[str, Dict]) -> Dict[str, Any]:
+        """Generate comparative summary across all formulations."""
+
+        formulations = list(all_results.keys())
+
+        # Aggregate statistics across all formulations
+        total_instances = len(instances)
+        total_experiments = total_instances * len(formulations)
+
+        comparative_results = []
+        formulation_stats = {}
+
+        for formulation in formulations:
+            results = all_results[formulation]
+            summary = formulation_summaries[formulation]
+
+            successful = summary["results_summary"]["successful"]
+            failed = summary["results_summary"]["failed"]
+            total_runtime = summary["results_summary"]["total_runtime_seconds"]
+            optimality_stats = summary["results_summary"]["optimality_stats"]
+
+            formulation_stats[formulation] = {
+                "successful": successful,
+                "failed": failed,
+                "success_rate": successful / total_instances if total_instances > 0 else 0,
+                "total_runtime": total_runtime,
+                "avg_runtime_per_instance": total_runtime / total_instances if total_instances > 0 else 0,
+                "optimality_stats": optimality_stats
+            }
+
+            # Add comparative results for each instance
+            for result in results:
+                comparative_results.append({
+                    "instance_name": result.get("instance_name", "unknown"),
+                    "formulation": formulation,
+                    "success": result.get("success", False),
+                    "objective": result.get("objective"),
+                    "best_known_objective": result.get("best_known_objective"),
+                    "is_optimal": result.get("is_optimal"),
+                    "optimality_status": result.get("optimality_status", "UNKNOWN"),
+                    "runtime_seconds": result.get("runtime_stats", {}).get("wall_clock_seconds"),
+                    "status": result.get("optimization_status_description", "unknown"),
+                    "gap_percent": result.get("gap_percent"),
+                    "error": result.get("error")
+                })
+
+        return {
+            "experiment_info": {
+                "experiment_id": experiment_name,
+                "tag": args.tag,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "seed": args.seed,
+                "formulations": formulations,
+                "command_line": " ".join(sys.argv)
+            },
+            "execution_details": {
+                "total_instances": total_instances,
+                "total_formulations": len(formulations),
+                "total_experiments": total_experiments,
+                "instances_by_tag": {args.tag: total_instances},
+                "instance_names": [i['name'] for i in instances]
+            },
+            "formulation_config": {
+                formulation: formulation_summaries[formulation]["formulation_config"][formulation]
+                for formulation in formulations
+            },
+            "formulation_summaries": formulation_stats,
+            "comparative_results": comparative_results
+        }
+
+    def print_experiment_summary(self, comparative_summary: Dict[str, Any], formulations: List[str]) -> None:
+        """Print a comprehensive summary of the comparative experiment."""
+
+        print("=" * 80)
+        print("🎉 MULTI-FORMULATION EXPERIMENT COMPLETED")
+        print("=" * 80)
+
+        exec_details = comparative_summary["execution_details"]
+        form_summaries = comparative_summary["formulation_summaries"]
+
+        print(f"📊 Instances: {exec_details['total_instances']}")
+        print(f"🔬 Formulations: {len(formulations)} ({', '.join(formulations)})")
+        print(f"⚡ Total Experiments: {exec_details['total_experiments']}")
+        print()
+
+        # Summary table for formulations
+        print("FORMULATION COMPARISON:")
+        print("-" * 80)
+        print(f"{'Formulation':<25} {'Success':<8} {'Optimal':<8} {'Runtime':<10} {'Rate':<6}")
+        print("-" * 80)
+
+        for formulation in formulations:
+            stats = form_summaries[formulation]
+            success_rate = f"{stats['success_rate']:.1%}"
+            optimal = stats['optimality_stats']['optimal_solutions']
+            total_success = stats['successful']
+            optimality_rate = f"{stats['optimality_stats']['optimality_rate']:.1%}" if total_success > 0 else "N/A"
+            avg_runtime = f"{stats['avg_runtime_per_instance']:.1f}s"
+
+            print(f"{formulation:<25} {stats['successful']}/{exec_details['total_instances']:<8} {optimal}/{total_success:<8} {avg_runtime:<10} {optimality_rate:<6}")
+
+        print()
+
+        # Overall statistics
+        total_successful = sum(stats['successful'] for stats in form_summaries.values())
+        total_failed = sum(stats['failed'] for stats in form_summaries.values())
+        total_optimal = sum(stats['optimality_stats']['optimal_solutions'] for stats in form_summaries.values())
+
+        print("OVERALL STATISTICS:")
+        print(f"✅ Total Successful: {total_successful}/{exec_details['total_experiments']}")
+        print(f"❌ Total Failed: {total_failed}/{exec_details['total_experiments']}")
+        print(f"🎯 Total Optimal: {total_optimal}/{total_successful} ({total_optimal/total_successful:.1%})" if total_successful > 0 else "🎯 Total Optimal: N/A")
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -473,10 +777,16 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
+  # Single formulation
   python orchestrator.py --tag quick_check --formulation path_based
-  python orchestrator.py --tag beasley --formulation flow_based --seed 123
+
+  # Multiple formulations (comparison)
+  python orchestrator.py --tag quick_check --formulation path_based --formulation flow_based
+  python orchestrator.py --tag beasley --formulation path_based --formulation path_based_formulation_original --seed 123
+
+  # With configuration overrides
   python orchestrator.py --tag quick_check --formulation path_based --config time_limit=1800,mip_gap=0.001
-  python orchestrator.py --tag quick_check --formulation path_based --config-file config.json
+  python orchestrator.py --tag quick_check --formulation path_based --formulation flow_based --config-file config.json
         """
     )
 
@@ -489,8 +799,9 @@ Examples:
     parser.add_argument(
         "--formulation",
         required=True,
+        action="append",
         choices=["path_based", "path_based_formulation_original", "flow_based", "flow_based_relaxed"],
-        help="Formulation to execute"
+        help="Formulation(s) to execute (can be used multiple times for comparison)"
     )
 
     parser.add_argument(

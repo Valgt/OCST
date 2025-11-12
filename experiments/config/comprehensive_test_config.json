@@ -1,9 +1,0 @@
-{
-  "time_limit": 10.0,
-  "tolerance": 1e-08,
-  "threads": 2,
-  "presolve": false,
-  "output_flag": true,
-  "branching_strategy": "pseudocost",
-  "mip_gap": 0.001
-}
