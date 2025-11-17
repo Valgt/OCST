@@ -1,7 +1,6 @@
 ---
-alwaysApply: true
+alwaysApply: false
 ---
-
 Objective
 Establish a repository-wide baseline focused exclusively on JSON before building visual analytics, unifying how the four existing exact formulations for OCST consume instances, expose configuration, and emit results. This “step 0” keeps the current algorithms intact while removing duplicated infrastructure.
 Important policy change: There will be no in-process coexistence of legacy and standardized paths. We will maintain two parallel versions that never mix:

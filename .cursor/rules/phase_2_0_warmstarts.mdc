@@ -1,0 +1,36 @@
+---
+alwaysApply: true
+---
+
+# Phase 2.0: Warm-Start Testing for OCST (actualizado)
+
+## Objetivo
+Warm starts 100% precalculadas para `path_based_formulation`, configurables por idea, con abort en cualquier error de entrada, y telemetría clara sobre qué warm start ayudó a la solución.
+
+## Fuente de datos
+- Archivos por idea en `data/input/<idea>/<instancia>.txt`.
+- Formato: primera línea `n` (debe coincidir con la instancia), luego `n-1` líneas con pares de nodos 0-based que forman un árbol.
+- Si falta archivo o el formato/validez falla (rango, duplicados, no spanning/conexo) → error y terminar.
+
+## Configuración esperada
+- JSON con `warm_starts: ["idea1", "idea2", ...]` (orden fijo). Ruta implícita como arriba.
+- Si algún warm start falla → abortar sin intentar el resto.
+
+## Diseño
+- Módulo común de warm starts (loader/validator O(n+m)): parsea archivo, valida árbol y devuelve aristas.
+- Integración en `path_based_formulation`: para cada idea válida, sembrar `x` en Gurobi (dejar `y` libres) y registrar start en el modelo en el mismo orden.
+- Telemetría/payload:
+  - `warm_starts_tried` (lista de ideas cargadas) y `warm_start_used` (idea de la solución final).
+  - Completar runtime, nodos/iters, gap, has_bound, status_description, config params/digest, lazy/cuts.
+- Logging estructurado: eventos inicio/fin por warm start (idea, estado, tiempo de parse/validación).
+
+## Implementación (orden)
+1) Extender config/lectura para `warm_starts`.  
+2) Añadir loader/validator de warm starts (archivo .txt).  
+3) Integrar en solver path_based: aplicar starts, habilitar warm start, poblar metadata/payload, logs.  
+4) Validación rápida: lectura de archivos, abortos correctos, smoke de solver pequeño con MST cargado.
+
+## Riesgos
+- Abort temprano por archivo inválido (deseado).  
+- Inconsistencia `y` si se fijan flujos: se evita sembrando solo `x`.  
+- Telemetría incompleta: cubrir metadata y logger para trazabilidad.
