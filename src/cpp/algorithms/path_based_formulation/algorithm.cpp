@@ -580,7 +580,9 @@ private:
         std::vector<std::string> warm_starts_tried_;
         std::string warm_start_used_ = "none";
         std::vector<ocst::common::WarmStartTree> warm_start_data_;
-        
+        double objective_scale_ = 1.0;  // Scaling factor for objective coefficients
+        double max_snap_violation_ = 0.0; // Track snapping distance
+
     public:
         explicit PathBasedSolver(const OCSTInstance& instance) 
             : FormulationSolver(instance, "path_based", "2.0.0"),
@@ -606,9 +608,10 @@ protected:
         model_->set(GRB_IntParam_LazyConstraints, 1);  // Enable lazy constraints (SEC)
         model_->set(GRB_IntParam_PreCrush, 1);  // Ensure lazy constraints work with presolve
         
-        // Override base class defaults for better cut separation
-        model_->set(GRB_IntParam_Presolve, 0);  // Disable presolve
-        model_->set(GRB_IntParam_Cuts, 0);      // Disable default cuts
+        // Improve numerical stability: allow presolve, focus on numerics, and enforce integrality.
+        model_->set(GRB_IntParam_Presolve, -1);     // Auto presolve
+        model_->set(GRB_IntParam_NumericFocus, 1);  // Balanced numerics (can raise to 2 if needed)
+        model_->set(GRB_IntParam_IntegralityFocus, 1); // Stricter integrality handling
     }
     
     /**
@@ -668,13 +671,33 @@ protected:
         // ===================================================================
         // STEP 3: Set objective function
         // ===================================================================
-        
+        // Determine objective scaling factor based on maximum coefficient (weight * cost)
+        double max_coeff = 0.0;
+        for (const auto& req : instance_.requirements) {
+            if (req.weight <= 0.0) continue;
+            for (const auto& edge : instance_.edges) {
+                max_coeff = std::max(max_coeff, req.weight * edge.cost);
+            }
+        }
+        objective_scale_ = 1.0;
+        if (max_coeff >= 100000.0) {
+            double scale = 1.0;
+            while (max_coeff / scale > 1000.0) {
+                scale *= 10.0;
+            }
+            objective_scale_ = scale;
+        }
+
         GRBLinExpr objective = 0;
         int included_requirements = 0;
         int skipped_requirements = 0;
         
-    if (config.verbose) {
-            std::cout << "[" << formulation_name_ << "] Setting objective function:" << std::endl;
+        if (config.verbose) {
+            std::cout << "[" << formulation_name_ << "] Setting objective function:";
+            if (objective_scale_ > 1.0) {
+                std::cout << " scaling by 1/" << objective_scale_;
+            }
+            std::cout << std::endl;
         }
         
         for (int r = 0; r < static_cast<int>(instance_.requirements.size()); ++r) {
@@ -699,9 +722,10 @@ protected:
             for (int e = 0; e < instance_.num_edges; ++e) {
                 const Edge& edge = instance_.edges[e];
 
+                const double scaled_cost = (req.weight * edge.cost) / objective_scale_;
                 // Add cost for both directions of flow
-                objective += req.weight * edge.cost * y_vars_[r][2*e];     // Forward direction
-                objective += req.weight * edge.cost * y_vars_[r][2*e + 1]; // Backward direction
+                objective += scaled_cost * y_vars_[r][2*e];     // Forward direction
+                objective += scaled_cost * y_vars_[r][2*e + 1]; // Backward direction
             }
         }
 
@@ -1187,25 +1211,50 @@ private:
         
         if (has_solution) {
             // Objective value
-            payload.objective = model_->get(GRB_DoubleAttr_ObjVal);
+            const double scaled_obj = model_->get(GRB_DoubleAttr_ObjVal);
+            payload.objective = scaled_obj * objective_scale_;
             payload.primal_bound = payload.objective;
+            max_snap_violation_ = 0.0;
             
             // Extract selected edges and build tree structure
+            payload.solution.tree_edges.clear();
+            payload.solution.tree_edges.reserve(instance_.num_nodes - 1);
             for (int e = 0; e < instance_.num_edges; ++e) {
-                if (x_vars_[e].get(GRB_DoubleAttr_X) > 0.5) {
+                const double val = x_vars_[e].get(GRB_DoubleAttr_X);
+                const double rounded = std::round(val);
+                max_snap_violation_ = std::max(max_snap_violation_, std::abs(val - rounded));
+                if (rounded > 0.5) {
                     const Edge& edge = instance_.edges[e];
                     payload.solution.tree_edges.push_back({edge.source, edge.destination});
                 }
             }
             
+            // Recompute objective with snapped solution to remove numeric noise
+            double clean_objective = 0.0;
+            for (int r = 0; r < static_cast<int>(instance_.requirements.size()); ++r) {
+                const Requirement& req = instance_.requirements[r];
+                if (req.weight <= 0.0) continue;
+                // For each edge, add cost if y is active after snapping
+                for (int e = 0; e < instance_.num_edges; ++e) {
+                    const Edge& edge = instance_.edges[e];
+                    double y_fwd = std::round(y_vars_[r][2*e].get(GRB_DoubleAttr_X));
+                    double y_bwd = std::round(y_vars_[r][2*e + 1].get(GRB_DoubleAttr_X));
+                    max_snap_violation_ = std::max(max_snap_violation_, std::abs(y_vars_[r][2*e].get(GRB_DoubleAttr_X) - y_fwd));
+                    max_snap_violation_ = std::max(max_snap_violation_, std::abs(y_vars_[r][2*e + 1].get(GRB_DoubleAttr_X) - y_bwd));
+                    clean_objective += req.weight * edge.cost * (y_fwd + y_bwd);
+                }
+            }
+            payload.solution.tree_cost = clean_objective;
+            payload.objective = clean_objective;
+            payload.primal_bound = clean_objective;
+            
             // Tree metrics
-            payload.solution.tree_cost = payload.objective;
             payload.solution.is_spanning_tree = (payload.solution.tree_edges.size() == static_cast<size_t>(instance_.num_nodes - 1));
             payload.solution.is_connected = payload.solution.is_spanning_tree;  // Spanning tree implies connected
             
             // Dual bound
             try {
-                payload.dual_bound = model_->get(GRB_DoubleAttr_ObjBound);
+                payload.dual_bound = model_->get(GRB_DoubleAttr_ObjBound) * objective_scale_;
                 payload.gap = payload.primal_bound - payload.dual_bound;
                 if (std::abs(payload.primal_bound) > 1e-9) {
                     payload.gap_percent = 100.0 * (payload.primal_bound - payload.dual_bound) / payload.primal_bound;
