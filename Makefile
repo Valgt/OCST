@@ -20,7 +20,7 @@ TEST_TARGETS = $(TEST_SOURCES:$(TEST_DIR)/%.cpp=$(BIN_DIR)/%)
 
 # Algoritmos
 PATH_BASED_SRC = $(SRC_DIR)/algorithms/path_based_formulation/algorithm.cpp
-PATH_BASED_SOLVER_SRC = $(SRC_DIR)/common/formulation_solver.cpp $(SRC_DIR)/common/config.cpp $(SRC_DIR)/common/structured_logger.cpp
+PATH_BASED_SOLVER_SRC = $(SRC_DIR)/common/formulation_solver.cpp $(SRC_DIR)/common/config.cpp $(SRC_DIR)/common/structured_logger.cpp $(SRC_DIR)/common/warm_start_loader.cpp
 PATH_BASED_ORIGINAL_SRC = $(SRC_DIR)/algorithms/path_based_formulation_original/algorithm.cpp
 FLOW_BASED_SRC = $(SRC_DIR)/algorithms/flow_based_formulation/algorithm.cpp
 FLOW_BASED_RELAXED_SRC = $(SRC_DIR)/algorithms/flow_based_relaxed_formulation/algorithm.cpp
@@ -156,5 +156,4 @@ help:
 
 # Objetivos que no son archivos
 .PHONY: all setup build_info test_gurobi path_based path_based_original flow_based flow_based_relaxed rooted_tree_based run_test clean check_gurobi help FORCE
-
 

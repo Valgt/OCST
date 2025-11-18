@@ -1,0 +1,3142 @@
+[
+  {
+    "instance_name": "ocstpin0",
+    "success": true,
+    "objective": 1340.0,
+    "best_known_objective": 1340.0,
+    "is_optimal": true,
+    "optimality_status": "OPTIMAL_VERIFIED",
+    "optimization_status_description": "OPTIMAL",
+    "runtime_stats": {
+      "wall_clock_seconds": 0.007871363,
+      "cpu_seconds": 0.004222869873046875,
+      "solver_nodes": 1,
+      "solver_iterations": 133
+    },
+    "gap_percent": 0.0,
+    "gap": 0.0,
+    "best_solution_time": 0.004222869873046875,
+    "lazy_constraints": 3,
+    "cutting_planes": 0,
+    "status": "OPTIMAL",
+    "error": null,
+    "raw_json": {
+      "artifacts": {
+        "warm_start": "data/input/mst/ocstpin0.txt"
+      },
+      "config": {
+        "digest": "path_based_v2.0.0",
+        "heuristics": "0.500000",
+        "mip_gap": "0.000000",
+        "threads": "1",
+        "time_limit": "3600.000000",
+        "warm_start_enabled": "true",
+        "warm_start_ideas": "mst"
+      },
+      "instance": {
+        "name": "ocstpin0",
+        "tags": []
+      },
+      "optimization_status": {
+        "code": "OPTIMAL",
+        "description": "Optimal solution found",
+        "has_bound": true,
+        "has_solution": true
+      },
+      "reproducibility": {
+        "git_commit": "7bb4e4d",
+        "git_dirty": true,
+        "seed": 42,
+        "timestamp": "2025-11-17 18:23:51"
+      },
+      "results": {
+        "best_solution_time": 0.004222869873046875,
+        "dual_bound": 1340.0,
+        "gap": 0.0,
+        "gap_percent": 0.0,
+        "objective": 1340.0,
+        "primal_bound": 1340.0
+      },
+      "run_uuid": "8fd29cb6-1d74-41cd-9f3e-d3439adf704c",
+      "runtime": {
+        "cpu_seconds": 0.004222869873046875,
+        "solver_iterations": 133,
+        "solver_nodes": 1,
+        "termination_reason": "",
+        "wall_clock_seconds": 0.007871363
+      },
+      "schema_version": "1.0",
+      "solution": {
+        "is_connected": true,
+        "is_spanning_tree": true,
+        "tree_cost": 1340.0,
+        "tree_edges": [
+          {
+            "destination": 0,
+            "source": 2
+          },
+          {
+            "destination": 1,
+            "source": 3
+          },
+          {
+            "destination": 0,
+            "source": 5
+          },
+          {
+            "destination": 3,
+            "source": 5
+          },
+          {
+            "destination": 3,
+            "source": 6
+          },
+          {
+            "destination": 4,
+            "source": 6
+          },
+          {
+            "destination": 5,
+            "source": 7
+          },
+          {
+            "destination": 6,
+            "source": 8
+          },
+          {
+            "destination": 4,
+            "source": 9
+          }
+        ]
+      },
+      "solver": {
+        "formulation": "path_based",
+        "id": "path_based",
+        "version": "2.0.0"
+      },
+      "solver_metadata": {
+        "callback_invocations": "0",
+        "cutting_planes": "0",
+        "lazy_constraints": "3",
+        "warm_start_used": "mst",
+        "warm_starts_tried": "mst"
+      }
+    }
+  },
+  {
+    "instance_name": "ocstpin1",
+    "success": true,
+    "objective": 4135577.0,
+    "best_known_objective": 4135577.0,
+    "is_optimal": true,
+    "optimality_status": "OPTIMAL_VERIFIED",
+    "optimization_status_description": "OPTIMAL",
+    "runtime_stats": {
+      "wall_clock_seconds": 0.00423858,
+      "cpu_seconds": 0.0018270015716552734,
+      "solver_nodes": 1,
+      "solver_iterations": 63
+    },
+    "gap_percent": 0.0,
+    "gap": 0.0,
+    "best_solution_time": 0.0018270015716552734,
+    "lazy_constraints": 0,
+    "cutting_planes": 0,
+    "status": "OPTIMAL",
+    "error": null,
+    "raw_json": {
+      "artifacts": {
+        "warm_start": "data/input/mst/ocstpin1.txt"
+      },
+      "config": {
+        "digest": "path_based_v2.0.0",
+        "heuristics": "0.500000",
+        "mip_gap": "0.000000",
+        "threads": "1",
+        "time_limit": "3600.000000",
+        "warm_start_enabled": "true",
+        "warm_start_ideas": "mst"
+      },
+      "instance": {
+        "name": "ocstpin1",
+        "tags": []
+      },
+      "optimization_status": {
+        "code": "OPTIMAL",
+        "description": "Optimal solution found",
+        "has_bound": true,
+        "has_solution": true
+      },
+      "reproducibility": {
+        "git_commit": "7bb4e4d",
+        "git_dirty": true,
+        "seed": 42,
+        "timestamp": "2025-11-17 18:23:51"
+      },
+      "results": {
+        "best_solution_time": 0.0018270015716552734,
+        "dual_bound": 4135577.0,
+        "gap": 0.0,
+        "gap_percent": 0.0,
+        "objective": 4135577.0,
+        "primal_bound": 4135577.0
+      },
+      "run_uuid": "071650be-88d3-4f8c-aff7-953402ff0d36",
+      "runtime": {
+        "cpu_seconds": 0.0018270015716552734,
+        "solver_iterations": 63,
+        "solver_nodes": 1,
+        "termination_reason": "",
+        "wall_clock_seconds": 0.00423858
+      },
+      "schema_version": "1.0",
+      "solution": {
+        "is_connected": true,
+        "is_spanning_tree": true,
+        "tree_cost": 4135577.0,
+        "tree_edges": [
+          {
+            "destination": 7,
+            "source": 0
+          },
+          {
+            "destination": 4,
+            "source": 1
+          },
+          {
+            "destination": 8,
+            "source": 1
+          },
+          {
+            "destination": 9,
+            "source": 1
+          },
+          {
+            "destination": 7,
+            "source": 2
+          },
+          {
+            "destination": 9,
+            "source": 3
+          },
+          {
+            "destination": 5,
+            "source": 4
+          },
+          {
+            "destination": 8,
+            "source": 6
+          },
+          {
+            "destination": 9,
+            "source": 7
+          }
+        ]
+      },
+      "solver": {
+        "formulation": "path_based",
+        "id": "path_based",
+        "version": "2.0.0"
+      },
+      "solver_metadata": {
+        "callback_invocations": "0",
+        "cutting_planes": "0",
+        "lazy_constraints": "0",
+        "warm_start_used": "mst",
+        "warm_starts_tried": "mst"
+      }
+    }
+  },
+  {
+    "instance_name": "ocstpin10",
+    "success": true,
+    "objective": 6909911.0,
+    "best_known_objective": 6909911.0,
+    "is_optimal": true,
+    "optimality_status": "OPTIMAL_VERIFIED",
+    "optimization_status_description": "OPTIMAL",
+    "runtime_stats": {
+      "wall_clock_seconds": 0.048911671,
+      "cpu_seconds": 0.045742034912109375,
+      "solver_nodes": 17,
+      "solver_iterations": 480
+    },
+    "gap_percent": 0.0,
+    "gap": 0.0,
+    "best_solution_time": 0.045742034912109375,
+    "lazy_constraints": 28,
+    "cutting_planes": 0,
+    "status": "OPTIMAL",
+    "error": null,
+    "raw_json": {
+      "artifacts": {
+        "warm_start": "data/input/mst/ocstpin10.txt"
+      },
+      "config": {
+        "digest": "path_based_v2.0.0",
+        "heuristics": "0.500000",
+        "mip_gap": "0.000000",
+        "threads": "1",
+        "time_limit": "3600.000000",
+        "warm_start_enabled": "true",
+        "warm_start_ideas": "mst"
+      },
+      "instance": {
+        "name": "ocstpin10",
+        "tags": []
+      },
+      "optimization_status": {
+        "code": "OPTIMAL",
+        "description": "Optimal solution found",
+        "has_bound": true,
+        "has_solution": true
+      },
+      "reproducibility": {
+        "git_commit": "7bb4e4d",
+        "git_dirty": true,
+        "seed": 42,
+        "timestamp": "2025-11-17 18:23:51"
+      },
+      "results": {
+        "best_solution_time": 0.045742034912109375,
+        "dual_bound": 6909911.0,
+        "gap": 0.0,
+        "gap_percent": 0.0,
+        "objective": 6909911.0,
+        "primal_bound": 6909911.0
+      },
+      "run_uuid": "1b4891d4-491a-4afd-b8b5-8934ebe4744e",
+      "runtime": {
+        "cpu_seconds": 0.045742034912109375,
+        "solver_iterations": 480,
+        "solver_nodes": 17,
+        "termination_reason": "",
+        "wall_clock_seconds": 0.048911671
+      },
+      "schema_version": "1.0",
+      "solution": {
+        "is_connected": true,
+        "is_spanning_tree": true,
+        "tree_cost": 6909911.0,
+        "tree_edges": [
+          {
+            "destination": 5,
+            "source": 0
+          },
+          {
+            "destination": 8,
+            "source": 0
+          },
+          {
+            "destination": 5,
+            "source": 1
+          },
+          {
+            "destination": 7,
+            "source": 1
+          },
+          {
+            "destination": 5,
+            "source": 2
+          },
+          {
+            "destination": 7,
+            "source": 3
+          },
+          {
+            "destination": 7,
+            "source": 4
+          },
+          {
+            "destination": 9,
+            "source": 5
+          },
+          {
+            "destination": 9,
+            "source": 6
+          }
+        ]
+      },
+      "solver": {
+        "formulation": "path_based",
+        "id": "path_based",
+        "version": "2.0.0"
+      },
+      "solver_metadata": {
+        "callback_invocations": "0",
+        "cutting_planes": "0",
+        "lazy_constraints": "28",
+        "warm_start_used": "mst",
+        "warm_starts_tried": "mst"
+      }
+    }
+  },
+  {
+    "instance_name": "ocstpin11",
+    "success": true,
+    "objective": 3888533.0,
+    "best_known_objective": 3888533.0,
+    "is_optimal": true,
+    "optimality_status": "OPTIMAL_VERIFIED",
+    "optimization_status_description": "OPTIMAL",
+    "runtime_stats": {
+      "wall_clock_seconds": 0.02596665,
+      "cpu_seconds": 0.02275395393371582,
+      "solver_nodes": 4,
+      "solver_iterations": 128
+    },
+    "gap_percent": 0.0,
+    "gap": 0.0,
+    "best_solution_time": 0.02275395393371582,
+    "lazy_constraints": 6,
+    "cutting_planes": 0,
+    "status": "OPTIMAL",
+    "error": null,
+    "raw_json": {
+      "artifacts": {
+        "warm_start": "data/input/mst/ocstpin11.txt"
+      },
+      "config": {
+        "digest": "path_based_v2.0.0",
+        "heuristics": "0.500000",
+        "mip_gap": "0.000000",
+        "threads": "1",
+        "time_limit": "3600.000000",
+        "warm_start_enabled": "true",
+        "warm_start_ideas": "mst"
+      },
+      "instance": {
+        "name": "ocstpin11",
+        "tags": []
+      },
+      "optimization_status": {
+        "code": "OPTIMAL",
+        "description": "Optimal solution found",
+        "has_bound": true,
+        "has_solution": true
+      },
+      "reproducibility": {
+        "git_commit": "7bb4e4d",
+        "git_dirty": true,
+        "seed": 42,
+        "timestamp": "2025-11-17 18:23:51"
+      },
+      "results": {
+        "best_solution_time": 0.02275395393371582,
+        "dual_bound": 3888533.0,
+        "gap": 0.0,
+        "gap_percent": 0.0,
+        "objective": 3888533.0,
+        "primal_bound": 3888533.0
+      },
+      "run_uuid": "c320b661-f59e-4c30-be54-af4213710d97",
+      "runtime": {
+        "cpu_seconds": 0.02275395393371582,
+        "solver_iterations": 128,
+        "solver_nodes": 4,
+        "termination_reason": "",
+        "wall_clock_seconds": 0.02596665
+      },
+      "schema_version": "1.0",
+      "solution": {
+        "is_connected": true,
+        "is_spanning_tree": true,
+        "tree_cost": 3888533.0,
+        "tree_edges": [
+          {
+            "destination": 4,
+            "source": 0
+          },
+          {
+            "destination": 4,
+            "source": 1
+          },
+          {
+            "destination": 6,
+            "source": 1
+          },
+          {
+            "destination": 7,
+            "source": 1
+          },
+          {
+            "destination": 3,
+            "source": 2
+          },
+          {
+            "destination": 6,
+            "source": 2
+          },
+          {
+            "destination": 5,
+            "source": 4
+          },
+          {
+            "destination": 8,
+            "source": 6
+          },
+          {
+            "destination": 9,
+            "source": 6
+          }
+        ]
+      },
+      "solver": {
+        "formulation": "path_based",
+        "id": "path_based",
+        "version": "2.0.0"
+      },
+      "solver_metadata": {
+        "callback_invocations": "0",
+        "cutting_planes": "0",
+        "lazy_constraints": "6",
+        "warm_start_used": "mst",
+        "warm_starts_tried": "mst"
+      }
+    }
+  },
+  {
+    "instance_name": "ocstpin12",
+    "success": true,
+    "objective": 2150236.0,
+    "best_known_objective": 2150236.0,
+    "is_optimal": true,
+    "optimality_status": "OPTIMAL_VERIFIED",
+    "optimization_status_description": "OPTIMAL",
+    "runtime_stats": {
+      "wall_clock_seconds": 0.007028852,
+      "cpu_seconds": 0.003916025161743164,
+      "solver_nodes": 1,
+      "solver_iterations": 86
+    },
+    "gap_percent": 0.0,
+    "gap": 0.0,
+    "best_solution_time": 0.003916025161743164,
+    "lazy_constraints": 0,
+    "cutting_planes": 0,
+    "status": "OPTIMAL",
+    "error": null,
+    "raw_json": {
+      "artifacts": {
+        "warm_start": "data/input/mst/ocstpin12.txt"
+      },
+      "config": {
+        "digest": "path_based_v2.0.0",
+        "heuristics": "0.500000",
+        "mip_gap": "0.000000",
+        "threads": "1",
+        "time_limit": "3600.000000",
+        "warm_start_enabled": "true",
+        "warm_start_ideas": "mst"
+      },
+      "instance": {
+        "name": "ocstpin12",
+        "tags": []
+      },
+      "optimization_status": {
+        "code": "OPTIMAL",
+        "description": "Optimal solution found",
+        "has_bound": true,
+        "has_solution": true
+      },
+      "reproducibility": {
+        "git_commit": "7bb4e4d",
+        "git_dirty": true,
+        "seed": 42,
+        "timestamp": "2025-11-17 18:23:51"
+      },
+      "results": {
+        "best_solution_time": 0.003916025161743164,
+        "dual_bound": 2150236.0,
+        "gap": 0.0,
+        "gap_percent": 0.0,
+        "objective": 2150236.0,
+        "primal_bound": 2150236.0
+      },
+      "run_uuid": "cc2c8b12-4235-40fc-803a-72cb47617b68",
+      "runtime": {
+        "cpu_seconds": 0.003916025161743164,
+        "solver_iterations": 86,
+        "solver_nodes": 1,
+        "termination_reason": "",
+        "wall_clock_seconds": 0.007028852
+      },
+      "schema_version": "1.0",
+      "solution": {
+        "is_connected": true,
+        "is_spanning_tree": true,
+        "tree_cost": 2150236.0,
+        "tree_edges": [
+          {
+            "destination": 2,
+            "source": 0
+          },
+          {
+            "destination": 9,
+            "source": 0
+          },
+          {
+            "destination": 6,
+            "source": 1
+          },
+          {
+            "destination": 3,
+            "source": 2
+          },
+          {
+            "destination": 9,
+            "source": 4
+          },
+          {
+            "destination": 7,
+            "source": 5
+          },
+          {
+            "destination": 7,
+            "source": 6
+          },
+          {
+            "destination": 8,
+            "source": 7
+          },
+          {
+            "destination": 9,
+            "source": 7
+          }
+        ]
+      },
+      "solver": {
+        "formulation": "path_based",
+        "id": "path_based",
+        "version": "2.0.0"
+      },
+      "solver_metadata": {
+        "callback_invocations": "0",
+        "cutting_planes": "0",
+        "lazy_constraints": "0",
+        "warm_start_used": "mst",
+        "warm_starts_tried": "mst"
+      }
+    }
+  },
+  {
+    "instance_name": "ocstpin13",
+    "success": true,
+    "objective": 5806363.0,
+    "best_known_objective": 5806363.0,
+    "is_optimal": true,
+    "optimality_status": "OPTIMAL_VERIFIED",
+    "optimization_status_description": "OPTIMAL",
+    "runtime_stats": {
+      "wall_clock_seconds": 0.012585329,
+      "cpu_seconds": 0.007071018218994141,
+      "solver_nodes": 1,
+      "solver_iterations": 223
+    },
+    "gap_percent": 0.0,
+    "gap": 0.0,
+    "best_solution_time": 0.007071018218994141,
+    "lazy_constraints": 0,
+    "cutting_planes": 0,
+    "status": "OPTIMAL",
+    "error": null,
+    "raw_json": {
+      "artifacts": {
+        "warm_start": "data/input/mst/ocstpin13.txt"
+      },
+      "config": {
+        "digest": "path_based_v2.0.0",
+        "heuristics": "0.500000",
+        "mip_gap": "0.000000",
+        "threads": "1",
+        "time_limit": "3600.000000",
+        "warm_start_enabled": "true",
+        "warm_start_ideas": "mst"
+      },
+      "instance": {
+        "name": "ocstpin13",
+        "tags": []
+      },
+      "optimization_status": {
+        "code": "OPTIMAL",
+        "description": "Optimal solution found",
+        "has_bound": true,
+        "has_solution": true
+      },
+      "reproducibility": {
+        "git_commit": "7bb4e4d",
+        "git_dirty": true,
+        "seed": 42,
+        "timestamp": "2025-11-17 18:23:51"
+      },
+      "results": {
+        "best_solution_time": 0.007071018218994141,
+        "dual_bound": 5806363.0,
+        "gap": 0.0,
+        "gap_percent": 0.0,
+        "objective": 5806363.0,
+        "primal_bound": 5806363.0
+      },
+      "run_uuid": "755c5791-eb94-4ae7-9bbb-5e4c48c515ae",
+      "runtime": {
+        "cpu_seconds": 0.007071018218994141,
+        "solver_iterations": 223,
+        "solver_nodes": 1,
+        "termination_reason": "",
+        "wall_clock_seconds": 0.012585329
+      },
+      "schema_version": "1.0",
+      "solution": {
+        "is_connected": true,
+        "is_spanning_tree": true,
+        "tree_cost": 5806363.0,
+        "tree_edges": [
+          {
+            "destination": 1,
+            "source": 0
+          },
+          {
+            "destination": 6,
+            "source": 0
+          },
+          {
+            "destination": 7,
+            "source": 2
+          },
+          {
+            "destination": 5,
+            "source": 3
+          },
+          {
+            "destination": 6,
+            "source": 3
+          },
+          {
+            "destination": 13,
+            "source": 3
+          },
+          {
+            "destination": 6,
+            "source": 4
+          },
+          {
+            "destination": 8,
+            "source": 4
+          },
+          {
+            "destination": 7,
+            "source": 6
+          },
+          {
+            "destination": 9,
+            "source": 6
+          },
+          {
+            "destination": 10,
+            "source": 6
+          },
+          {
+            "destination": 12,
+            "source": 9
+          },
+          {
+            "destination": 14,
+            "source": 10
+          },
+          {
+            "destination": 12,
+            "source": 11
+          }
+        ]
+      },
+      "solver": {
+        "formulation": "path_based",
+        "id": "path_based",
+        "version": "2.0.0"
+      },
+      "solver_metadata": {
+        "callback_invocations": "0",
+        "cutting_planes": "0",
+        "lazy_constraints": "0",
+        "warm_start_used": "mst",
+        "warm_starts_tried": "mst"
+      }
+    }
+  },
+  {
+    "instance_name": "ocstpin14",
+    "success": true,
+    "objective": 9955439.0,
+    "best_known_objective": 9955439.0,
+    "is_optimal": true,
+    "optimality_status": "OPTIMAL_VERIFIED",
+    "optimization_status_description": "OPTIMAL",
+    "runtime_stats": {
+      "wall_clock_seconds": 0.060646195,
+      "cpu_seconds": 0.05685091018676758,
+      "solver_nodes": 11,
+      "solver_iterations": 358
+    },
+    "gap_percent": 0.0,
+    "gap": 0.0,
+    "best_solution_time": 0.05685091018676758,
+    "lazy_constraints": 41,
+    "cutting_planes": 0,
+    "status": "OPTIMAL",
+    "error": null,
+    "raw_json": {
+      "artifacts": {
+        "warm_start": "data/input/mst/ocstpin14.txt"
+      },
+      "config": {
+        "digest": "path_based_v2.0.0",
+        "heuristics": "0.500000",
+        "mip_gap": "0.000000",
+        "threads": "1",
+        "time_limit": "3600.000000",
+        "warm_start_enabled": "true",
+        "warm_start_ideas": "mst"
+      },
+      "instance": {
+        "name": "ocstpin14",
+        "tags": []
+      },
+      "optimization_status": {
+        "code": "OPTIMAL",
+        "description": "Optimal solution found",
+        "has_bound": true,
+        "has_solution": true
+      },
+      "reproducibility": {
+        "git_commit": "7bb4e4d",
+        "git_dirty": true,
+        "seed": 42,
+        "timestamp": "2025-11-17 18:23:51"
+      },
+      "results": {
+        "best_solution_time": 0.05685091018676758,
+        "dual_bound": 9955439.0,
+        "gap": 0.0,
+        "gap_percent": 0.0,
+        "objective": 9955439.0,
+        "primal_bound": 9955439.0
+      },
+      "run_uuid": "63babb34-f4c5-47ba-933c-66e23ae4db8a",
+      "runtime": {
+        "cpu_seconds": 0.05685091018676758,
+        "solver_iterations": 358,
+        "solver_nodes": 11,
+        "termination_reason": "",
+        "wall_clock_seconds": 0.060646195
+      },
+      "schema_version": "1.0",
+      "solution": {
+        "is_connected": true,
+        "is_spanning_tree": true,
+        "tree_cost": 9955439.0,
+        "tree_edges": [
+          {
+            "destination": 7,
+            "source": 0
+          },
+          {
+            "destination": 14,
+            "source": 0
+          },
+          {
+            "destination": 2,
+            "source": 1
+          },
+          {
+            "destination": 7,
+            "source": 1
+          },
+          {
+            "destination": 9,
+            "source": 2
+          },
+          {
+            "destination": 10,
+            "source": 3
+          },
+          {
+            "destination": 11,
+            "source": 4
+          },
+          {
+            "destination": 12,
+            "source": 4
+          },
+          {
+            "destination": 13,
+            "source": 4
+          },
+          {
+            "destination": 10,
+            "source": 5
+          },
+          {
+            "destination": 12,
+            "source": 6
+          },
+          {
+            "destination": 8,
+            "source": 7
+          },
+          {
+            "destination": 11,
+            "source": 7
+          },
+          {
+            "destination": 11,
+            "source": 10
+          }
+        ]
+      },
+      "solver": {
+        "formulation": "path_based",
+        "id": "path_based",
+        "version": "2.0.0"
+      },
+      "solver_metadata": {
+        "callback_invocations": "0",
+        "cutting_planes": "0",
+        "lazy_constraints": "41",
+        "warm_start_used": "mst",
+        "warm_starts_tried": "mst"
+      }
+    }
+  },
+  {
+    "instance_name": "ocstpin2",
+    "success": true,
+    "objective": 2896545.0,
+    "best_known_objective": 2896545.0,
+    "is_optimal": true,
+    "optimality_status": "OPTIMAL_VERIFIED",
+    "optimization_status_description": "OPTIMAL",
+    "runtime_stats": {
+      "wall_clock_seconds": 0.005312067,
+      "cpu_seconds": 0.0029311180114746094,
+      "solver_nodes": 1,
+      "solver_iterations": 62
+    },
+    "gap_percent": 0.0,
+    "gap": 0.0,
+    "best_solution_time": 0.0029311180114746094,
+    "lazy_constraints": 6,
+    "cutting_planes": 0,
+    "status": "OPTIMAL",
+    "error": null,
+    "raw_json": {
+      "artifacts": {
+        "warm_start": "data/input/mst/ocstpin2.txt"
+      },
+      "config": {
+        "digest": "path_based_v2.0.0",
+        "heuristics": "0.500000",
+        "mip_gap": "0.000000",
+        "threads": "1",
+        "time_limit": "3600.000000",
+        "warm_start_enabled": "true",
+        "warm_start_ideas": "mst"
+      },
+      "instance": {
+        "name": "ocstpin2",
+        "tags": []
+      },
+      "optimization_status": {
+        "code": "OPTIMAL",
+        "description": "Optimal solution found",
+        "has_bound": true,
+        "has_solution": true
+      },
+      "reproducibility": {
+        "git_commit": "7bb4e4d",
+        "git_dirty": true,
+        "seed": 42,
+        "timestamp": "2025-11-17 18:23:51"
+      },
+      "results": {
+        "best_solution_time": 0.0029311180114746094,
+        "dual_bound": 2896545.0,
+        "gap": 0.0,
+        "gap_percent": 0.0,
+        "objective": 2896545.0,
+        "primal_bound": 2896545.0
+      },
+      "run_uuid": "046aacb2-0c50-4e8f-b42e-fa2955cbca67",
+      "runtime": {
+        "cpu_seconds": 0.0029311180114746094,
+        "solver_iterations": 62,
+        "solver_nodes": 1,
+        "termination_reason": "",
+        "wall_clock_seconds": 0.005312067
+      },
+      "schema_version": "1.0",
+      "solution": {
+        "is_connected": true,
+        "is_spanning_tree": true,
+        "tree_cost": 2896545.0,
+        "tree_edges": [
+          {
+            "destination": 2,
+            "source": 0
+          },
+          {
+            "destination": 3,
+            "source": 0
+          },
+          {
+            "destination": 2,
+            "source": 1
+          },
+          {
+            "destination": 9,
+            "source": 1
+          },
+          {
+            "destination": 4,
+            "source": 2
+          },
+          {
+            "destination": 5,
+            "source": 2
+          },
+          {
+            "destination": 7,
+            "source": 2
+          },
+          {
+            "destination": 6,
+            "source": 5
+          },
+          {
+            "destination": 9,
+            "source": 8
+          }
+        ]
+      },
+      "solver": {
+        "formulation": "path_based",
+        "id": "path_based",
+        "version": "2.0.0"
+      },
+      "solver_metadata": {
+        "callback_invocations": "0",
+        "cutting_planes": "0",
+        "lazy_constraints": "6",
+        "warm_start_used": "mst",
+        "warm_starts_tried": "mst"
+      }
+    }
+  },
+  {
+    "instance_name": "ocstpin3",
+    "success": true,
+    "objective": 7280790.0,
+    "best_known_objective": 7280790.0,
+    "is_optimal": true,
+    "optimality_status": "OPTIMAL_VERIFIED",
+    "optimization_status_description": "OPTIMAL",
+    "runtime_stats": {
+      "wall_clock_seconds": 0.005433529,
+      "cpu_seconds": 0.002507925033569336,
+      "solver_nodes": 1,
+      "solver_iterations": 89
+    },
+    "gap_percent": 0.0,
+    "gap": 0.0,
+    "best_solution_time": 0.002507925033569336,
+    "lazy_constraints": 0,
+    "cutting_planes": 0,
+    "status": "OPTIMAL",
+    "error": null,
+    "raw_json": {
+      "artifacts": {
+        "warm_start": "data/input/mst/ocstpin3.txt"
+      },
+      "config": {
+        "digest": "path_based_v2.0.0",
+        "heuristics": "0.500000",
+        "mip_gap": "0.000000",
+        "threads": "1",
+        "time_limit": "3600.000000",
+        "warm_start_enabled": "true",
+        "warm_start_ideas": "mst"
+      },
+      "instance": {
+        "name": "ocstpin3",
+        "tags": []
+      },
+      "optimization_status": {
+        "code": "OPTIMAL",
+        "description": "Optimal solution found",
+        "has_bound": true,
+        "has_solution": true
+      },
+      "reproducibility": {
+        "git_commit": "7bb4e4d",
+        "git_dirty": true,
+        "seed": 42,
+        "timestamp": "2025-11-17 18:23:51"
+      },
+      "results": {
+        "best_solution_time": 0.002507925033569336,
+        "dual_bound": 7280790.0,
+        "gap": 0.0,
+        "gap_percent": 0.0,
+        "objective": 7280790.0,
+        "primal_bound": 7280790.0
+      },
+      "run_uuid": "b1bbdc89-1428-448d-868d-839e58fe53ca",
+      "runtime": {
+        "cpu_seconds": 0.002507925033569336,
+        "solver_iterations": 89,
+        "solver_nodes": 1,
+        "termination_reason": "",
+        "wall_clock_seconds": 0.005433529
+      },
+      "schema_version": "1.0",
+      "solution": {
+        "is_connected": true,
+        "is_spanning_tree": true,
+        "tree_cost": 7280790.0,
+        "tree_edges": [
+          {
+            "destination": 1,
+            "source": 0
+          },
+          {
+            "destination": 2,
+            "source": 1
+          },
+          {
+            "destination": 6,
+            "source": 1
+          },
+          {
+            "destination": 7,
+            "source": 1
+          },
+          {
+            "destination": 8,
+            "source": 2
+          },
+          {
+            "destination": 9,
+            "source": 2
+          },
+          {
+            "destination": 8,
+            "source": 3
+          },
+          {
+            "destination": 8,
+            "source": 4
+          },
+          {
+            "destination": 9,
+            "source": 5
+          }
+        ]
+      },
+      "solver": {
+        "formulation": "path_based",
+        "id": "path_based",
+        "version": "2.0.0"
+      },
+      "solver_metadata": {
+        "callback_invocations": "0",
+        "cutting_planes": "0",
+        "lazy_constraints": "0",
+        "warm_start_used": "mst",
+        "warm_starts_tried": "mst"
+      }
+    }
+  },
+  {
+    "instance_name": "ocstpin4",
+    "success": true,
+    "objective": 7263378.0,
+    "best_known_objective": 7263378.0,
+    "is_optimal": true,
+    "optimality_status": "OPTIMAL_VERIFIED",
+    "optimization_status_description": "OPTIMAL",
+    "runtime_stats": {
+      "wall_clock_seconds": 0.005001239,
+      "cpu_seconds": 0.0022258758544921875,
+      "solver_nodes": 1,
+      "solver_iterations": 92
+    },
+    "gap_percent": 0.0,
+    "gap": 0.0,
+    "best_solution_time": 0.0022258758544921875,
+    "lazy_constraints": 0,
+    "cutting_planes": 0,
+    "status": "OPTIMAL",
+    "error": null,
+    "raw_json": {
+      "artifacts": {
+        "warm_start": "data/input/mst/ocstpin4.txt"
+      },
+      "config": {
+        "digest": "path_based_v2.0.0",
+        "heuristics": "0.500000",
+        "mip_gap": "0.000000",
+        "threads": "1",
+        "time_limit": "3600.000000",
+        "warm_start_enabled": "true",
+        "warm_start_ideas": "mst"
+      },
+      "instance": {
+        "name": "ocstpin4",
+        "tags": []
+      },
+      "optimization_status": {
+        "code": "OPTIMAL",
+        "description": "Optimal solution found",
+        "has_bound": true,
+        "has_solution": true
+      },
+      "reproducibility": {
+        "git_commit": "7bb4e4d",
+        "git_dirty": true,
+        "seed": 42,
+        "timestamp": "2025-11-17 18:23:51"
+      },
+      "results": {
+        "best_solution_time": 0.0022258758544921875,
+        "dual_bound": 7263378.0,
+        "gap": 0.0,
+        "gap_percent": 0.0,
+        "objective": 7263378.0,
+        "primal_bound": 7263378.0
+      },
+      "run_uuid": "93214226-0b6b-498a-8bb2-f3eef5f09b22",
+      "runtime": {
+        "cpu_seconds": 0.0022258758544921875,
+        "solver_iterations": 92,
+        "solver_nodes": 1,
+        "termination_reason": "",
+        "wall_clock_seconds": 0.005001239
+      },
+      "schema_version": "1.0",
+      "solution": {
+        "is_connected": true,
+        "is_spanning_tree": true,
+        "tree_cost": 7263378.0,
+        "tree_edges": [
+          {
+            "destination": 9,
+            "source": 0
+          },
+          {
+            "destination": 2,
+            "source": 1
+          },
+          {
+            "destination": 6,
+            "source": 1
+          },
+          {
+            "destination": 6,
+            "source": 3
+          },
+          {
+            "destination": 7,
+            "source": 3
+          },
+          {
+            "destination": 8,
+            "source": 3
+          },
+          {
+            "destination": 6,
+            "source": 4
+          },
+          {
+            "destination": 9,
+            "source": 5
+          },
+          {
+            "destination": 9,
+            "source": 6
+          }
+        ]
+      },
+      "solver": {
+        "formulation": "path_based",
+        "id": "path_based",
+        "version": "2.0.0"
+      },
+      "solver_metadata": {
+        "callback_invocations": "0",
+        "cutting_planes": "0",
+        "lazy_constraints": "0",
+        "warm_start_used": "mst",
+        "warm_starts_tried": "mst"
+      }
+    }
+  },
+  {
+    "instance_name": "ocstpin5",
+    "success": true,
+    "objective": 14235693.0,
+    "best_known_objective": 14235693.0,
+    "is_optimal": true,
+    "optimality_status": "OPTIMAL_VERIFIED",
+    "optimization_status_description": "OPTIMAL",
+    "runtime_stats": {
+      "wall_clock_seconds": 0.005072565,
+      "cpu_seconds": 0.002649068832397461,
+      "solver_nodes": 1,
+      "solver_iterations": 60
+    },
+    "gap_percent": 0.0,
+    "gap": 0.0,
+    "best_solution_time": 0.002649068832397461,
+    "lazy_constraints": 0,
+    "cutting_planes": 0,
+    "status": "OPTIMAL",
+    "error": null,
+    "raw_json": {
+      "artifacts": {
+        "warm_start": "data/input/mst/ocstpin5.txt"
+      },
+      "config": {
+        "digest": "path_based_v2.0.0",
+        "heuristics": "0.500000",
+        "mip_gap": "0.000000",
+        "threads": "1",
+        "time_limit": "3600.000000",
+        "warm_start_enabled": "true",
+        "warm_start_ideas": "mst"
+      },
+      "instance": {
+        "name": "ocstpin5",
+        "tags": []
+      },
+      "optimization_status": {
+        "code": "OPTIMAL",
+        "description": "Optimal solution found",
+        "has_bound": true,
+        "has_solution": true
+      },
+      "reproducibility": {
+        "git_commit": "7bb4e4d",
+        "git_dirty": true,
+        "seed": 42,
+        "timestamp": "2025-11-17 18:23:51"
+      },
+      "results": {
+        "best_solution_time": 0.002649068832397461,
+        "dual_bound": 14235693.0,
+        "gap": 0.0,
+        "gap_percent": 0.0,
+        "objective": 14235693.0,
+        "primal_bound": 14235693.0
+      },
+      "run_uuid": "5c7c1ce2-a76b-46fd-b4f0-d33a4014cc22",
+      "runtime": {
+        "cpu_seconds": 0.002649068832397461,
+        "solver_iterations": 60,
+        "solver_nodes": 1,
+        "termination_reason": "",
+        "wall_clock_seconds": 0.005072565
+      },
+      "schema_version": "1.0",
+      "solution": {
+        "is_connected": true,
+        "is_spanning_tree": true,
+        "tree_cost": 14235693.0,
+        "tree_edges": [
+          {
+            "destination": 3,
+            "source": 0
+          },
+          {
+            "destination": 4,
+            "source": 0
+          },
+          {
+            "destination": 7,
+            "source": 0
+          },
+          {
+            "destination": 6,
+            "source": 1
+          },
+          {
+            "destination": 4,
+            "source": 2
+          },
+          {
+            "destination": 8,
+            "source": 4
+          },
+          {
+            "destination": 9,
+            "source": 4
+          },
+          {
+            "destination": 8,
+            "source": 5
+          },
+          {
+            "destination": 9,
+            "source": 6
+          }
+        ]
+      },
+      "solver": {
+        "formulation": "path_based",
+        "id": "path_based",
+        "version": "2.0.0"
+      },
+      "solver_metadata": {
+        "callback_invocations": "0",
+        "cutting_planes": "0",
+        "lazy_constraints": "0",
+        "warm_start_used": "mst",
+        "warm_starts_tried": "mst"
+      }
+    }
+  },
+  {
+    "instance_name": "ocstpin6",
+    "success": true,
+    "objective": 3482519.0,
+    "best_known_objective": 3482519.0,
+    "is_optimal": true,
+    "optimality_status": "OPTIMAL_VERIFIED",
+    "optimization_status_description": "OPTIMAL",
+    "runtime_stats": {
+      "wall_clock_seconds": 0.016270021,
+      "cpu_seconds": 0.013756990432739258,
+      "solver_nodes": 3,
+      "solver_iterations": 118
+    },
+    "gap_percent": 0.0,
+    "gap": 0.0,
+    "best_solution_time": 0.013756990432739258,
+    "lazy_constraints": 0,
+    "cutting_planes": 0,
+    "status": "OPTIMAL",
+    "error": null,
+    "raw_json": {
+      "artifacts": {
+        "warm_start": "data/input/mst/ocstpin6.txt"
+      },
+      "config": {
+        "digest": "path_based_v2.0.0",
+        "heuristics": "0.500000",
+        "mip_gap": "0.000000",
+        "threads": "1",
+        "time_limit": "3600.000000",
+        "warm_start_enabled": "true",
+        "warm_start_ideas": "mst"
+      },
+      "instance": {
+        "name": "ocstpin6",
+        "tags": []
+      },
+      "optimization_status": {
+        "code": "OPTIMAL",
+        "description": "Optimal solution found",
+        "has_bound": true,
+        "has_solution": true
+      },
+      "reproducibility": {
+        "git_commit": "7bb4e4d",
+        "git_dirty": true,
+        "seed": 42,
+        "timestamp": "2025-11-17 18:23:51"
+      },
+      "results": {
+        "best_solution_time": 0.013756990432739258,
+        "dual_bound": 3482519.0,
+        "gap": 0.0,
+        "gap_percent": 0.0,
+        "objective": 3482519.0,
+        "primal_bound": 3482519.0
+      },
+      "run_uuid": "cbda8c8e-4a93-4dd2-a0ac-c1d027dc845c",
+      "runtime": {
+        "cpu_seconds": 0.013756990432739258,
+        "solver_iterations": 118,
+        "solver_nodes": 3,
+        "termination_reason": "",
+        "wall_clock_seconds": 0.016270021
+      },
+      "schema_version": "1.0",
+      "solution": {
+        "is_connected": true,
+        "is_spanning_tree": true,
+        "tree_cost": 3482519.0,
+        "tree_edges": [
+          {
+            "destination": 6,
+            "source": 0
+          },
+          {
+            "destination": 2,
+            "source": 1
+          },
+          {
+            "destination": 8,
+            "source": 1
+          },
+          {
+            "destination": 5,
+            "source": 2
+          },
+          {
+            "destination": 5,
+            "source": 3
+          },
+          {
+            "destination": 7,
+            "source": 3
+          },
+          {
+            "destination": 6,
+            "source": 4
+          },
+          {
+            "destination": 9,
+            "source": 5
+          },
+          {
+            "destination": 9,
+            "source": 6
+          }
+        ]
+      },
+      "solver": {
+        "formulation": "path_based",
+        "id": "path_based",
+        "version": "2.0.0"
+      },
+      "solver_metadata": {
+        "callback_invocations": "0",
+        "cutting_planes": "0",
+        "lazy_constraints": "0",
+        "warm_start_used": "mst",
+        "warm_starts_tried": "mst"
+      }
+    }
+  },
+  {
+    "instance_name": "ocstpin7",
+    "success": true,
+    "objective": 5889141.0,
+    "best_known_objective": 5889141.0,
+    "is_optimal": true,
+    "optimality_status": "OPTIMAL_VERIFIED",
+    "optimization_status_description": "OPTIMAL",
+    "runtime_stats": {
+      "wall_clock_seconds": 0.005670938,
+      "cpu_seconds": 0.0029010772705078125,
+      "solver_nodes": 1,
+      "solver_iterations": 104
+    },
+    "gap_percent": 0.0,
+    "gap": 0.0,
+    "best_solution_time": 0.0029010772705078125,
+    "lazy_constraints": 0,
+    "cutting_planes": 0,
+    "status": "OPTIMAL",
+    "error": null,
+    "raw_json": {
+      "artifacts": {
+        "warm_start": "data/input/mst/ocstpin7.txt"
+      },
+      "config": {
+        "digest": "path_based_v2.0.0",
+        "heuristics": "0.500000",
+        "mip_gap": "0.000000",
+        "threads": "1",
+        "time_limit": "3600.000000",
+        "warm_start_enabled": "true",
+        "warm_start_ideas": "mst"
+      },
+      "instance": {
+        "name": "ocstpin7",
+        "tags": []
+      },
+      "optimization_status": {
+        "code": "OPTIMAL",
+        "description": "Optimal solution found",
+        "has_bound": true,
+        "has_solution": true
+      },
+      "reproducibility": {
+        "git_commit": "7bb4e4d",
+        "git_dirty": true,
+        "seed": 42,
+        "timestamp": "2025-11-17 18:23:51"
+      },
+      "results": {
+        "best_solution_time": 0.0029010772705078125,
+        "dual_bound": 5889141.0,
+        "gap": 0.0,
+        "gap_percent": 0.0,
+        "objective": 5889141.0,
+        "primal_bound": 5889141.0
+      },
+      "run_uuid": "1b381933-37e3-4d8f-a091-55e992e2b22d",
+      "runtime": {
+        "cpu_seconds": 0.0029010772705078125,
+        "solver_iterations": 104,
+        "solver_nodes": 1,
+        "termination_reason": "",
+        "wall_clock_seconds": 0.005670938
+      },
+      "schema_version": "1.0",
+      "solution": {
+        "is_connected": true,
+        "is_spanning_tree": true,
+        "tree_cost": 5889141.0,
+        "tree_edges": [
+          {
+            "destination": 4,
+            "source": 0
+          },
+          {
+            "destination": 8,
+            "source": 1
+          },
+          {
+            "destination": 8,
+            "source": 2
+          },
+          {
+            "destination": 4,
+            "source": 3
+          },
+          {
+            "destination": 7,
+            "source": 4
+          },
+          {
+            "destination": 8,
+            "source": 4
+          },
+          {
+            "destination": 9,
+            "source": 5
+          },
+          {
+            "destination": 8,
+            "source": 6
+          },
+          {
+            "destination": 9,
+            "source": 6
+          }
+        ]
+      },
+      "solver": {
+        "formulation": "path_based",
+        "id": "path_based",
+        "version": "2.0.0"
+      },
+      "solver_metadata": {
+        "callback_invocations": "0",
+        "cutting_planes": "0",
+        "lazy_constraints": "0",
+        "warm_start_used": "mst",
+        "warm_starts_tried": "mst"
+      }
+    }
+  },
+  {
+    "instance_name": "ocstpin8",
+    "success": true,
+    "objective": 3155658.0,
+    "best_known_objective": 3155658.0,
+    "is_optimal": true,
+    "optimality_status": "OPTIMAL_VERIFIED",
+    "optimization_status_description": "OPTIMAL",
+    "runtime_stats": {
+      "wall_clock_seconds": 0.006237356,
+      "cpu_seconds": 0.0036170482635498047,
+      "solver_nodes": 1,
+      "solver_iterations": 53
+    },
+    "gap_percent": 0.0,
+    "gap": 0.0,
+    "best_solution_time": 0.0036170482635498047,
+    "lazy_constraints": 0,
+    "cutting_planes": 0,
+    "status": "OPTIMAL",
+    "error": null,
+    "raw_json": {
+      "artifacts": {
+        "warm_start": "data/input/mst/ocstpin8.txt"
+      },
+      "config": {
+        "digest": "path_based_v2.0.0",
+        "heuristics": "0.500000",
+        "mip_gap": "0.000000",
+        "threads": "1",
+        "time_limit": "3600.000000",
+        "warm_start_enabled": "true",
+        "warm_start_ideas": "mst"
+      },
+      "instance": {
+        "name": "ocstpin8",
+        "tags": []
+      },
+      "optimization_status": {
+        "code": "OPTIMAL",
+        "description": "Optimal solution found",
+        "has_bound": true,
+        "has_solution": true
+      },
+      "reproducibility": {
+        "git_commit": "7bb4e4d",
+        "git_dirty": true,
+        "seed": 42,
+        "timestamp": "2025-11-17 18:23:51"
+      },
+      "results": {
+        "best_solution_time": 0.0036170482635498047,
+        "dual_bound": 3155658.0,
+        "gap": 0.0,
+        "gap_percent": 0.0,
+        "objective": 3155658.0,
+        "primal_bound": 3155658.0
+      },
+      "run_uuid": "6629613b-3e8e-42cc-a33e-006996c8f1e1",
+      "runtime": {
+        "cpu_seconds": 0.0036170482635498047,
+        "solver_iterations": 53,
+        "solver_nodes": 1,
+        "termination_reason": "",
+        "wall_clock_seconds": 0.006237356
+      },
+      "schema_version": "1.0",
+      "solution": {
+        "is_connected": true,
+        "is_spanning_tree": true,
+        "tree_cost": 3155658.0,
+        "tree_edges": [
+          {
+            "destination": 1,
+            "source": 0
+          },
+          {
+            "destination": 6,
+            "source": 0
+          },
+          {
+            "destination": 7,
+            "source": 0
+          },
+          {
+            "destination": 4,
+            "source": 1
+          },
+          {
+            "destination": 9,
+            "source": 1
+          },
+          {
+            "destination": 5,
+            "source": 2
+          },
+          {
+            "destination": 5,
+            "source": 3
+          },
+          {
+            "destination": 9,
+            "source": 5
+          },
+          {
+            "destination": 9,
+            "source": 8
+          }
+        ]
+      },
+      "solver": {
+        "formulation": "path_based",
+        "id": "path_based",
+        "version": "2.0.0"
+      },
+      "solver_metadata": {
+        "callback_invocations": "0",
+        "cutting_planes": "0",
+        "lazy_constraints": "0",
+        "warm_start_used": "mst",
+        "warm_starts_tried": "mst"
+      }
+    }
+  },
+  {
+    "instance_name": "ocstpin9",
+    "success": true,
+    "objective": 6629218.0,
+    "best_known_objective": 6629218.0,
+    "is_optimal": true,
+    "optimality_status": "OPTIMAL_VERIFIED",
+    "optimization_status_description": "OPTIMAL",
+    "runtime_stats": {
+      "wall_clock_seconds": 0.032098673,
+      "cpu_seconds": 0.02855396270751953,
+      "solver_nodes": 3,
+      "solver_iterations": 202
+    },
+    "gap_percent": 0.0,
+    "gap": 0.0,
+    "best_solution_time": 0.02855396270751953,
+    "lazy_constraints": 0,
+    "cutting_planes": 0,
+    "status": "OPTIMAL",
+    "error": null,
+    "raw_json": {
+      "artifacts": {
+        "warm_start": "data/input/mst/ocstpin9.txt"
+      },
+      "config": {
+        "digest": "path_based_v2.0.0",
+        "heuristics": "0.500000",
+        "mip_gap": "0.000000",
+        "threads": "1",
+        "time_limit": "3600.000000",
+        "warm_start_enabled": "true",
+        "warm_start_ideas": "mst"
+      },
+      "instance": {
+        "name": "ocstpin9",
+        "tags": []
+      },
+      "optimization_status": {
+        "code": "OPTIMAL",
+        "description": "Optimal solution found",
+        "has_bound": true,
+        "has_solution": true
+      },
+      "reproducibility": {
+        "git_commit": "7bb4e4d",
+        "git_dirty": true,
+        "seed": 42,
+        "timestamp": "2025-11-17 18:23:51"
+      },
+      "results": {
+        "best_solution_time": 0.02855396270751953,
+        "dual_bound": 6629218.0,
+        "gap": 0.0,
+        "gap_percent": 0.0,
+        "objective": 6629218.0,
+        "primal_bound": 6629218.0
+      },
+      "run_uuid": "3fa7d2a7-3c91-4c26-baf0-c120a5fb6c12",
+      "runtime": {
+        "cpu_seconds": 0.02855396270751953,
+        "solver_iterations": 202,
+        "solver_nodes": 3,
+        "termination_reason": "",
+        "wall_clock_seconds": 0.032098673
+      },
+      "schema_version": "1.0",
+      "solution": {
+        "is_connected": true,
+        "is_spanning_tree": true,
+        "tree_cost": 6629218.0,
+        "tree_edges": [
+          {
+            "destination": 4,
+            "source": 0
+          },
+          {
+            "destination": 6,
+            "source": 0
+          },
+          {
+            "destination": 6,
+            "source": 1
+          },
+          {
+            "destination": 4,
+            "source": 2
+          },
+          {
+            "destination": 8,
+            "source": 3
+          },
+          {
+            "destination": 9,
+            "source": 3
+          },
+          {
+            "destination": 8,
+            "source": 4
+          },
+          {
+            "destination": 8,
+            "source": 5
+          },
+          {
+            "destination": 8,
+            "source": 7
+          }
+        ]
+      },
+      "solver": {
+        "formulation": "path_based",
+        "id": "path_based",
+        "version": "2.0.0"
+      },
+      "solver_metadata": {
+        "callback_invocations": "0",
+        "cutting_planes": "0",
+        "lazy_constraints": "0",
+        "warm_start_used": "mst",
+        "warm_starts_tried": "mst"
+      }
+    }
+  },
+  {
+    "instance_name": "orst0",
+    "success": true,
+    "objective": 801846.0,
+    "best_known_objective": 801846.0,
+    "is_optimal": true,
+    "optimality_status": "OPTIMAL_VERIFIED",
+    "optimization_status_description": "OPTIMAL",
+    "runtime_stats": {
+      "wall_clock_seconds": 0.035310102,
+      "cpu_seconds": 0.03179788589477539,
+      "solver_nodes": 2,
+      "solver_iterations": 239
+    },
+    "gap_percent": 0.0,
+    "gap": 0.0,
+    "best_solution_time": 0.03179788589477539,
+    "lazy_constraints": 0,
+    "cutting_planes": 0,
+    "status": "OPTIMAL",
+    "error": null,
+    "raw_json": {
+      "artifacts": {
+        "warm_start": "data/input/mst/orst0.txt"
+      },
+      "config": {
+        "digest": "path_based_v2.0.0",
+        "heuristics": "0.500000",
+        "mip_gap": "0.000000",
+        "threads": "1",
+        "time_limit": "3600.000000",
+        "warm_start_enabled": "true",
+        "warm_start_ideas": "mst"
+      },
+      "instance": {
+        "name": "orst0",
+        "tags": []
+      },
+      "optimization_status": {
+        "code": "OPTIMAL",
+        "description": "Optimal solution found",
+        "has_bound": true,
+        "has_solution": true
+      },
+      "reproducibility": {
+        "git_commit": "7bb4e4d",
+        "git_dirty": true,
+        "seed": 42,
+        "timestamp": "2025-11-17 18:23:51"
+      },
+      "results": {
+        "best_solution_time": 0.03179788589477539,
+        "dual_bound": 801846.0,
+        "gap": 0.0,
+        "gap_percent": 0.0,
+        "objective": 801846.0,
+        "primal_bound": 801846.0
+      },
+      "run_uuid": "1e8f57ed-a8e5-4a5a-b081-23c3b70b89c8",
+      "runtime": {
+        "cpu_seconds": 0.03179788589477539,
+        "solver_iterations": 239,
+        "solver_nodes": 2,
+        "termination_reason": "",
+        "wall_clock_seconds": 0.035310102
+      },
+      "schema_version": "1.0",
+      "solution": {
+        "is_connected": true,
+        "is_spanning_tree": true,
+        "tree_cost": 801846.0,
+        "tree_edges": [
+          {
+            "destination": 2,
+            "source": 0
+          },
+          {
+            "destination": 9,
+            "source": 0
+          },
+          {
+            "destination": 4,
+            "source": 1
+          },
+          {
+            "destination": 6,
+            "source": 3
+          },
+          {
+            "destination": 8,
+            "source": 3
+          },
+          {
+            "destination": 7,
+            "source": 4
+          },
+          {
+            "destination": 8,
+            "source": 4
+          },
+          {
+            "destination": 9,
+            "source": 4
+          },
+          {
+            "destination": 9,
+            "source": 5
+          }
+        ]
+      },
+      "solver": {
+        "formulation": "path_based",
+        "id": "path_based",
+        "version": "2.0.0"
+      },
+      "solver_metadata": {
+        "callback_invocations": "0",
+        "cutting_planes": "0",
+        "lazy_constraints": "0",
+        "warm_start_used": "mst",
+        "warm_starts_tried": "mst"
+      }
+    }
+  },
+  {
+    "instance_name": "orst1",
+    "success": true,
+    "objective": 995494.0,
+    "best_known_objective": 995494.0,
+    "is_optimal": true,
+    "optimality_status": "OPTIMAL_VERIFIED",
+    "optimization_status_description": "OPTIMAL",
+    "runtime_stats": {
+      "wall_clock_seconds": 0.276654406,
+      "cpu_seconds": 0.2724339962005615,
+      "solver_nodes": 80,
+      "solver_iterations": 3080
+    },
+    "gap_percent": 0.0,
+    "gap": 0.0,
+    "best_solution_time": 0.2724339962005615,
+    "lazy_constraints": 0,
+    "cutting_planes": 0,
+    "status": "OPTIMAL",
+    "error": null,
+    "raw_json": {
+      "artifacts": {
+        "warm_start": "data/input/mst/orst1.txt"
+      },
+      "config": {
+        "digest": "path_based_v2.0.0",
+        "heuristics": "0.500000",
+        "mip_gap": "0.000000",
+        "threads": "1",
+        "time_limit": "3600.000000",
+        "warm_start_enabled": "true",
+        "warm_start_ideas": "mst"
+      },
+      "instance": {
+        "name": "orst1",
+        "tags": []
+      },
+      "optimization_status": {
+        "code": "OPTIMAL",
+        "description": "Optimal solution found",
+        "has_bound": true,
+        "has_solution": true
+      },
+      "reproducibility": {
+        "git_commit": "7bb4e4d",
+        "git_dirty": true,
+        "seed": 42,
+        "timestamp": "2025-11-17 18:23:52"
+      },
+      "results": {
+        "best_solution_time": 0.2724339962005615,
+        "dual_bound": 995494.0,
+        "gap": 0.0,
+        "gap_percent": 0.0,
+        "objective": 995494.0,
+        "primal_bound": 995494.0
+      },
+      "run_uuid": "3cfd695f-e084-4165-b571-d11309b4c2dc",
+      "runtime": {
+        "cpu_seconds": 0.2724339962005615,
+        "solver_iterations": 3080,
+        "solver_nodes": 80,
+        "termination_reason": "",
+        "wall_clock_seconds": 0.276654406
+      },
+      "schema_version": "1.0",
+      "solution": {
+        "is_connected": true,
+        "is_spanning_tree": true,
+        "tree_cost": 995494.0,
+        "tree_edges": [
+          {
+            "destination": 6,
+            "source": 0
+          },
+          {
+            "destination": 2,
+            "source": 1
+          },
+          {
+            "destination": 3,
+            "source": 1
+          },
+          {
+            "destination": 5,
+            "source": 2
+          },
+          {
+            "destination": 6,
+            "source": 2
+          },
+          {
+            "destination": 7,
+            "source": 2
+          },
+          {
+            "destination": 9,
+            "source": 2
+          },
+          {
+            "destination": 8,
+            "source": 4
+          },
+          {
+            "destination": 8,
+            "source": 7
+          }
+        ]
+      },
+      "solver": {
+        "formulation": "path_based",
+        "id": "path_based",
+        "version": "2.0.0"
+      },
+      "solver_metadata": {
+        "callback_invocations": "0",
+        "cutting_planes": "0",
+        "lazy_constraints": "0",
+        "warm_start_used": "mst",
+        "warm_starts_tried": "mst"
+      }
+    }
+  },
+  {
+    "instance_name": "orst2",
+    "success": true,
+    "objective": 712327.0,
+    "best_known_objective": 712327.0,
+    "is_optimal": true,
+    "optimality_status": "OPTIMAL_VERIFIED",
+    "optimization_status_description": "OPTIMAL",
+    "runtime_stats": {
+      "wall_clock_seconds": 0.043597974,
+      "cpu_seconds": 0.039794921875,
+      "solver_nodes": 9,
+      "solver_iterations": 290
+    },
+    "gap_percent": 0.0,
+    "gap": 0.0,
+    "best_solution_time": 0.039794921875,
+    "lazy_constraints": 0,
+    "cutting_planes": 0,
+    "status": "OPTIMAL",
+    "error": null,
+    "raw_json": {
+      "artifacts": {
+        "warm_start": "data/input/mst/orst2.txt"
+      },
+      "config": {
+        "digest": "path_based_v2.0.0",
+        "heuristics": "0.500000",
+        "mip_gap": "0.000000",
+        "threads": "1",
+        "time_limit": "3600.000000",
+        "warm_start_enabled": "true",
+        "warm_start_ideas": "mst"
+      },
+      "instance": {
+        "name": "orst2",
+        "tags": []
+      },
+      "optimization_status": {
+        "code": "OPTIMAL",
+        "description": "Optimal solution found",
+        "has_bound": true,
+        "has_solution": true
+      },
+      "reproducibility": {
+        "git_commit": "7bb4e4d",
+        "git_dirty": true,
+        "seed": 42,
+        "timestamp": "2025-11-17 18:23:52"
+      },
+      "results": {
+        "best_solution_time": 0.039794921875,
+        "dual_bound": 712327.0,
+        "gap": 0.0,
+        "gap_percent": 0.0,
+        "objective": 712327.0,
+        "primal_bound": 712327.0
+      },
+      "run_uuid": "f4bcaa76-ffd7-421d-b598-869ad41403f1",
+      "runtime": {
+        "cpu_seconds": 0.039794921875,
+        "solver_iterations": 290,
+        "solver_nodes": 9,
+        "termination_reason": "",
+        "wall_clock_seconds": 0.043597974
+      },
+      "schema_version": "1.0",
+      "solution": {
+        "is_connected": true,
+        "is_spanning_tree": true,
+        "tree_cost": 712327.0,
+        "tree_edges": [
+          {
+            "destination": 1,
+            "source": 0
+          },
+          {
+            "destination": 5,
+            "source": 0
+          },
+          {
+            "destination": 9,
+            "source": 1
+          },
+          {
+            "destination": 3,
+            "source": 2
+          },
+          {
+            "destination": 7,
+            "source": 2
+          },
+          {
+            "destination": 9,
+            "source": 2
+          },
+          {
+            "destination": 9,
+            "source": 4
+          },
+          {
+            "destination": 6,
+            "source": 5
+          },
+          {
+            "destination": 9,
+            "source": 8
+          }
+        ]
+      },
+      "solver": {
+        "formulation": "path_based",
+        "id": "path_based",
+        "version": "2.0.0"
+      },
+      "solver_metadata": {
+        "callback_invocations": "0",
+        "cutting_planes": "0",
+        "lazy_constraints": "0",
+        "warm_start_used": "mst",
+        "warm_starts_tried": "mst"
+      }
+    }
+  },
+  {
+    "instance_name": "orst3",
+    "success": true,
+    "objective": 307480.0,
+    "best_known_objective": 307480.0,
+    "is_optimal": true,
+    "optimality_status": "OPTIMAL_VERIFIED",
+    "optimization_status_description": "OPTIMAL",
+    "runtime_stats": {
+      "wall_clock_seconds": 0.19267692,
+      "cpu_seconds": 0.18983912467956543,
+      "solver_nodes": 145,
+      "solver_iterations": 2005
+    },
+    "gap_percent": 0.0,
+    "gap": 0.0,
+    "best_solution_time": 0.18983912467956543,
+    "lazy_constraints": 243,
+    "cutting_planes": 0,
+    "status": "OPTIMAL",
+    "error": null,
+    "raw_json": {
+      "artifacts": {
+        "warm_start": "data/input/mst/orst3.txt"
+      },
+      "config": {
+        "digest": "path_based_v2.0.0",
+        "heuristics": "0.500000",
+        "mip_gap": "0.000000",
+        "threads": "1",
+        "time_limit": "3600.000000",
+        "warm_start_enabled": "true",
+        "warm_start_ideas": "mst"
+      },
+      "instance": {
+        "name": "orst3",
+        "tags": []
+      },
+      "optimization_status": {
+        "code": "OPTIMAL",
+        "description": "Optimal solution found",
+        "has_bound": true,
+        "has_solution": true
+      },
+      "reproducibility": {
+        "git_commit": "7bb4e4d",
+        "git_dirty": true,
+        "seed": 42,
+        "timestamp": "2025-11-17 18:23:52"
+      },
+      "results": {
+        "best_solution_time": 0.18983912467956543,
+        "dual_bound": 307480.0,
+        "gap": 0.0,
+        "gap_percent": 0.0,
+        "objective": 307480.0,
+        "primal_bound": 307480.0
+      },
+      "run_uuid": "4dce7201-5833-43a4-aeb5-b13bca50f8b4",
+      "runtime": {
+        "cpu_seconds": 0.18983912467956543,
+        "solver_iterations": 2005,
+        "solver_nodes": 145,
+        "termination_reason": "",
+        "wall_clock_seconds": 0.19267692
+      },
+      "schema_version": "1.0",
+      "solution": {
+        "is_connected": true,
+        "is_spanning_tree": true,
+        "tree_cost": 307480.0,
+        "tree_edges": [
+          {
+            "destination": 7,
+            "source": 0
+          },
+          {
+            "destination": 8,
+            "source": 0
+          },
+          {
+            "destination": 3,
+            "source": 1
+          },
+          {
+            "destination": 9,
+            "source": 1
+          },
+          {
+            "destination": 7,
+            "source": 2
+          },
+          {
+            "destination": 9,
+            "source": 4
+          },
+          {
+            "destination": 9,
+            "source": 5
+          },
+          {
+            "destination": 8,
+            "source": 6
+          },
+          {
+            "destination": 9,
+            "source": 8
+          }
+        ]
+      },
+      "solver": {
+        "formulation": "path_based",
+        "id": "path_based",
+        "version": "2.0.0"
+      },
+      "solver_metadata": {
+        "callback_invocations": "0",
+        "cutting_planes": "0",
+        "lazy_constraints": "243",
+        "warm_start_used": "mst",
+        "warm_starts_tried": "mst"
+      }
+    }
+  },
+  {
+    "instance_name": "orst4",
+    "success": true,
+    "objective": 451519.0,
+    "best_known_objective": 451519.0,
+    "is_optimal": true,
+    "optimality_status": "OPTIMAL_VERIFIED",
+    "optimization_status_description": "OPTIMAL",
+    "runtime_stats": {
+      "wall_clock_seconds": 0.066752076,
+      "cpu_seconds": 0.06337690353393555,
+      "solver_nodes": 32,
+      "solver_iterations": 453
+    },
+    "gap_percent": 0.0,
+    "gap": 0.0,
+    "best_solution_time": 0.06337690353393555,
+    "lazy_constraints": 47,
+    "cutting_planes": 0,
+    "status": "OPTIMAL",
+    "error": null,
+    "raw_json": {
+      "artifacts": {
+        "warm_start": "data/input/mst/orst4.txt"
+      },
+      "config": {
+        "digest": "path_based_v2.0.0",
+        "heuristics": "0.500000",
+        "mip_gap": "0.000000",
+        "threads": "1",
+        "time_limit": "3600.000000",
+        "warm_start_enabled": "true",
+        "warm_start_ideas": "mst"
+      },
+      "instance": {
+        "name": "orst4",
+        "tags": []
+      },
+      "optimization_status": {
+        "code": "OPTIMAL",
+        "description": "Optimal solution found",
+        "has_bound": true,
+        "has_solution": true
+      },
+      "reproducibility": {
+        "git_commit": "7bb4e4d",
+        "git_dirty": true,
+        "seed": 42,
+        "timestamp": "2025-11-17 18:23:52"
+      },
+      "results": {
+        "best_solution_time": 0.06337690353393555,
+        "dual_bound": 451519.0,
+        "gap": 0.0,
+        "gap_percent": 0.0,
+        "objective": 451519.0,
+        "primal_bound": 451519.0
+      },
+      "run_uuid": "393449d0-6f3c-4c2f-b8db-639a9a4325f1",
+      "runtime": {
+        "cpu_seconds": 0.06337690353393555,
+        "solver_iterations": 453,
+        "solver_nodes": 32,
+        "termination_reason": "",
+        "wall_clock_seconds": 0.066752076
+      },
+      "schema_version": "1.0",
+      "solution": {
+        "is_connected": true,
+        "is_spanning_tree": true,
+        "tree_cost": 451519.0,
+        "tree_edges": [
+          {
+            "destination": 1,
+            "source": 0
+          },
+          {
+            "destination": 8,
+            "source": 1
+          },
+          {
+            "destination": 5,
+            "source": 2
+          },
+          {
+            "destination": 7,
+            "source": 3
+          },
+          {
+            "destination": 8,
+            "source": 3
+          },
+          {
+            "destination": 8,
+            "source": 4
+          },
+          {
+            "destination": 6,
+            "source": 5
+          },
+          {
+            "destination": 7,
+            "source": 6
+          },
+          {
+            "destination": 9,
+            "source": 8
+          }
+        ]
+      },
+      "solver": {
+        "formulation": "path_based",
+        "id": "path_based",
+        "version": "2.0.0"
+      },
+      "solver_metadata": {
+        "callback_invocations": "0",
+        "cutting_planes": "0",
+        "lazy_constraints": "47",
+        "warm_start_used": "mst",
+        "warm_starts_tried": "mst"
+      }
+    }
+  },
+  {
+    "instance_name": "orst5",
+    "success": true,
+    "objective": 1147497.0,
+    "best_known_objective": 1147497.0,
+    "is_optimal": true,
+    "optimality_status": "OPTIMAL_VERIFIED",
+    "optimization_status_description": "OPTIMAL",
+    "runtime_stats": {
+      "wall_clock_seconds": 0.053332934,
+      "cpu_seconds": 0.04938197135925293,
+      "solver_nodes": 1,
+      "solver_iterations": 452
+    },
+    "gap_percent": 0.0,
+    "gap": 0.0,
+    "best_solution_time": 0.04938197135925293,
+    "lazy_constraints": 0,
+    "cutting_planes": 0,
+    "status": "OPTIMAL",
+    "error": null,
+    "raw_json": {
+      "artifacts": {
+        "warm_start": "data/input/mst/orst5.txt"
+      },
+      "config": {
+        "digest": "path_based_v2.0.0",
+        "heuristics": "0.500000",
+        "mip_gap": "0.000000",
+        "threads": "1",
+        "time_limit": "3600.000000",
+        "warm_start_enabled": "true",
+        "warm_start_ideas": "mst"
+      },
+      "instance": {
+        "name": "orst5",
+        "tags": []
+      },
+      "optimization_status": {
+        "code": "OPTIMAL",
+        "description": "Optimal solution found",
+        "has_bound": true,
+        "has_solution": true
+      },
+      "reproducibility": {
+        "git_commit": "7bb4e4d",
+        "git_dirty": true,
+        "seed": 42,
+        "timestamp": "2025-11-17 18:23:52"
+      },
+      "results": {
+        "best_solution_time": 0.04938197135925293,
+        "dual_bound": 1147497.0,
+        "gap": 0.0,
+        "gap_percent": 0.0,
+        "objective": 1147497.0,
+        "primal_bound": 1147497.0
+      },
+      "run_uuid": "d17d2196-67ab-40af-bee5-7fe001f36fd9",
+      "runtime": {
+        "cpu_seconds": 0.04938197135925293,
+        "solver_iterations": 452,
+        "solver_nodes": 1,
+        "termination_reason": "",
+        "wall_clock_seconds": 0.053332934
+      },
+      "schema_version": "1.0",
+      "solution": {
+        "is_connected": true,
+        "is_spanning_tree": true,
+        "tree_cost": 1147497.0,
+        "tree_edges": [
+          {
+            "destination": 2,
+            "source": 0
+          },
+          {
+            "destination": 9,
+            "source": 0
+          },
+          {
+            "destination": 4,
+            "source": 1
+          },
+          {
+            "destination": 9,
+            "source": 1
+          },
+          {
+            "destination": 4,
+            "source": 3
+          },
+          {
+            "destination": 6,
+            "source": 3
+          },
+          {
+            "destination": 8,
+            "source": 3
+          },
+          {
+            "destination": 9,
+            "source": 5
+          },
+          {
+            "destination": 9,
+            "source": 7
+          }
+        ]
+      },
+      "solver": {
+        "formulation": "path_based",
+        "id": "path_based",
+        "version": "2.0.0"
+      },
+      "solver_metadata": {
+        "callback_invocations": "0",
+        "cutting_planes": "0",
+        "lazy_constraints": "0",
+        "warm_start_used": "mst",
+        "warm_starts_tried": "mst"
+      }
+    }
+  },
+  {
+    "instance_name": "orst6",
+    "success": true,
+    "objective": 1134484.0,
+    "best_known_objective": 1134484.0,
+    "is_optimal": true,
+    "optimality_status": "OPTIMAL_VERIFIED",
+    "optimization_status_description": "OPTIMAL",
+    "runtime_stats": {
+      "wall_clock_seconds": 15.107223117,
+      "cpu_seconds": 15.103659868240356,
+      "solver_nodes": 7193,
+      "solver_iterations": 131379
+    },
+    "gap_percent": 0.0,
+    "gap": 0.0,
+    "best_solution_time": 15.103659868240356,
+    "lazy_constraints": 49,
+    "cutting_planes": 0,
+    "status": "OPTIMAL",
+    "error": null,
+    "raw_json": {
+      "artifacts": {
+        "warm_start": "data/input/mst/orst6.txt"
+      },
+      "config": {
+        "digest": "path_based_v2.0.0",
+        "heuristics": "0.500000",
+        "mip_gap": "0.000000",
+        "threads": "1",
+        "time_limit": "3600.000000",
+        "warm_start_enabled": "true",
+        "warm_start_ideas": "mst"
+      },
+      "instance": {
+        "name": "orst6",
+        "tags": []
+      },
+      "optimization_status": {
+        "code": "OPTIMAL",
+        "description": "Optimal solution found",
+        "has_bound": true,
+        "has_solution": true
+      },
+      "reproducibility": {
+        "git_commit": "7bb4e4d",
+        "git_dirty": true,
+        "seed": 42,
+        "timestamp": "2025-11-17 18:24:07"
+      },
+      "results": {
+        "best_solution_time": 15.103659868240356,
+        "dual_bound": 1134484.0,
+        "gap": 0.0,
+        "gap_percent": 0.0,
+        "objective": 1134484.0,
+        "primal_bound": 1134484.0
+      },
+      "run_uuid": "dacf642c-f6e0-4fad-9d0d-a039191ddb87",
+      "runtime": {
+        "cpu_seconds": 15.103659868240356,
+        "solver_iterations": 131379,
+        "solver_nodes": 7193,
+        "termination_reason": "",
+        "wall_clock_seconds": 15.107223117
+      },
+      "schema_version": "1.0",
+      "solution": {
+        "is_connected": true,
+        "is_spanning_tree": true,
+        "tree_cost": 1134484.0,
+        "tree_edges": [
+          {
+            "destination": 6,
+            "source": 0
+          },
+          {
+            "destination": 7,
+            "source": 1
+          },
+          {
+            "destination": 9,
+            "source": 1
+          },
+          {
+            "destination": 3,
+            "source": 2
+          },
+          {
+            "destination": 5,
+            "source": 2
+          },
+          {
+            "destination": 6,
+            "source": 2
+          },
+          {
+            "destination": 7,
+            "source": 2
+          },
+          {
+            "destination": 5,
+            "source": 4
+          },
+          {
+            "destination": 8,
+            "source": 4
+          }
+        ]
+      },
+      "solver": {
+        "formulation": "path_based",
+        "id": "path_based",
+        "version": "2.0.0"
+      },
+      "solver_metadata": {
+        "callback_invocations": "0",
+        "cutting_planes": "0",
+        "lazy_constraints": "49",
+        "warm_start_used": "mst",
+        "warm_starts_tried": "mst"
+      }
+    }
+  },
+  {
+    "instance_name": "orst7",
+    "success": true,
+    "objective": 1556492.0,
+    "best_known_objective": 1556492.0,
+    "is_optimal": true,
+    "optimality_status": "OPTIMAL_VERIFIED",
+    "optimization_status_description": "OPTIMAL",
+    "runtime_stats": {
+      "wall_clock_seconds": 1.418992768,
+      "cpu_seconds": 1.414726972579956,
+      "solver_nodes": 295,
+      "solver_iterations": 16818
+    },
+    "gap_percent": 0.0,
+    "gap": 0.0,
+    "best_solution_time": 1.414726972579956,
+    "lazy_constraints": 0,
+    "cutting_planes": 0,
+    "status": "OPTIMAL",
+    "error": null,
+    "raw_json": {
+      "artifacts": {
+        "warm_start": "data/input/mst/orst7.txt"
+      },
+      "config": {
+        "digest": "path_based_v2.0.0",
+        "heuristics": "0.500000",
+        "mip_gap": "0.000000",
+        "threads": "1",
+        "time_limit": "3600.000000",
+        "warm_start_enabled": "true",
+        "warm_start_ideas": "mst"
+      },
+      "instance": {
+        "name": "orst7",
+        "tags": []
+      },
+      "optimization_status": {
+        "code": "OPTIMAL",
+        "description": "Optimal solution found",
+        "has_bound": true,
+        "has_solution": true
+      },
+      "reproducibility": {
+        "git_commit": "7bb4e4d",
+        "git_dirty": true,
+        "seed": 42,
+        "timestamp": "2025-11-17 18:24:09"
+      },
+      "results": {
+        "best_solution_time": 1.414726972579956,
+        "dual_bound": 1556492.0,
+        "gap": 0.0,
+        "gap_percent": 0.0,
+        "objective": 1556492.0,
+        "primal_bound": 1556492.0
+      },
+      "run_uuid": "70323b5f-94ef-424c-bd0d-b1da7f9e2b49",
+      "runtime": {
+        "cpu_seconds": 1.414726972579956,
+        "solver_iterations": 16818,
+        "solver_nodes": 295,
+        "termination_reason": "",
+        "wall_clock_seconds": 1.418992768
+      },
+      "schema_version": "1.0",
+      "solution": {
+        "is_connected": true,
+        "is_spanning_tree": true,
+        "tree_cost": 1556492.0,
+        "tree_edges": [
+          {
+            "destination": 7,
+            "source": 0
+          },
+          {
+            "destination": 7,
+            "source": 1
+          },
+          {
+            "destination": 9,
+            "source": 2
+          },
+          {
+            "destination": 7,
+            "source": 3
+          },
+          {
+            "destination": 7,
+            "source": 4
+          },
+          {
+            "destination": 8,
+            "source": 4
+          },
+          {
+            "destination": 7,
+            "source": 5
+          },
+          {
+            "destination": 7,
+            "source": 6
+          },
+          {
+            "destination": 9,
+            "source": 7
+          }
+        ]
+      },
+      "solver": {
+        "formulation": "path_based",
+        "id": "path_based",
+        "version": "2.0.0"
+      },
+      "solver_metadata": {
+        "callback_invocations": "0",
+        "cutting_planes": "0",
+        "lazy_constraints": "0",
+        "warm_start_used": "mst",
+        "warm_starts_tried": "mst"
+      }
+    }
+  },
+  {
+    "instance_name": "orst8",
+    "success": true,
+    "objective": 905252.0,
+    "best_known_objective": 905252.0,
+    "is_optimal": true,
+    "optimality_status": "OPTIMAL_VERIFIED",
+    "optimization_status_description": "OPTIMAL",
+    "runtime_stats": {
+      "wall_clock_seconds": 0.075542327,
+      "cpu_seconds": 0.07164692878723145,
+      "solver_nodes": 12,
+      "solver_iterations": 616
+    },
+    "gap_percent": 0.0,
+    "gap": 0.0,
+    "best_solution_time": 0.07164692878723145,
+    "lazy_constraints": 12,
+    "cutting_planes": 0,
+    "status": "OPTIMAL",
+    "error": null,
+    "raw_json": {
+      "artifacts": {
+        "warm_start": "data/input/mst/orst8.txt"
+      },
+      "config": {
+        "digest": "path_based_v2.0.0",
+        "heuristics": "0.500000",
+        "mip_gap": "0.000000",
+        "threads": "1",
+        "time_limit": "3600.000000",
+        "warm_start_enabled": "true",
+        "warm_start_ideas": "mst"
+      },
+      "instance": {
+        "name": "orst8",
+        "tags": []
+      },
+      "optimization_status": {
+        "code": "OPTIMAL",
+        "description": "Optimal solution found",
+        "has_bound": true,
+        "has_solution": true
+      },
+      "reproducibility": {
+        "git_commit": "7bb4e4d",
+        "git_dirty": true,
+        "seed": 42,
+        "timestamp": "2025-11-17 18:24:09"
+      },
+      "results": {
+        "best_solution_time": 0.07164692878723145,
+        "dual_bound": 905252.0,
+        "gap": 0.0,
+        "gap_percent": 0.0,
+        "objective": 905252.0,
+        "primal_bound": 905252.0
+      },
+      "run_uuid": "57639768-7026-4d92-aaf7-759eaef692fd",
+      "runtime": {
+        "cpu_seconds": 0.07164692878723145,
+        "solver_iterations": 616,
+        "solver_nodes": 12,
+        "termination_reason": "",
+        "wall_clock_seconds": 0.075542327
+      },
+      "schema_version": "1.0",
+      "solution": {
+        "is_connected": true,
+        "is_spanning_tree": true,
+        "tree_cost": 905252.0,
+        "tree_edges": [
+          {
+            "destination": 3,
+            "source": 0
+          },
+          {
+            "destination": 6,
+            "source": 0
+          },
+          {
+            "destination": 2,
+            "source": 1
+          },
+          {
+            "destination": 4,
+            "source": 1
+          },
+          {
+            "destination": 5,
+            "source": 1
+          },
+          {
+            "destination": 6,
+            "source": 2
+          },
+          {
+            "destination": 7,
+            "source": 2
+          },
+          {
+            "destination": 8,
+            "source": 7
+          },
+          {
+            "destination": 9,
+            "source": 7
+          }
+        ]
+      },
+      "solver": {
+        "formulation": "path_based",
+        "id": "path_based",
+        "version": "2.0.0"
+      },
+      "solver_metadata": {
+        "callback_invocations": "0",
+        "cutting_planes": "0",
+        "lazy_constraints": "12",
+        "warm_start_used": "mst",
+        "warm_starts_tried": "mst"
+      }
+    }
+  },
+  {
+    "instance_name": "orst9",
+    "success": true,
+    "objective": 555643.0,
+    "best_known_objective": 555643.0,
+    "is_optimal": true,
+    "optimality_status": "OPTIMAL_VERIFIED",
+    "optimization_status_description": "OPTIMAL",
+    "runtime_stats": {
+      "wall_clock_seconds": 0.269759044,
+      "cpu_seconds": 0.2664811611175537,
+      "solver_nodes": 155,
+      "solver_iterations": 2058
+    },
+    "gap_percent": 0.0,
+    "gap": 0.0,
+    "best_solution_time": 0.2664811611175537,
+    "lazy_constraints": 9,
+    "cutting_planes": 0,
+    "status": "OPTIMAL",
+    "error": null,
+    "raw_json": {
+      "artifacts": {
+        "warm_start": "data/input/mst/orst9.txt"
+      },
+      "config": {
+        "digest": "path_based_v2.0.0",
+        "heuristics": "0.500000",
+        "mip_gap": "0.000000",
+        "threads": "1",
+        "time_limit": "3600.000000",
+        "warm_start_enabled": "true",
+        "warm_start_ideas": "mst"
+      },
+      "instance": {
+        "name": "orst9",
+        "tags": []
+      },
+      "optimization_status": {
+        "code": "OPTIMAL",
+        "description": "Optimal solution found",
+        "has_bound": true,
+        "has_solution": true
+      },
+      "reproducibility": {
+        "git_commit": "7bb4e4d",
+        "git_dirty": true,
+        "seed": 42,
+        "timestamp": "2025-11-17 18:24:09"
+      },
+      "results": {
+        "best_solution_time": 0.2664811611175537,
+        "dual_bound": 555643.0,
+        "gap": 0.0,
+        "gap_percent": 0.0,
+        "objective": 555643.0,
+        "primal_bound": 555643.0
+      },
+      "run_uuid": "9c4cd610-cfdc-43b8-8b8a-afa7436e4de4",
+      "runtime": {
+        "cpu_seconds": 0.2664811611175537,
+        "solver_iterations": 2058,
+        "solver_nodes": 155,
+        "termination_reason": "",
+        "wall_clock_seconds": 0.269759044
+      },
+      "schema_version": "1.0",
+      "solution": {
+        "is_connected": true,
+        "is_spanning_tree": true,
+        "tree_cost": 555643.0,
+        "tree_edges": [
+          {
+            "destination": 1,
+            "source": 0
+          },
+          {
+            "destination": 6,
+            "source": 0
+          },
+          {
+            "destination": 6,
+            "source": 2
+          },
+          {
+            "destination": 8,
+            "source": 2
+          },
+          {
+            "destination": 5,
+            "source": 3
+          },
+          {
+            "destination": 5,
+            "source": 4
+          },
+          {
+            "destination": 9,
+            "source": 5
+          },
+          {
+            "destination": 9,
+            "source": 7
+          },
+          {
+            "destination": 9,
+            "source": 8
+          }
+        ]
+      },
+      "solver": {
+        "formulation": "path_based",
+        "id": "path_based",
+        "version": "2.0.0"
+      },
+      "solver_metadata": {
+        "callback_invocations": "0",
+        "cutting_planes": "0",
+        "lazy_constraints": "9",
+        "warm_start_used": "mst",
+        "warm_starts_tried": "mst"
+      }
+    }
+  }
+]

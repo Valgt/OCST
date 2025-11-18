@@ -67,6 +67,25 @@ ResultPayload FormulationSolver::solve(const SolverConfig& config) {
             std::cout << "[" << formulation_name_ << "] Collecting results..." << std::endl;
         }
         ResultPayload result = collect_results();
+
+        // Runtime metrics
+        const double wall_clock_seconds = std::chrono::duration<double>(solve_end_time_ - solve_start_time_).count();
+        result.runtime_stats.wall_clock_seconds = wall_clock_seconds;
+        try {
+            result.runtime_stats.solver_nodes = static_cast<int>(model_->get(GRB_DoubleAttr_NodeCount));
+        } catch (...) {
+            result.runtime_stats.solver_nodes = 0;
+        }
+        try {
+            result.runtime_stats.solver_iterations = static_cast<int>(model_->get(GRB_DoubleAttr_IterCount));
+        } catch (...) {
+            result.runtime_stats.solver_iterations = 0;
+        }
+        try {
+            result.best_solution_time = model_->get(GRB_DoubleAttr_Runtime);
+        } catch (...) {
+            result.best_solution_time = wall_clock_seconds;
+        }
         
         // Add metadata
         populate_metadata(result, config);
@@ -189,7 +208,7 @@ void FormulationSolver::populate_metadata(ResultPayload& result, const SolverCon
     // Reproducibility
     result.reproducibility.git_commit = GIT_COMMIT;
     result.reproducibility.git_dirty = GIT_DIRTY;
-    result.reproducibility.seed = 0;  // TODO: Add seed support
+    result.reproducibility.seed = config.seed;
     
     // Timestamp
     auto now = std::chrono::system_clock::now();
@@ -206,13 +225,46 @@ void FormulationSolver::populate_metadata(ResultPayload& result, const SolverCon
     result.config_params["mip_gap"] = std::to_string(config.mip_gap);
     result.config_params["threads"] = std::to_string(config.threads);
     result.config_params["heuristics"] = std::to_string(config.heuristics_level);
+    result.config_params["warm_start_enabled"] = config.enable_warm_start ? "true" : "false";
+    if (!config.warm_start_ideas.empty()) {
+        std::string ideas_csv;
+        for (size_t i = 0; i < config.warm_start_ideas.size(); ++i) {
+            if (i > 0) ideas_csv += ",";
+            ideas_csv += config.warm_start_ideas[i];
+        }
+        result.config_params["warm_start_ideas"] = ideas_csv;
+    }
     
     // Store solver-specific metrics in metadata
     result.solver_metadata["lazy_constraints"] = std::to_string(lazy_constraints_added_);
     result.solver_metadata["cutting_planes"] = std::to_string(cutting_planes_added_);
     result.solver_metadata["callback_invocations"] = std::to_string(callback_invocations_);
+
+    // Status description (human-readable)
+    switch (result.optimization_status_code) {
+        case OptimizationStatus::OPTIMAL:
+            result.optimization_status_description = "Optimal solution found";
+            break;
+        case OptimizationStatus::TIME_LIMIT:
+            result.optimization_status_description = "Time limit reached";
+            break;
+        case OptimizationStatus::INFEASIBLE:
+            result.optimization_status_description = "Model infeasible";
+            break;
+        case OptimizationStatus::UNBOUNDED:
+            result.optimization_status_description = "Model unbounded";
+            break;
+        case OptimizationStatus::SUBOPTIMAL:
+            result.optimization_status_description = "Limit reached (suboptimal)";
+            break;
+        case OptimizationStatus::INTERRUPTED:
+            result.optimization_status_description = "Interrupted";
+            break;
+        default:
+            result.optimization_status_description = "Error";
+            break;
+    }
 }
 
 } // namespace common
 } // namespace ocst
-

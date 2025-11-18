@@ -34,3 +34,20 @@ Warm starts 100% precalculadas para `path_based_formulation`, configurables por 
 - Abort temprano por archivo inválido (deseado).  
 - Inconsistencia `y` si se fijan flujos: se evita sembrando solo `x`.  
 - Telemetría incompleta: cubrir metadata y logger para trazabilidad.
+
+## Planificación / Workflows
+1) **MST como primera idea**  
+   - Exponer `warm_starts: ["mst"]` por defecto.  
+   - Loader/validator de archivos .txt y si falta → error.  
+   - Sembrar `x` con MST y habilitar warm start en path_based.  
+2) **Añadir idea basada en Dijkstra**  
+   - Habilitar `warm_starts: ["mst", "dijkstra_tree"]`.  
+   - Reusar loader/validator; solo cambia carpeta/idea.  
+   - Confirmar telemetría `warm_starts_tried` y `warm_start_used`.  
+3) **Otras ideas (<idea1>, <idea2>)**  
+   - Misma ruta `data/input/<idea>/<instancia>.txt`, mismo validador.  
+   - Abort en error de cualquier archivo.  
+4) **Pagar deuda técnica del solver**  
+   - Completar runtime, nodos/iters, gap, has_bound, status_description, config params/digest, lazy/cuts en payload.  
+   - Eventos en StructuredLogger para warm starts (inicio/fin, estado).  
+   - Smoke test con MST cargado para validar flujo.

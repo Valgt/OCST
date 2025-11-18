@@ -1,0 +1,102 @@
+{
+  "artifacts": {
+    "warm_start": "data/input/mst/ocstpin10.txt"
+  },
+  "config": {
+    "digest": "path_based_v2.0.0",
+    "heuristics": "0.500000",
+    "mip_gap": "0.000000",
+    "threads": "1",
+    "time_limit": "3600.000000",
+    "warm_start_enabled": "true",
+    "warm_start_ideas": "mst"
+  },
+  "instance": {
+    "name": "ocstpin10",
+    "tags": []
+  },
+  "optimization_status": {
+    "code": "OPTIMAL",
+    "description": "Optimal solution found",
+    "has_bound": true,
+    "has_solution": true
+  },
+  "reproducibility": {
+    "git_commit": "7bb4e4d",
+    "git_dirty": true,
+    "seed": 42,
+    "timestamp": "2025-11-17 18:01:49"
+  },
+  "results": {
+    "best_solution_time": 0.042260169982910156,
+    "dual_bound": 6909911.0,
+    "gap": 0.0,
+    "gap_percent": 0.0,
+    "objective": 6909911.0,
+    "primal_bound": 6909911.0
+  },
+  "run_uuid": "f4253d90-a386-4f13-abbf-afd24b608f52",
+  "runtime": {
+    "cpu_seconds": 0.042260169982910156,
+    "solver_iterations": 480,
+    "solver_nodes": 17,
+    "termination_reason": "",
+    "wall_clock_seconds": 0.045106815
+  },
+  "schema_version": "1.0",
+  "solution": {
+    "is_connected": true,
+    "is_spanning_tree": true,
+    "tree_cost": 6909911.0,
+    "tree_edges": [
+      {
+        "destination": 5,
+        "source": 0
+      },
+      {
+        "destination": 8,
+        "source": 0
+      },
+      {
+        "destination": 5,
+        "source": 1
+      },
+      {
+        "destination": 7,
+        "source": 1
+      },
+      {
+        "destination": 5,
+        "source": 2
+      },
+      {
+        "destination": 7,
+        "source": 3
+      },
+      {
+        "destination": 7,
+        "source": 4
+      },
+      {
+        "destination": 9,
+        "source": 5
+      },
+      {
+        "destination": 9,
+        "source": 6
+      }
+    ]
+  },
+  "solver": {
+    "formulation": "path_based",
+    "id": "path_based",
+    "version": "2.0.0"
+  },
+  "solver_metadata": {
+    "callback_invocations": "0",
+    "cutting_planes": "0",
+    "lazy_constraints": "28",
+    "warm_start_used": "mst",
+    "warm_starts_tried": "mst"
+  }
+}

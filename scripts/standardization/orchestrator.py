@@ -17,6 +17,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 import glob
+import re
 
 
 class OCSTOrchestrator:
@@ -399,12 +400,22 @@ class OCSTOrchestrator:
                 cmd.extend([f"--{key}", str(value)])
 
         # Execute
+        start_time = time.time()
         try:
+            env = os.environ.copy()
+            gurobi_home = env.get("GUROBI_HOME")
+            if gurobi_home:
+                lib_path = os.path.join(gurobi_home, "lib")
+                current_ld = env.get("LD_LIBRARY_PATH", "")
+                if lib_path not in current_ld.split(":"):
+                    env["LD_LIBRARY_PATH"] = f"{lib_path}:{current_ld}" if current_ld else lib_path
+
             result = subprocess.run(
                 cmd,
                 cwd=self.project_root,
                 capture_output=True,
                 text=True,
+                env=env,
                 timeout=3600,  # 1 hour timeout
                 check=True
             )
@@ -414,6 +425,12 @@ class OCSTOrchestrator:
                 # Legacy formulation doesn't produce JSON, parse stdout
                 # Look for "Objective value:" in stdout
                 objective = None
+                runtime_seconds = None
+                nodes_explored = None
+                mip_gap = None
+                lazy_constraints = None
+                cutting_planes = None
+
                 for line in result.stdout.split('\n'):
                     if "Objective value:" in line:
                         try:
@@ -423,6 +440,38 @@ class OCSTOrchestrator:
                                 objective = float(parts[1].strip())
                         except ValueError:
                             pass
+                    elif "Runtime:" in line and "seconds" in line:
+                        m = re.search(r"Runtime:\s*([0-9.]+)", line)
+                        if m:
+                            runtime_seconds = float(m.group(1))
+                    elif "Nodes explored:" in line:
+                        m = re.search(r"Nodes explored:\s*([0-9.eE+-]+)", line)
+                        if m:
+                            try:
+                                nodes_explored = float(m.group(1))
+                            except ValueError:
+                                nodes_explored = None
+                    elif "MIP gap:" in line and "%" in line:
+                        m = re.search(r"MIP gap:\s*([0-9.+-eE]+)", line)
+                        if m:
+                            try:
+                                mip_gap = float(m.group(1))
+                            except ValueError:
+                                mip_gap = None
+                    elif "Lazy constraints added" in line:
+                        m = re.search(r"Lazy constraints added:\s*([0-9.+-eE]+)", line)
+                        if m:
+                            try:
+                                lazy_constraints = float(m.group(1))
+                            except ValueError:
+                                lazy_constraints = None
+                    elif "Cutting planes added" in line:
+                        m = re.search(r"Cutting planes added:\s*([0-9.+-eE]+)", line)
+                        if m:
+                            try:
+                                cutting_planes = float(m.group(1))
+                            except ValueError:
+                                cutting_planes = None
 
                 # Cleanup temporary file (but not original legacy files from test_instances/)
                 if temp_legacy_file and os.path.exists(temp_legacy_file):
@@ -430,11 +479,38 @@ class OCSTOrchestrator:
                     if not temp_legacy_file.startswith(str(self.data_dir / "test_instances")):
                         os.unlink(temp_legacy_file)
 
+                best_known_obj = self.best_known_values.get(instance_name)
+                is_optimal = None
+                optimality_status = "UNKNOWN"
+                if best_known_obj is not None and objective is not None:
+                    if abs(objective - best_known_obj) < 1e-6:
+                        is_optimal = True
+                        optimality_status = "OPTIMAL_VERIFIED"
+                    elif abs(objective - best_known_obj) < 0.1:
+                        is_optimal = True
+                        optimality_status = "OPTIMAL_NUMERICAL"
+                    else:
+                        is_optimal = False
+                        optimality_status = "SUBOPTIMAL"
+
                 return {
                     "instance_name": instance_name,
                     "success": True,
                     "objective": objective,
+                    "best_known_objective": best_known_obj,
+                    "is_optimal": is_optimal,
+                    "optimality_status": optimality_status,
                     "optimization_status_description": "COMPLETED",
+                    "runtime_stats": {
+                        "wall_clock_seconds": runtime_seconds if runtime_seconds not in (None, 0.0) else time.time() - start_time,
+                        "solver_nodes": nodes_explored,
+                        "solver_iterations": None
+                    },
+                    "lazy_constraints": lazy_constraints,
+                    "cutting_planes": cutting_planes,
+                    "warm_starts_tried": None,
+                    "warm_start_used": None,
+                    "gap_percent": mip_gap,
                     "stdout": result.stdout,
                     "stderr": result.stderr,
                     "timestamp": datetime.now(timezone.utc).isoformat()
@@ -464,6 +540,21 @@ class OCSTOrchestrator:
                             is_optimal = False
                             optimality_status = "SUBOPTIMAL"
 
+                    runtime_stats = result_data.get("runtime", {})
+                    solver_metadata = result_data.get("solver_metadata", {})
+                    def _parse_num(val):
+                        try:
+                            return int(val)
+                        except (ValueError, TypeError):
+                            try:
+                                return float(val)
+                            except (ValueError, TypeError):
+                                return None
+                    lazy_constraints = _parse_num(solver_metadata.get("lazy_constraints"))
+                    cutting_planes = _parse_num(solver_metadata.get("cutting_planes"))
+                    warm_start_used = solver_metadata.get("warm_start_used")
+                    warm_starts_tried = solver_metadata.get("warm_starts_tried")
+
                     return {
                         "instance_name": result_data.get("instance", {}).get("name", instance_name),
                         "success": True,
@@ -472,8 +563,19 @@ class OCSTOrchestrator:
                         "is_optimal": is_optimal,
                         "optimality_status": optimality_status,
                         "optimization_status_description": result_data.get("optimization_status", {}).get("code", "UNKNOWN"),
-                        "runtime_stats": result_data.get("runtime", {}),
+                        "runtime_stats": {
+                            "wall_clock_seconds": runtime_stats.get("wall_clock_seconds"),
+                            "cpu_seconds": runtime_stats.get("cpu_seconds"),
+                            "solver_nodes": runtime_stats.get("solver_nodes"),
+                            "solver_iterations": runtime_stats.get("solver_iterations")
+                        },
                         "gap_percent": result_data.get("results", {}).get("gap_percent"),
+                        "gap": result_data.get("results", {}).get("gap"),
+                        "best_solution_time": result_data.get("results", {}).get("best_solution_time"),
+                        "lazy_constraints": lazy_constraints,
+                        "cutting_planes": cutting_planes,
+                        "warm_starts_tried": warm_starts_tried,
+                        "warm_start_used": warm_start_used,
                         "status": result_data.get("optimization_status", {}).get("code", "UNKNOWN"),
                         "error": None,
                         "raw_json": result_data  # Keep full JSON for debugging
@@ -508,6 +610,30 @@ class OCSTOrchestrator:
         total_runtime = sum(
             r.get('runtime_stats', {}).get('wall_clock_seconds', 0)
             for r in results if r.get('success', False)
+        )
+
+        total_nodes = sum(
+            r.get('runtime_stats', {}).get('solver_nodes', 0) or 0
+            for r in results if r.get('success', False)
+        )
+        total_iterations = sum(
+            r.get('runtime_stats', {}).get('solver_iterations', 0) or 0
+            for r in results if r.get('success', False)
+        )
+        total_best_solution_time = sum(
+            r.get('results', {}).get('best_solution_time', 0)
+            if 'results' in r else r.get('best_solution_time', 0) or 0
+            for r in results if r.get('success', False)
+        )
+        warm_used_set = set(
+            r.get('warm_start_used')
+            for r in results
+            if r.get('warm_start_used') not in (None, "")
+        )
+        warm_tried_set = set(
+            r.get('warm_starts_tried')
+            for r in results
+            if r.get('warm_starts_tried') not in (None, "")
         )
 
         # Calculate optimality statistics
@@ -552,6 +678,14 @@ class OCSTOrchestrator:
                 "success_rate": successful / len(instances) if instances else 0,
                 "total_runtime_seconds": total_runtime,
                 "avg_runtime_per_instance": total_runtime / len(instances) if instances else 0,
+                "total_solver_nodes": total_nodes,
+                "avg_solver_nodes": total_nodes / successful if successful else 0,
+                "total_solver_iterations": total_iterations,
+                "avg_solver_iterations": total_iterations / successful if successful else 0,
+                "total_best_solution_time": total_best_solution_time,
+                "avg_best_solution_time": total_best_solution_time / successful if successful else 0,
+                "warm_starts_used": sorted(warm_used_set),
+                "warm_starts_tried": sorted(warm_tried_set),
                 "optimality_stats": {
                     "optimal_solutions": optimal_count,
                     "verified_optimal": verified_optimal_count,
@@ -569,6 +703,12 @@ class OCSTOrchestrator:
                     "is_optimal": r.get("is_optimal"),
                     "optimality_status": r.get("optimality_status", "UNKNOWN"),
                     "runtime_seconds": r.get("runtime_stats", {}).get("wall_clock_seconds"),
+                    "solver_nodes": r.get("runtime_stats", {}).get("solver_nodes"),
+                    "solver_iterations": r.get("runtime_stats", {}).get("solver_iterations"),
+                    "lazy_constraints": r.get("lazy_constraints"),
+                    "cutting_planes": r.get("cutting_planes"),
+                    "warm_starts_tried": r.get("warm_starts_tried"),
+                    "warm_start_used": r.get("warm_start_used"),
                     "status": r.get("optimization_status_description", "unknown"),
                     "gap_percent": r.get("gap_percent"),
                     "error": r.get("error")
@@ -585,6 +725,20 @@ class OCSTOrchestrator:
 
         total_runtime = sum(
             r.get('runtime_stats', {}).get('wall_clock_seconds', 0)
+            for r in results if r.get('success', False)
+        )
+
+        total_nodes = sum(
+            r.get('runtime_stats', {}).get('solver_nodes', 0) or 0
+            for r in results if r.get('success', False)
+        )
+        total_iterations = sum(
+            r.get('runtime_stats', {}).get('solver_iterations', 0) or 0
+            for r in results if r.get('success', False)
+        )
+        total_best_solution_time = sum(
+            r.get('results', {}).get('best_solution_time', 0)
+            if 'results' in r else r.get('best_solution_time', 0) or 0
             for r in results if r.get('success', False)
         )
 
@@ -630,6 +784,12 @@ class OCSTOrchestrator:
                 "success_rate": successful / len(instances) if instances else 0,
                 "total_runtime_seconds": total_runtime,
                 "avg_runtime_per_instance": total_runtime / len(instances) if instances else 0,
+                "total_solver_nodes": total_nodes,
+                "avg_solver_nodes": total_nodes / successful if successful else 0,
+                "total_solver_iterations": total_iterations,
+                "avg_solver_iterations": total_iterations / successful if successful else 0,
+                "total_best_solution_time": total_best_solution_time,
+                "avg_best_solution_time": total_best_solution_time / successful if successful else 0,
                 "optimality_stats": {
                     "optimal_solutions": optimal_count,
                     "verified_optimal": verified_optimal_count,
@@ -647,6 +807,12 @@ class OCSTOrchestrator:
                     "is_optimal": r.get("is_optimal"),
                     "optimality_status": r.get("optimality_status", "UNKNOWN"),
                     "runtime_seconds": r.get("runtime_stats", {}).get("wall_clock_seconds"),
+                    "solver_nodes": r.get("runtime_stats", {}).get("solver_nodes"),
+                    "solver_iterations": r.get("runtime_stats", {}).get("solver_iterations"),
+                    "lazy_constraints": r.get("lazy_constraints"),
+                    "cutting_planes": r.get("cutting_planes"),
+                    "warm_starts_tried": r.get("warm_starts_tried"),
+                    "warm_start_used": r.get("warm_start_used"),
                     "status": r.get("optimization_status_description", "unknown"),
                     "gap_percent": r.get("gap_percent"),
                     "error": r.get("error")
@@ -676,7 +842,11 @@ class OCSTOrchestrator:
             successful = summary["results_summary"]["successful"]
             failed = summary["results_summary"]["failed"]
             total_runtime = summary["results_summary"]["total_runtime_seconds"]
+            total_nodes = summary["results_summary"].get("total_solver_nodes", 0)
+            total_iterations = summary["results_summary"].get("total_solver_iterations", 0)
             optimality_stats = summary["results_summary"]["optimality_stats"]
+            warm_used = summary["results_summary"].get("warm_starts_used", [])
+            warm_tried = summary["results_summary"].get("warm_starts_tried", [])
 
             formulation_stats[formulation] = {
                 "successful": successful,
@@ -684,6 +854,12 @@ class OCSTOrchestrator:
                 "success_rate": successful / total_instances if total_instances > 0 else 0,
                 "total_runtime": total_runtime,
                 "avg_runtime_per_instance": total_runtime / total_instances if total_instances > 0 else 0,
+                "total_solver_nodes": total_nodes,
+                "avg_solver_nodes": total_nodes / total_instances if total_instances > 0 else 0,
+                "total_solver_iterations": total_iterations,
+                "avg_solver_iterations": total_iterations / total_instances if total_instances > 0 else 0,
+                "warm_starts_used": warm_used,
+                "warm_starts_tried": warm_tried,
                 "optimality_stats": optimality_stats
             }
 
@@ -698,6 +874,12 @@ class OCSTOrchestrator:
                     "is_optimal": result.get("is_optimal"),
                     "optimality_status": result.get("optimality_status", "UNKNOWN"),
                     "runtime_seconds": result.get("runtime_stats", {}).get("wall_clock_seconds"),
+                    "solver_nodes": result.get("runtime_stats", {}).get("solver_nodes"),
+                    "solver_iterations": result.get("runtime_stats", {}).get("solver_iterations"),
+                    "lazy_constraints": result.get("lazy_constraints"),
+                    "cutting_planes": result.get("cutting_planes"),
+                    "warm_starts_tried": result.get("warm_starts_tried"),
+                    "warm_start_used": result.get("warm_start_used"),
                     "status": result.get("optimization_status_description", "unknown"),
                     "gap_percent": result.get("gap_percent"),
                     "error": result.get("error")

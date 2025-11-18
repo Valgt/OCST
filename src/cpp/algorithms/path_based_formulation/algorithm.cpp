@@ -4,7 +4,6 @@
 #include <fstream>
 #include <sstream>
 #include <unordered_map>
-#include <unordered_set>
 #include <chrono>
 #include <algorithm>
 #include <cmath>
@@ -15,6 +14,7 @@
 #include <queue>
 #include <memory>
 #include <stack>
+#include <unordered_set>
 
 // Unified instance loader (supports both legacy and JSON formats)
 #include "instance_loader.h"
@@ -24,6 +24,9 @@
 
 // Common solver interface (Workstream 2 - Simplified)
 #include "formulation_solver.h"
+
+// Warm start loader (Phase 2.0)
+#include "warm_start_loader.h"
 
 // UUID generation
 #include "sole/sole.hpp"
@@ -42,6 +45,7 @@ using Requirement = ocst::common::Requirement;
 using OCSTInstance = ocst::common::OCSTInstance;
 using ResultPayload = ocst::common::ResultPayload;
 using ResultSerializer = ocst::common::ResultSerializer;
+using SolverConfig = ocst::common::SolverConfig;
 
 //=============================================================================
 // MAX-FLOW MIN-CUT FOR FRACTIONAL SEC SEPARATION
@@ -149,7 +153,7 @@ public:
         
         return cut;
     }
-};
+    };
 
 /**
  * @brief SEC Callback for Path-Based Formulation
@@ -562,20 +566,25 @@ private:
 /**
  * @brief Path-based formulation solver for OCST problem
  */
-class PathBasedSolver : public ocst::common::FormulationSolver
-{
-private:
-    // Decision variables (formulation-specific)
-    std::vector<GRBVar> x_vars_;     // Edge selection variables
-    std::vector<std::vector<GRBVar>> y_vars_;  // Flow variables for each requirement
-    
-    // SEC Callback for subtour elimination
-    std::unique_ptr<SECCallback> sec_callback_;
-    
-public:
-    explicit PathBasedSolver(const OCSTInstance& instance) 
-        : FormulationSolver(instance, "path_based", "2.0.0"),
-          sec_callback_(nullptr)
+    class PathBasedSolver : public ocst::common::FormulationSolver
+    {
+    private:
+        // Decision variables (formulation-specific)
+        std::vector<GRBVar> x_vars_;     // Edge selection variables
+        std::vector<std::vector<GRBVar>> y_vars_;  // Flow variables for each requirement
+        
+        // SEC Callback for subtour elimination
+        std::unique_ptr<SECCallback> sec_callback_;
+
+        // Warm start telemetry (Phase 2.0)
+        std::vector<std::string> warm_starts_tried_;
+        std::string warm_start_used_ = "none";
+        std::vector<ocst::common::WarmStartTree> warm_start_data_;
+        
+    public:
+        explicit PathBasedSolver(const OCSTInstance& instance) 
+            : FormulationSolver(instance, "path_based", "2.0.0"),
+              sec_callback_(nullptr)
     {
         // Configuration will be done in configure() override
     }
@@ -718,10 +727,10 @@ protected:
         // ===================================================================
         
         if (config.enable_warm_start) {
-    if (config.verbose) {
-                std::cout << "[" << formulation_name_ << "] Setting warm-start solution..." << std::endl;
+            if (config.verbose) {
+                std::cout << "[" << formulation_name_ << "] Loading warm starts..." << std::endl;
             }
-            apply_warm_start();
+            apply_warm_starts(config);
         }
     }  // End of build_model()
 
@@ -825,53 +834,141 @@ private:
     }
     
     /**
-     * @brief Helper: Apply warm-start solution using MST
-     * 
-     * Called from build_model() if config.enable_warm_start is true.
+     * @brief Apply warm starts from precomputed trees (data/input/<idea>/<instance>.txt)
      */
-    void apply_warm_start()
+    void apply_warm_starts(const ocst::common::SolverConfig& config)
     {
-        try {
-            // Find MST using Kruskal's algorithm
-            std::vector<int> mst_edges = find_mst();
-            
-            // Set x variables based on MST
-            for (int e = 0; e < instance_.num_edges; ++e) {
-                bool in_mst = std::find(mst_edges.begin(), mst_edges.end(), e) != mst_edges.end();
-                x_vars_[e].set(GRB_DoubleAttr_Start, in_mst ? 1.0 : 0.0);
+        warm_starts_tried_.clear();
+        warm_start_data_.clear();
+        warm_start_used_ = "none";
+        const int num_starts = static_cast<int>(config.warm_start_ideas.size());
+        if (num_starts <= 0) {
+            return;
+        }
+
+        // Reserve slots for all MIP starts before populating them.
+        model_->set(GRB_IntAttr_NumStart, num_starts);
+        model_->update();
+
+        for (size_t idx = 0; idx < config.warm_start_ideas.size(); ++idx) {
+            const auto& idea = config.warm_start_ideas[idx];
+            auto start_ts = std::chrono::steady_clock::now();
+            if (config.logger) {
+                ocst::common::WarmStartEvent evt{idea, "start", 0.0, std::chrono::system_clock::now()};
+                config.logger->log_warm_start_event(evt);
             }
-            
-            // Set y variables based on shortest paths in MST
+
+            ocst::common::WarmStartTree data;
+            try {
+                data = ocst::common::load_warm_start_tree(instance_, idea, config.instance_name);
+            } catch (...) {
+                if (config.logger) {
+                    auto elapsed_ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start_ts).count();
+                    ocst::common::WarmStartEvent evt{idea, "failure", elapsed_ms, std::chrono::system_clock::now()};
+                    config.logger->log_warm_start_event(evt);
+                }
+                throw;
+            }
+
+            warm_starts_tried_.push_back(idea);
+            warm_start_data_.push_back(data);
+
+            // Select start slot and reset all variables for this start
+            model_->set(GRB_IntParam_StartNumber, static_cast<int>(idx));
+            for (auto& var : x_vars_) {
+                var.set(GRB_DoubleAttr_Start, GRB_UNDEFINED);
+            }
+            for (auto& y_per_req : y_vars_) {
+                for (auto& var : y_per_req) {
+                    var.set(GRB_DoubleAttr_Start, GRB_UNDEFINED);
+                }
+            }
+
+            // Initialize all x to 0 for this start
+            for (auto& var : x_vars_) {
+                var.set(GRB_DoubleAttr_Start, 0.0);
+            }
+            // Initialize all y to 0 for this start
+            for (auto& y_per_req : y_vars_) {
+                for (auto& var : y_per_req) {
+                    var.set(GRB_DoubleAttr_Start, 0.0);
+                }
+            }
+            // Set active edges to 1
+            for (int e_idx : data.edge_indices) {
+                if (e_idx >= 0 && e_idx < static_cast<int>(x_vars_.size())) {
+                    x_vars_[e_idx].set(GRB_DoubleAttr_Start, 1.0);
+                }
+            }
+
+            // Set flows along the unique tree path for each requirement
+            std::vector<std::vector<int>> adj(instance_.num_nodes);
+            for (const auto& e : data.tree_edges) {
+                adj[e.first].push_back(e.second);
+                adj[e.second].push_back(e.first);
+            }
+
             for (int r = 0; r < static_cast<int>(instance_.requirements.size()); ++r) {
                 const Requirement& req = instance_.requirements[r];
-                
-                // Find shortest path from origin to destination in MST
-                std::vector<int> path = find_path_in_mst(req.origin, req.destination, mst_edges);
-                
-                // Set flow variables along the path
-                for (size_t i = 0; i < path.size() - 1; ++i) {
-                    int u = path[i];
-                    int v = path[i + 1];
-                    
-                    // Find edge index
-                    int edge_idx = instance_.get_edge_index(u, v);
-                    if (edge_idx >= 0) {
-                        const Edge& edge = instance_.edges[edge_idx];
-                        
-                        // Determine direction and set flow
-                        if (edge.source == u && edge.destination == v) {
-                            y_vars_[r][2 * edge_idx].set(GRB_DoubleAttr_Start, 1.0);  // Unit flow
-                        } else if (edge.source == v && edge.destination == u) {
-                            y_vars_[r][2 * edge_idx + 1].set(GRB_DoubleAttr_Start, 1.0);  // Unit flow
+                int s = req.origin;
+                int t = req.destination;
+
+                // BFS to recover path in the tree
+                std::vector<int> parent(instance_.num_nodes, -1);
+                std::queue<int> q;
+                q.push(s);
+                parent[s] = s;
+                while (!q.empty() && parent[t] == -1) {
+                    int u = q.front();
+                    q.pop();
+                    for (int v : adj[u]) {
+                        if (parent[v] == -1) {
+                            parent[v] = u;
+                            q.push(v);
                         }
                     }
                 }
+
+                if (parent[t] == -1) {
+                    throw std::runtime_error("No path in warm start tree for requirement " + std::to_string(r));
+                }
+
+                // Reconstruct path t -> s
+                int node = t;
+                while (node != s) {
+                    int p = parent[node];
+                    int edge_idx = instance_.get_edge_index(node, p);
+                    if (edge_idx < 0) {
+                        throw std::runtime_error("Warm start edge missing in instance graph between " +
+                                                 std::to_string(node) + " and " + std::to_string(p));
+                    }
+
+                    const Edge& edge = instance_.edges[edge_idx];
+                    if (edge.source == p && edge.destination == node) {
+                        y_vars_[r][2 * edge_idx].set(GRB_DoubleAttr_Start, 1.0);
+                    } else if (edge.source == node && edge.destination == p) {
+                        y_vars_[r][2 * edge_idx + 1].set(GRB_DoubleAttr_Start, 1.0);
+                    } else {
+                        // Edge orientation mismatched; set both directions as a fallback
+                        y_vars_[r][2 * edge_idx].set(GRB_DoubleAttr_Start, 1.0);
+                        y_vars_[r][2 * edge_idx + 1].set(GRB_DoubleAttr_Start, 1.0);
+                    }
+
+                    node = p;
+                }
             }
-            
-            std::cout << "Warm-start set using MST with " << mst_edges.size() << " edges" << std::endl;
-            
-        } catch (const std::exception& e) {
-            std::cerr << "Warning: Failed to set warm-start: " << e.what() << std::endl;
+
+            if (config.logger) {
+                auto elapsed_ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start_ts).count();
+                ocst::common::WarmStartEvent evt{idea, "success", elapsed_ms, std::chrono::system_clock::now()};
+                config.logger->log_warm_start_event(evt);
+            }
+        }
+
+        if (warm_starts_tried_.size() == 1) {
+            warm_start_used_ = warm_starts_tried_.front();
+        } else if (!warm_starts_tried_.empty()) {
+            warm_start_used_ = "multiple";
         }
     }
     
@@ -1086,6 +1183,7 @@ private:
         // Solution data
         bool has_solution = (gurobi_status == GRB_OPTIMAL || gurobi_status == GRB_TIME_LIMIT);
         payload.has_solution = has_solution;
+        payload.has_bound = true;  // Gurobi siempre entrega cota dual cuando resuelve
         
         if (has_solution) {
             // Objective value
@@ -1108,14 +1206,47 @@ private:
             // Dual bound
             try {
                 payload.dual_bound = model_->get(GRB_DoubleAttr_ObjBound);
-                if (payload.primal_bound > 1e-9) {
+                payload.gap = payload.primal_bound - payload.dual_bound;
+                if (std::abs(payload.primal_bound) > 1e-9) {
                     payload.gap_percent = 100.0 * (payload.primal_bound - payload.dual_bound) / payload.primal_bound;
                 }
             } catch (GRBException&) {
                 // Bound not available
                 payload.dual_bound = payload.objective;
                 payload.gap_percent = 0.0;
+                payload.gap = 0.0;
             }
+        } else {
+            payload.objective = 0.0;
+            payload.primal_bound = 0.0;
+            try {
+                payload.dual_bound = model_->get(GRB_DoubleAttr_ObjBound);
+                payload.gap = 0.0;
+                payload.gap_percent = 0.0;
+            } catch (GRBException&) {
+                payload.has_bound = false;
+            }
+        }
+
+        // Warm start metadata
+        if (!warm_starts_tried_.empty()) {
+            std::ostringstream tried_ss;
+            for (size_t i = 0; i < warm_starts_tried_.size(); ++i) {
+                if (i > 0) tried_ss << ",";
+                tried_ss << warm_starts_tried_[i];
+            }
+            payload.solver_metadata["warm_starts_tried"] = tried_ss.str();
+            payload.solver_metadata["warm_start_used"] = warm_start_used_;
+            if (!warm_start_data_.empty()) {
+                payload.warm_start_path = warm_start_data_.front().path;
+            }
+        }
+
+        // Runtime stats (wall clock ya se setea en solve; aquí añadimos CPU si aplica)
+        try {
+            payload.runtime_stats.cpu_seconds = model_->get(GRB_DoubleAttr_Runtime);
+        } catch (...) {
+            // Silencio
         }
         
         return payload;
@@ -1150,11 +1281,22 @@ ResultPayload solve_path_based_instance(const std::string& input_file,
                   << instance.num_edges << " edges, " << instance.requirements.size() 
                   << " requirements" << std::endl;
         
+        // Compute instance basename (for warm starts and outputs)
+        std::string instance_basename = input_file;
+        size_t last_slash = instance_basename.find_last_of("/");
+        if (last_slash != std::string::npos) {
+            instance_basename = instance_basename.substr(last_slash + 1);
+        }
+        size_t last_dot = instance_basename.find_last_of(".");
+        if (last_dot != std::string::npos) {
+            instance_basename = instance_basename.substr(0, last_dot);
+        }
+
         // Solve using path-based formulation with new interface
         PathBasedSolver solver(instance);
 
         // Configure solver
-        ocst::common::SolverConfig config;
+        SolverConfig config;
 
         // Load config from file if provided
         if (!config_file.empty()) {
@@ -1170,10 +1312,12 @@ ResultPayload solve_path_based_instance(const std::string& input_file,
         config.threads = config.common_config.get_threads();
         config.verbose = config.common_config.get_output_flag();
         config.heuristics_level = 0.5;  // Keep default for now
-        config.enable_warm_start = false;  // Temporarily disabled
+        config.warm_start_ideas = config.common_config.get_warm_starts();
+        config.enable_warm_start = !config.warm_start_ideas.empty();
 
         // Set seed for reproducibility
         config.seed = seed;
+        config.instance_name = instance_basename;
 
         // Create logger if enabled
         if (enable_logging) {
@@ -1200,23 +1344,15 @@ ResultPayload solve_path_based_instance(const std::string& input_file,
         int lazy_added = (it_lazy != payload.solver_metadata.end()) ? std::stoi(it_lazy->second) : 0;
         auto it_cuts = payload.solver_metadata.find("cutting_planes");
         int cuts_added = (it_cuts != payload.solver_metadata.end()) ? std::stoi(it_cuts->second) : 0;
+        auto it_ws_used = payload.solver_metadata.find("warm_start_used");
+        std::string warm_used = (it_ws_used != payload.solver_metadata.end()) ? it_ws_used->second : "none";
         
         std::cout << "Lazy constraints added: " << lazy_added << std::endl;
         std::cout << "Cutting planes added: " << cuts_added << std::endl;
         std::cout << "Selected edges: " << payload.solution.tree_edges.size() << std::endl;
+        std::cout << "Warm start used: " << warm_used << std::endl;
         
         // Generate output filename based on input file
-        std::string instance_basename = input_file;
-        size_t last_slash = instance_basename.find_last_of("/");
-        if (last_slash != std::string::npos) {
-            instance_basename = instance_basename.substr(last_slash + 1);
-        }
-        // Remove extension if present
-        size_t last_dot = instance_basename.find_last_of(".");
-        if (last_dot != std::string::npos) {
-            instance_basename = instance_basename.substr(0, last_dot);
-        }
-
         // Write JSON solution using ResultPayload (modern format)
         std::filesystem::path json_solution_file = std::filesystem::path(output_dir) / (instance_basename + ".results.json");
         std::filesystem::create_directories(json_solution_file.parent_path());

@@ -1,5 +1,6 @@
 #include "config.h"
 #include <filesystem>
+#include <algorithm>
 
 namespace ocst::common {
 
@@ -34,6 +35,7 @@ bool Config::load_from_json(const nlohmann::json& json_config) {
         parse_optional(json_config, "presolve", presolve_);
         parse_optional(json_config, "output_flag", output_flag_);
         parse_optional(json_config, "branching_strategy", branching_strategy_);
+        parse_warm_starts(json_config);
 
         return validate();
     } catch (const std::exception& e) {
@@ -96,6 +98,12 @@ bool Config::validate() const {
     return true;
 }
 
+std::vector<std::string> Config::get_warm_starts() const {
+    if (warm_starts_) return *warm_starts_;
+    // Default: only MST
+    return {"mst"};
+}
+
 // Template specializations
 template<>
 void Config::parse_optional<double>(const nlohmann::json& json, const std::string& key, std::optional<double>& target) {
@@ -123,6 +131,27 @@ void Config::parse_optional<std::string>(const nlohmann::json& json, const std::
     if (json.contains(key) && !json[key].is_null()) {
         target = json[key].get<std::string>();
     }
+}
+
+void Config::parse_warm_starts(const nlohmann::json& json) {
+    if (!json.contains("warm_starts")) return;
+    const auto& ws = json["warm_starts"];
+    if (!ws.is_array()) {
+        throw std::runtime_error("warm_starts must be an array of strings");
+    }
+    std::vector<std::string> ideas;
+    for (const auto& entry : ws) {
+        if (!entry.is_string()) {
+            throw std::runtime_error("warm_starts entries must be strings");
+        }
+        ideas.push_back(entry.get<std::string>());
+    }
+    // Allow empty array to explicitly disable warm starts.
+    if (ideas.empty()) {
+        warm_starts_ = std::vector<std::string>{};
+        return;
+    }
+    warm_starts_ = ideas;
 }
 
 } // namespace ocst::common

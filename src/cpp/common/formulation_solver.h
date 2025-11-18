@@ -54,6 +54,8 @@ struct SolverConfig {
     double heuristics_level = 0.5;  // Gurobi heuristics (0.0-1.0)
     bool enable_warm_start = false;
     int seed = 42;  // Random seed for reproducibility
+    std::vector<std::string> warm_start_ideas;
+    std::string instance_name;
 
     // Integration with common config
     Config common_config;
@@ -179,4 +181,3 @@ protected:
 } // namespace ocst
 
 #endif // OCST_COMMON_FORMULATION_SOLVER_H
-

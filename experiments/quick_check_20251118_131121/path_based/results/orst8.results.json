@@ -1,0 +1,54 @@
+{
+  "config": {
+    "digest": "path_based_v2.0.0",
+    "heuristics": "0.500000",
+    "mip_gap": "0.000000",
+    "threads": "1",
+    "time_limit": "3600.000000",
+    "warm_start_enabled": "true",
+    "warm_start_ideas": "dijkstra_tree,mst"
+  },
+  "instance": {
+    "name": "orst8",
+    "tags": []
+  },
+  "optimization_status": {
+    "code": "ERROR",
+    "description": "Error",
+    "has_bound": false,
+    "has_solution": false
+  },
+  "reproducibility": {
+    "git_commit": "7bb4e4d",
+    "git_dirty": true,
+    "seed": 42,
+    "timestamp": "2025-11-18 08:11:40"
+  },
+  "results": {
+    "best_solution_time": 0.0,
+    "dual_bound": 0.0,
+    "gap": 0.0,
+    "gap_percent": 0.0,
+    "objective": 0.0,
+    "primal_bound": 0.0
+  },
+  "run_uuid": "5c6efc5a-4a32-4e3d-8541-afe19a4a7104",
+  "runtime": {
+    "cpu_seconds": 0.0,
+    "solver_iterations": 0,
+    "solver_nodes": 0,
+    "termination_reason": "",
+    "wall_clock_seconds": 0.0
+  },
+  "schema_version": "1.0",
+  "solver": {
+    "formulation": "path_based",
+    "id": "path_based",
+    "version": "2.0.0"
+  },
+  "solver_metadata": {
+    "callback_invocations": "0",
+    "cutting_planes": "0",
+    "lazy_constraints": "0"
+  }
+}

@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include <optional>
+#include <vector>
 #include <nlohmann/json.hpp>
 #include <stdexcept>
 #include <iostream>
@@ -68,6 +69,7 @@ public:
     bool get_presolve() const { return presolve_.value_or(ConfigDefaults::PRESOLVE); }
     bool get_output_flag() const { return output_flag_.value_or(ConfigDefaults::OUTPUT_FLAG); }
     std::string get_branching_strategy() const { return branching_strategy_.value_or(ConfigDefaults::BRANCHING_STRATEGY); }
+    std::vector<std::string> get_warm_starts() const;
 
     /**
      * @brief Get all configuration parameters as a map
@@ -91,10 +93,13 @@ private:
     std::optional<bool> presolve_;
     std::optional<bool> output_flag_;
     std::optional<std::string> branching_strategy_;
+    std::optional<std::vector<std::string>> warm_starts_;
 
     // Helper method to parse optional values
     template<typename T>
     void parse_optional(const nlohmann::json& json, const std::string& key, std::optional<T>& target);
+
+    void parse_warm_starts(const nlohmann::json& json);
 };
 
 // Template specializations for parsing

@@ -1,0 +1,102 @@
+{
+  "artifacts": {
+    "warm_start": "data/input/dijkstra_tree/orst7.txt"
+  },
+  "config": {
+    "digest": "path_based_v2.0.0",
+    "heuristics": "0.500000",
+    "mip_gap": "0.000000",
+    "threads": "1",
+    "time_limit": "3600.000000",
+    "warm_start_enabled": "true",
+    "warm_start_ideas": "dijkstra_tree,mst"
+  },
+  "instance": {
+    "name": "orst7",
+    "tags": []
+  },
+  "optimization_status": {
+    "code": "OPTIMAL",
+    "description": "Optimal solution found",
+    "has_bound": true,
+    "has_solution": true
+  },
+  "reproducibility": {
+    "git_commit": "7bb4e4d",
+    "git_dirty": true,
+    "seed": 42,
+    "timestamp": "2025-11-18 09:11:05"
+  },
+  "results": {
+    "best_solution_time": 1.716465950012207,
+    "dual_bound": 1556492.0,
+    "gap": 0.0,
+    "gap_percent": 0.0,
+    "objective": 1556492.0,
+    "primal_bound": 1556492.0
+  },
+  "run_uuid": "fd25b4c0-ca99-4d8a-b23a-45268b9f6f73",
+  "runtime": {
+    "cpu_seconds": 1.716465950012207,
+    "solver_iterations": 14055,
+    "solver_nodes": 268,
+    "termination_reason": "",
+    "wall_clock_seconds": 1.723234769
+  },
+  "schema_version": "1.0",
+  "solution": {
+    "is_connected": true,
+    "is_spanning_tree": true,
+    "tree_cost": 1556492.0,
+    "tree_edges": [
+      {
+        "destination": 7,
+        "source": 0
+      },
+      {
+        "destination": 7,
+        "source": 1
+      },
+      {
+        "destination": 9,
+        "source": 2
+      },
+      {
+        "destination": 7,
+        "source": 3
+      },
+      {
+        "destination": 7,
+        "source": 4
+      },
+      {
+        "destination": 8,
+        "source": 4
+      },
+      {
+        "destination": 7,
+        "source": 5
+      },
+      {
+        "destination": 7,
+        "source": 6
+      },
+      {
+        "destination": 9,
+        "source": 7
+      }
+    ]
+  },
+  "solver": {
+    "formulation": "path_based",
+    "id": "path_based",
+    "version": "2.0.0"
+  },
+  "solver_metadata": {
+    "callback_invocations": "0",
+    "cutting_planes": "0",
+    "lazy_constraints": "0",
+    "warm_start_used": "multiple",
+    "warm_starts_tried": "dijkstra_tree,mst"
+  }
+}

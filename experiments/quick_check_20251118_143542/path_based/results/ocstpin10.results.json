@@ -1,0 +1,102 @@
+{
+  "artifacts": {
+    "warm_start": "data/input/gomory_hu_tree/ocstpin10.txt"
+  },
+  "config": {
+    "digest": "path_based_v2.0.0",
+    "heuristics": "0.500000",
+    "mip_gap": "0.000000",
+    "threads": "1",
+    "time_limit": "3600.000000",
+    "warm_start_enabled": "true",
+    "warm_start_ideas": "gomory_hu_tree,dijkstra_tree,mst"
+  },
+  "instance": {
+    "name": "ocstpin10",
+    "tags": []
+  },
+  "optimization_status": {
+    "code": "OPTIMAL",
+    "description": "Optimal solution found",
+    "has_bound": true,
+    "has_solution": true
+  },
+  "reproducibility": {
+    "git_commit": "7bb4e4d",
+    "git_dirty": true,
+    "seed": 42,
+    "timestamp": "2025-11-18 09:36:07"
+  },
+  "results": {
+    "best_solution_time": 0.07117009162902832,
+    "dual_bound": 6909911.0,
+    "gap": 0.0,
+    "gap_percent": 0.0,
+    "objective": 6909911.0,
+    "primal_bound": 6909911.0
+  },
+  "run_uuid": "f22d3ed5-d2e7-4199-86e5-b4aca4ce7f65",
+  "runtime": {
+    "cpu_seconds": 0.07117009162902832,
+    "solver_iterations": 490,
+    "solver_nodes": 16,
+    "termination_reason": "",
+    "wall_clock_seconds": 0.075685819
+  },
+  "schema_version": "1.0",
+  "solution": {
+    "is_connected": true,
+    "is_spanning_tree": true,
+    "tree_cost": 6909911.0,
+    "tree_edges": [
+      {
+        "destination": 5,
+        "source": 0
+      },
+      {
+        "destination": 5,
+        "source": 1
+      },
+      {
+        "destination": 7,
+        "source": 1
+      },
+      {
+        "destination": 5,
+        "source": 2
+      },
+      {
+        "destination": 7,
+        "source": 3
+      },
+      {
+        "destination": 7,
+        "source": 4
+      },
+      {
+        "destination": 9,
+        "source": 5
+      },
+      {
+        "destination": 9,
+        "source": 6
+      },
+      {
+        "destination": 8,
+        "source": 7
+      }
+    ]
+  },
+  "solver": {
+    "formulation": "path_based",
+    "id": "path_based",
+    "version": "2.0.0"
+  },
+  "solver_metadata": {
+    "callback_invocations": "0",
+    "cutting_planes": "0",
+    "lazy_constraints": "27",
+    "warm_start_used": "multiple",
+    "warm_starts_tried": "gomory_hu_tree,dijkstra_tree,mst"
+  }
+}

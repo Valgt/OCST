@@ -1,0 +1,9 @@
+{
+  "warm_starts": [
+    "dijkstra_tree",
+    "mst"
+  ],
+  "mip_gap": 0.0,
+  "time_limit": 3600,
+  "threads": 1
+}

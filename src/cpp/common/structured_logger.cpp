@@ -63,6 +63,18 @@ void StructuredLogger::log_callback_stats(const CallbackStats& event) {
     write_json_line(json_event);
 }
 
+void StructuredLogger::log_warm_start_event(const WarmStartEvent& event) {
+    nlohmann::json json_event = {
+        {"timestamp", timestamp_to_string(event.timestamp)},
+        {"event_type", "warm_start"},
+        {"idea", event.idea},
+        {"status", event.status},
+        {"duration_ms", event.duration_ms}
+    };
+
+    write_json_line(json_event);
+}
+
 void StructuredLogger::rotate_if_needed() {
     if (current_file_size_ >= max_file_size_bytes_) {
         rotate_file();

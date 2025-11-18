@@ -58,6 +58,16 @@ struct CallbackStats {
 };
 
 /**
+ * @brief Warm start lifecycle event data
+ */
+struct WarmStartEvent {
+    std::string idea;
+    std::string status;  // start | success | failure
+    double duration_ms = 0.0;
+    std::chrono::system_clock::time_point timestamp;
+};
+
+/**
  * @brief Structured logger for OCST solvers
  *
  * Emits JSON Lines format for downstream analysis and visualization.
@@ -97,6 +107,11 @@ public:
      * @brief Log callback statistics
      */
     void log_callback_stats(const CallbackStats& event);
+
+    /**
+     * @brief Log warm start lifecycle events
+     */
+    void log_warm_start_event(const WarmStartEvent& event);
 
     /**
      * @brief Check if file needs rotation and rotate if necessary

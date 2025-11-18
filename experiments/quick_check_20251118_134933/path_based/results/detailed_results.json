@@ -1,0 +1,252 @@
+[
+  {
+    "instance_name": "ocstpin0",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: [path_based] Gurobi error: Var::set\n",
+    "timestamp": "2025-11-18T13:49:57.276247+00:00",
+    "error": "Execution failed: [path_based] Gurobi error: Var::set\n"
+  },
+  {
+    "instance_name": "ocstpin1",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: [path_based] Gurobi error: Var::set\n",
+    "timestamp": "2025-11-18T13:49:57.283151+00:00",
+    "error": "Execution failed: [path_based] Gurobi error: Var::set\n"
+  },
+  {
+    "instance_name": "ocstpin10",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: [path_based] Gurobi error: Var::set\n",
+    "timestamp": "2025-11-18T13:49:57.295693+00:00",
+    "error": "Execution failed: [path_based] Gurobi error: Var::set\n"
+  },
+  {
+    "instance_name": "ocstpin11",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: [path_based] Gurobi error: Var::set\n",
+    "timestamp": "2025-11-18T13:49:57.305676+00:00",
+    "error": "Execution failed: [path_based] Gurobi error: Var::set\n"
+  },
+  {
+    "instance_name": "ocstpin12",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: [path_based] Gurobi error: Var::set\n",
+    "timestamp": "2025-11-18T13:49:57.315109+00:00",
+    "error": "Execution failed: [path_based] Gurobi error: Var::set\n"
+  },
+  {
+    "instance_name": "ocstpin13",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: [path_based] Gurobi error: Var::set\n",
+    "timestamp": "2025-11-18T13:49:57.326901+00:00",
+    "error": "Execution failed: [path_based] Gurobi error: Var::set\n"
+  },
+  {
+    "instance_name": "ocstpin14",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: [path_based] Gurobi error: Var::set\n",
+    "timestamp": "2025-11-18T13:49:57.335066+00:00",
+    "error": "Execution failed: [path_based] Gurobi error: Var::set\n"
+  },
+  {
+    "instance_name": "ocstpin2",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: [path_based] Gurobi error: Var::set\n",
+    "timestamp": "2025-11-18T13:49:57.342808+00:00",
+    "error": "Execution failed: [path_based] Gurobi error: Var::set\n"
+  },
+  {
+    "instance_name": "ocstpin3",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: [path_based] Gurobi error: Var::set\n",
+    "timestamp": "2025-11-18T13:49:57.352802+00:00",
+    "error": "Execution failed: [path_based] Gurobi error: Var::set\n"
+  },
+  {
+    "instance_name": "ocstpin4",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: [path_based] Gurobi error: Var::set\n",
+    "timestamp": "2025-11-18T13:49:57.360131+00:00",
+    "error": "Execution failed: [path_based] Gurobi error: Var::set\n"
+  },
+  {
+    "instance_name": "ocstpin5",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: [path_based] Gurobi error: Var::set\n",
+    "timestamp": "2025-11-18T13:49:57.367072+00:00",
+    "error": "Execution failed: [path_based] Gurobi error: Var::set\n"
+  },
+  {
+    "instance_name": "ocstpin6",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: [path_based] Gurobi error: Var::set\n",
+    "timestamp": "2025-11-18T13:49:57.374917+00:00",
+    "error": "Execution failed: [path_based] Gurobi error: Var::set\n"
+  },
+  {
+    "instance_name": "ocstpin7",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: [path_based] Gurobi error: Var::set\n",
+    "timestamp": "2025-11-18T13:49:57.381179+00:00",
+    "error": "Execution failed: [path_based] Gurobi error: Var::set\n"
+  },
+  {
+    "instance_name": "ocstpin8",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: [path_based] Gurobi error: Var::set\n",
+    "timestamp": "2025-11-18T13:49:57.388353+00:00",
+    "error": "Execution failed: [path_based] Gurobi error: Var::set\n"
+  },
+  {
+    "instance_name": "ocstpin9",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: [path_based] Gurobi error: Var::set\n",
+    "timestamp": "2025-11-18T13:49:57.396793+00:00",
+    "error": "Execution failed: [path_based] Gurobi error: Var::set\n"
+  },
+  {
+    "instance_name": "orst0",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: [path_based] Gurobi error: Var::set\n",
+    "timestamp": "2025-11-18T13:49:57.405993+00:00",
+    "error": "Execution failed: [path_based] Gurobi error: Var::set\n"
+  },
+  {
+    "instance_name": "orst1",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: [path_based] Gurobi error: Var::set\n",
+    "timestamp": "2025-11-18T13:49:57.414672+00:00",
+    "error": "Execution failed: [path_based] Gurobi error: Var::set\n"
+  },
+  {
+    "instance_name": "orst2",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: [path_based] Gurobi error: Var::set\n",
+    "timestamp": "2025-11-18T13:49:57.427169+00:00",
+    "error": "Execution failed: [path_based] Gurobi error: Var::set\n"
+  },
+  {
+    "instance_name": "orst3",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: [path_based] Gurobi error: Var::set\n",
+    "timestamp": "2025-11-18T13:49:57.434030+00:00",
+    "error": "Execution failed: [path_based] Gurobi error: Var::set\n"
+  },
+  {
+    "instance_name": "orst4",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: [path_based] Gurobi error: Var::set\n",
+    "timestamp": "2025-11-18T13:49:57.441517+00:00",
+    "error": "Execution failed: [path_based] Gurobi error: Var::set\n"
+  },
+  {
+    "instance_name": "orst5",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: [path_based] Gurobi error: Var::set\n",
+    "timestamp": "2025-11-18T13:49:57.449643+00:00",
+    "error": "Execution failed: [path_based] Gurobi error: Var::set\n"
+  },
+  {
+    "instance_name": "orst6",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: [path_based] Gurobi error: Var::set\n",
+    "timestamp": "2025-11-18T13:49:57.457536+00:00",
+    "error": "Execution failed: [path_based] Gurobi error: Var::set\n"
+  },
+  {
+    "instance_name": "orst7",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: [path_based] Gurobi error: Var::set\n",
+    "timestamp": "2025-11-18T13:49:57.466081+00:00",
+    "error": "Execution failed: [path_based] Gurobi error: Var::set\n"
+  },
+  {
+    "instance_name": "orst8",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: [path_based] Gurobi error: Var::set\n",
+    "timestamp": "2025-11-18T13:49:57.474161+00:00",
+    "error": "Execution failed: [path_based] Gurobi error: Var::set\n"
+  },
+  {
+    "instance_name": "orst9",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: [path_based] Gurobi error: Var::set\n",
+    "timestamp": "2025-11-18T13:49:57.481191+00:00",
+    "error": "Execution failed: [path_based] Gurobi error: Var::set\n"
+  }
+]

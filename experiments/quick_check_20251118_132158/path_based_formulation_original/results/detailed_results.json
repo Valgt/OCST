@@ -1,0 +1,252 @@
+[
+  {
+    "instance_name": "ocstpin0",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: terminate called after throwing an instance of 'GRBException'\n",
+    "timestamp": "2025-11-18T13:21:59.019673+00:00",
+    "error": "Execution failed: terminate called after throwing an instance of 'GRBException'\n"
+  },
+  {
+    "instance_name": "ocstpin1",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: terminate called after throwing an instance of 'GRBException'\n",
+    "timestamp": "2025-11-18T13:21:59.046645+00:00",
+    "error": "Execution failed: terminate called after throwing an instance of 'GRBException'\n"
+  },
+  {
+    "instance_name": "ocstpin10",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: terminate called after throwing an instance of 'GRBException'\n",
+    "timestamp": "2025-11-18T13:21:59.073688+00:00",
+    "error": "Execution failed: terminate called after throwing an instance of 'GRBException'\n"
+  },
+  {
+    "instance_name": "ocstpin11",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: terminate called after throwing an instance of 'GRBException'\n",
+    "timestamp": "2025-11-18T13:21:59.099453+00:00",
+    "error": "Execution failed: terminate called after throwing an instance of 'GRBException'\n"
+  },
+  {
+    "instance_name": "ocstpin12",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: terminate called after throwing an instance of 'GRBException'\n",
+    "timestamp": "2025-11-18T13:21:59.124875+00:00",
+    "error": "Execution failed: terminate called after throwing an instance of 'GRBException'\n"
+  },
+  {
+    "instance_name": "ocstpin13",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: terminate called after throwing an instance of 'GRBException'\n",
+    "timestamp": "2025-11-18T13:21:59.150548+00:00",
+    "error": "Execution failed: terminate called after throwing an instance of 'GRBException'\n"
+  },
+  {
+    "instance_name": "ocstpin14",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: terminate called after throwing an instance of 'GRBException'\n",
+    "timestamp": "2025-11-18T13:21:59.177450+00:00",
+    "error": "Execution failed: terminate called after throwing an instance of 'GRBException'\n"
+  },
+  {
+    "instance_name": "ocstpin2",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: terminate called after throwing an instance of 'GRBException'\n",
+    "timestamp": "2025-11-18T13:21:59.203463+00:00",
+    "error": "Execution failed: terminate called after throwing an instance of 'GRBException'\n"
+  },
+  {
+    "instance_name": "ocstpin3",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: terminate called after throwing an instance of 'GRBException'\n",
+    "timestamp": "2025-11-18T13:21:59.229910+00:00",
+    "error": "Execution failed: terminate called after throwing an instance of 'GRBException'\n"
+  },
+  {
+    "instance_name": "ocstpin4",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: terminate called after throwing an instance of 'GRBException'\n",
+    "timestamp": "2025-11-18T13:21:59.260878+00:00",
+    "error": "Execution failed: terminate called after throwing an instance of 'GRBException'\n"
+  },
+  {
+    "instance_name": "ocstpin5",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: terminate called after throwing an instance of 'GRBException'\n",
+    "timestamp": "2025-11-18T13:21:59.287507+00:00",
+    "error": "Execution failed: terminate called after throwing an instance of 'GRBException'\n"
+  },
+  {
+    "instance_name": "ocstpin6",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: terminate called after throwing an instance of 'GRBException'\n",
+    "timestamp": "2025-11-18T13:21:59.313820+00:00",
+    "error": "Execution failed: terminate called after throwing an instance of 'GRBException'\n"
+  },
+  {
+    "instance_name": "ocstpin7",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: terminate called after throwing an instance of 'GRBException'\n",
+    "timestamp": "2025-11-18T13:21:59.339897+00:00",
+    "error": "Execution failed: terminate called after throwing an instance of 'GRBException'\n"
+  },
+  {
+    "instance_name": "ocstpin8",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: terminate called after throwing an instance of 'GRBException'\n",
+    "timestamp": "2025-11-18T13:21:59.366295+00:00",
+    "error": "Execution failed: terminate called after throwing an instance of 'GRBException'\n"
+  },
+  {
+    "instance_name": "ocstpin9",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: terminate called after throwing an instance of 'GRBException'\n",
+    "timestamp": "2025-11-18T13:21:59.394611+00:00",
+    "error": "Execution failed: terminate called after throwing an instance of 'GRBException'\n"
+  },
+  {
+    "instance_name": "orst0",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: terminate called after throwing an instance of 'GRBException'\n",
+    "timestamp": "2025-11-18T13:21:59.420904+00:00",
+    "error": "Execution failed: terminate called after throwing an instance of 'GRBException'\n"
+  },
+  {
+    "instance_name": "orst1",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: terminate called after throwing an instance of 'GRBException'\n",
+    "timestamp": "2025-11-18T13:21:59.448344+00:00",
+    "error": "Execution failed: terminate called after throwing an instance of 'GRBException'\n"
+  },
+  {
+    "instance_name": "orst2",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: terminate called after throwing an instance of 'GRBException'\n",
+    "timestamp": "2025-11-18T13:21:59.476266+00:00",
+    "error": "Execution failed: terminate called after throwing an instance of 'GRBException'\n"
+  },
+  {
+    "instance_name": "orst3",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: terminate called after throwing an instance of 'GRBException'\n",
+    "timestamp": "2025-11-18T13:21:59.504547+00:00",
+    "error": "Execution failed: terminate called after throwing an instance of 'GRBException'\n"
+  },
+  {
+    "instance_name": "orst4",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: terminate called after throwing an instance of 'GRBException'\n",
+    "timestamp": "2025-11-18T13:21:59.532716+00:00",
+    "error": "Execution failed: terminate called after throwing an instance of 'GRBException'\n"
+  },
+  {
+    "instance_name": "orst5",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: terminate called after throwing an instance of 'GRBException'\n",
+    "timestamp": "2025-11-18T13:21:59.561160+00:00",
+    "error": "Execution failed: terminate called after throwing an instance of 'GRBException'\n"
+  },
+  {
+    "instance_name": "orst6",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: terminate called after throwing an instance of 'GRBException'\n",
+    "timestamp": "2025-11-18T13:21:59.590239+00:00",
+    "error": "Execution failed: terminate called after throwing an instance of 'GRBException'\n"
+  },
+  {
+    "instance_name": "orst7",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: terminate called after throwing an instance of 'GRBException'\n",
+    "timestamp": "2025-11-18T13:21:59.618352+00:00",
+    "error": "Execution failed: terminate called after throwing an instance of 'GRBException'\n"
+  },
+  {
+    "instance_name": "orst8",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: terminate called after throwing an instance of 'GRBException'\n",
+    "timestamp": "2025-11-18T13:21:59.646331+00:00",
+    "error": "Execution failed: terminate called after throwing an instance of 'GRBException'\n"
+  },
+  {
+    "instance_name": "orst9",
+    "success": false,
+    "objective": null,
+    "optimization_status_description": "ERROR",
+    "stdout": "",
+    "stderr": "Execution failed: terminate called after throwing an instance of 'GRBException'\n",
+    "timestamp": "2025-11-18T13:21:59.673153+00:00",
+    "error": "Execution failed: terminate called after throwing an instance of 'GRBException'\n"
+  }
+]
