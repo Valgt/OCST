@@ -69,3 +69,6 @@ thesis/
 ia_standards/
 
 
+
+# Dependencia externa clonada localmente (google/googletest); no se versiona
+third_party/googletest/
