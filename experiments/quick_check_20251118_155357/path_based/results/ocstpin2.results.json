@@ -1,0 +1,102 @@
+{
+  "artifacts": {
+    "warm_start": "data/input/dijkstra_tree/ocstpin2.txt"
+  },
+  "config": {
+    "digest": "path_based_v2.0.0",
+    "heuristics": "0.500000",
+    "mip_gap": "0.000000",
+    "threads": "1",
+    "time_limit": "3600.000000",
+    "warm_start_enabled": "true",
+    "warm_start_ideas": "dijkstra_tree"
+  },
+  "instance": {
+    "name": "ocstpin2",
+    "tags": []
+  },
+  "optimization_status": {
+    "code": "OPTIMAL",
+    "description": "Optimal solution found",
+    "has_bound": true,
+    "has_solution": true
+  },
+  "reproducibility": {
+    "git_commit": "1915e0e",
+    "git_dirty": true,
+    "seed": 42,
+    "timestamp": "2025-11-18 10:54:16"
+  },
+  "results": {
+    "best_solution_time": 0.0032629966735839844,
+    "dual_bound": 2896544.9999999995,
+    "gap": 4.656612873077393e-10,
+    "gap_percent": 1.6076438905928933e-14,
+    "objective": 2896545.0,
+    "primal_bound": 2896545.0
+  },
+  "run_uuid": "f27d6833-06f5-4fe3-991e-f24fb30318e4",
+  "runtime": {
+    "cpu_seconds": 0.0032629966735839844,
+    "solver_iterations": 45,
+    "solver_nodes": 1,
+    "termination_reason": "",
+    "wall_clock_seconds": 0.005490802
+  },
+  "schema_version": "1.0",
+  "solution": {
+    "is_connected": true,
+    "is_spanning_tree": true,
+    "tree_cost": 2896545.0,
+    "tree_edges": [
+      {
+        "destination": 2,
+        "source": 0
+      },
+      {
+        "destination": 3,
+        "source": 0
+      },
+      {
+        "destination": 2,
+        "source": 1
+      },
+      {
+        "destination": 9,
+        "source": 1
+      },
+      {
+        "destination": 4,
+        "source": 2
+      },
+      {
+        "destination": 5,
+        "source": 2
+      },
+      {
+        "destination": 7,
+        "source": 2
+      },
+      {
+        "destination": 6,
+        "source": 5
+      },
+      {
+        "destination": 9,
+        "source": 8
+      }
+    ]
+  },
+  "solver": {
+    "formulation": "path_based",
+    "id": "path_based",
+    "version": "2.0.0"
+  },
+  "solver_metadata": {
+    "callback_invocations": "0",
+    "cutting_planes": "0",
+    "lazy_constraints": "4",
+    "warm_start_used": "dijkstra_tree",
+    "warm_starts_tried": "dijkstra_tree"
+  }
+}

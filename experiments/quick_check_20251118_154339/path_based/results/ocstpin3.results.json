@@ -1,0 +1,96 @@
+{
+  "config": {
+    "digest": "path_based_v2.0.0",
+    "heuristics": "0.500000",
+    "mip_gap": "0.000000",
+    "threads": "1",
+    "time_limit": "3600.000000",
+    "warm_start_enabled": "false"
+  },
+  "instance": {
+    "name": "ocstpin3",
+    "tags": []
+  },
+  "optimization_status": {
+    "code": "OPTIMAL",
+    "description": "Optimal solution found",
+    "has_bound": true,
+    "has_solution": true
+  },
+  "reproducibility": {
+    "git_commit": "1915e0e",
+    "git_dirty": true,
+    "seed": 42,
+    "timestamp": "2025-11-18 10:43:56"
+  },
+  "results": {
+    "best_solution_time": 0.005030155181884766,
+    "dual_bound": 7280790.0,
+    "gap": -9.313225746154785e-10,
+    "gap_percent": -1.2791504419375901e-14,
+    "objective": 7280789.999999999,
+    "primal_bound": 7280789.999999999
+  },
+  "run_uuid": "68ee550b-9261-4395-b09c-d1f356f92c15",
+  "runtime": {
+    "cpu_seconds": 0.005030155181884766,
+    "solver_iterations": 80,
+    "solver_nodes": 1,
+    "termination_reason": "",
+    "wall_clock_seconds": 0.00767434
+  },
+  "schema_version": "1.0",
+  "solution": {
+    "is_connected": true,
+    "is_spanning_tree": true,
+    "tree_cost": 7280789.999999999,
+    "tree_edges": [
+      {
+        "destination": 1,
+        "source": 0
+      },
+      {
+        "destination": 2,
+        "source": 1
+      },
+      {
+        "destination": 6,
+        "source": 1
+      },
+      {
+        "destination": 7,
+        "source": 1
+      },
+      {
+        "destination": 8,
+        "source": 2
+      },
+      {
+        "destination": 9,
+        "source": 2
+      },
+      {
+        "destination": 8,
+        "source": 3
+      },
+      {
+        "destination": 8,
+        "source": 4
+      },
+      {
+        "destination": 9,
+        "source": 5
+      }
+    ]
+  },
+  "solver": {
+    "formulation": "path_based",
+    "id": "path_based",
+    "version": "2.0.0"
+  },
+  "solver_metadata": {
+    "callback_invocations": "0",
+    "cutting_planes": "0",
+    "lazy_constraints": "0"
+  }
+}

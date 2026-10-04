@@ -1,0 +1,102 @@
+{
+  "artifacts": {
+    "warm_start": "data/input/mst/ocstpin9.txt"
+  },
+  "config": {
+    "digest": "path_based_v2.0.0",
+    "heuristics": "0.500000",
+    "mip_gap": "0.000000",
+    "threads": "1",
+    "time_limit": "3600.000000",
+    "warm_start_enabled": "true",
+    "warm_start_ideas": "mst"
+  },
+  "instance": {
+    "name": "ocstpin9",
+    "tags": []
+  },
+  "optimization_status": {
+    "code": "OPTIMAL",
+    "description": "Optimal solution found",
+    "has_bound": true,
+    "has_solution": true
+  },
+  "reproducibility": {
+    "git_commit": "1915e0e",
+    "git_dirty": true,
+    "seed": 42,
+    "timestamp": "2025-11-18 10:44:35"
+  },
+  "results": {
+    "best_solution_time": 0.013466119766235352,
+    "dual_bound": 6629217.999999998,
+    "gap": 2.7939677238464355e-09,
+    "gap_percent": 4.214626406683918e-14,
+    "objective": 6629218.000000001,
+    "primal_bound": 6629218.000000001
+  },
+  "run_uuid": "db5b8892-ccd1-4b1b-a816-655d01fe9920",
+  "runtime": {
+    "cpu_seconds": 0.013466119766235352,
+    "solver_iterations": 185,
+    "solver_nodes": 1,
+    "termination_reason": "",
+    "wall_clock_seconds": 0.016481324
+  },
+  "schema_version": "1.0",
+  "solution": {
+    "is_connected": true,
+    "is_spanning_tree": true,
+    "tree_cost": 6629218.000000001,
+    "tree_edges": [
+      {
+        "destination": 4,
+        "source": 0
+      },
+      {
+        "destination": 6,
+        "source": 0
+      },
+      {
+        "destination": 6,
+        "source": 1
+      },
+      {
+        "destination": 4,
+        "source": 2
+      },
+      {
+        "destination": 8,
+        "source": 3
+      },
+      {
+        "destination": 9,
+        "source": 3
+      },
+      {
+        "destination": 8,
+        "source": 4
+      },
+      {
+        "destination": 8,
+        "source": 5
+      },
+      {
+        "destination": 8,
+        "source": 7
+      }
+    ]
+  },
+  "solver": {
+    "formulation": "path_based",
+    "id": "path_based",
+    "version": "2.0.0"
+  },
+  "solver_metadata": {
+    "callback_invocations": "0",
+    "cutting_planes": "0",
+    "lazy_constraints": "0",
+    "warm_start_used": "mst",
+    "warm_starts_tried": "mst"
+  }
+}

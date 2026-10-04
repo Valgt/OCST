@@ -1,0 +1,116 @@
+{
+  "config": {
+    "digest": "path_based_v2.0.0",
+    "heuristics": "0.500000",
+    "mip_gap": "0.000000",
+    "threads": "1",
+    "time_limit": "3600.000000",
+    "warm_start_enabled": "false"
+  },
+  "instance": {
+    "name": "ocstpin13",
+    "tags": []
+  },
+  "optimization_status": {
+    "code": "OPTIMAL",
+    "description": "Optimal solution found",
+    "has_bound": true,
+    "has_solution": true
+  },
+  "reproducibility": {
+    "git_commit": "1915e0e",
+    "git_dirty": true,
+    "seed": 42,
+    "timestamp": "2025-11-18 10:43:56"
+  },
+  "results": {
+    "best_solution_time": 0.019039154052734375,
+    "dual_bound": 5806362.999999999,
+    "gap": 9.313225746154785e-10,
+    "gap_percent": 1.6039689124077817e-14,
+    "objective": 5806363.0,
+    "primal_bound": 5806363.0
+  },
+  "run_uuid": "dfe563ae-7654-41d0-a94c-575087857466",
+  "runtime": {
+    "cpu_seconds": 0.019039154052734375,
+    "solver_iterations": 204,
+    "solver_nodes": 1,
+    "termination_reason": "",
+    "wall_clock_seconds": 0.023875501
+  },
+  "schema_version": "1.0",
+  "solution": {
+    "is_connected": true,
+    "is_spanning_tree": true,
+    "tree_cost": 5806363.0,
+    "tree_edges": [
+      {
+        "destination": 1,
+        "source": 0
+      },
+      {
+        "destination": 6,
+        "source": 0
+      },
+      {
+        "destination": 7,
+        "source": 2
+      },
+      {
+        "destination": 5,
+        "source": 3
+      },
+      {
+        "destination": 6,
+        "source": 3
+      },
+      {
+        "destination": 13,
+        "source": 3
+      },
+      {
+        "destination": 6,
+        "source": 4
+      },
+      {
+        "destination": 8,
+        "source": 4
+      },
+      {
+        "destination": 7,
+        "source": 6
+      },
+      {
+        "destination": 9,
+        "source": 6
+      },
+      {
+        "destination": 10,
+        "source": 6
+      },
+      {
+        "destination": 12,
+        "source": 9
+      },
+      {
+        "destination": 14,
+        "source": 10
+      },
+      {
+        "destination": 12,
+        "source": 11
+      }
+    ]
+  },
+  "solver": {
+    "formulation": "path_based",
+    "id": "path_based",
+    "version": "2.0.0"
+  },
+  "solver_metadata": {
+    "callback_invocations": "0",
+    "cutting_planes": "0",
+    "lazy_constraints": "0"
+  }
+}
